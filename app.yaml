@@ -1,0 +1,6 @@
+# google project id: plagio
+# url: https://plagio.appspot.com
+
+entrypoint: gunicorn -b :$PORT bot_main:app
+runtime: python37
+
