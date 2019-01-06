@@ -7,13 +7,13 @@ import datetime
 from google.cloud import datastore
 CLIENT = datastore.Client()
 
-class NDB_Base(object):    
+class NDB_Base(object):
 
     def __getattr__(self, attr):
         if attr == 'key':
             return self.entry.key
         return self.entry.get(attr,None)
-    
+
     def __setattr__(self, key, value):
         if key == 'entry':
             super().__setattr__(key, value)
@@ -35,7 +35,22 @@ class NDB_Base(object):
         #     from bot_telegram import send_message
         #     msg = "updated entry: {}".format(self.entry)
         #     send_message(self, msg, markdown=False)
-        
 
     def delete(self):
         CLIENT.delete(self.entry.key)
+
+def transactional(func):
+    import google.cloud.exceptions
+    from bot_telegram import report_master
+    def transactional_wrapper(*args, **kwargs):
+        for _ in range(5):
+            try:
+                with CLIENT.transaction():
+                    return func(*args, **kwargs)
+            except google.cloud.exceptions.Conflict:
+                continue
+        else:
+            report_string = '❗️ Concurrent transaction conflict'
+            report_master(report_string)
+            logging.error(report_string)
+    return transactional_wrapper

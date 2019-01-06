@@ -3,7 +3,7 @@
 # ================================
 # SYMBOLS
 # ================================
-# 🤗📝✏️ 
+# 🤗📝✏️
 CHECK_SYMBOL = '✅'
 BULLET_SYMBOL = '∙'
 RIGHT_ARROW_SYMBOL = '→'
@@ -101,8 +101,8 @@ MSG_NOTIFICATIONS_OFF = {
     'it': "🔕 Hai le notifiche disabilitate."
 }
 MSG_NO_START_COMMAND_AVAILABLE_DURING_GAME = {
-    'en': "⛔ ️No /start command availale during the game. Type /exit\\_game if you want to abandon the game.",
-    'it': "⛔ ️Il comando /start non è disponibile durante il gioco. Scrivi /exit\\_game se vuoi terminare il gioco."
+    'en': "⛔ No /start command availale during the game. Type /exit\\_game if you want to abandon the game.",
+    'it': "⛔ Il comando /start non è disponibile durante il gioco. Scrivi /exit\\_game se vuoi terminare il gioco."
 }
 MSG_INFO = {
     'en': "🏗 Plagio bot the game of creative writers!",
@@ -137,7 +137,7 @@ MSG_GAME_ALREADY_STARTED = {
     'it': '🤷‍♀️ Non ci sono posti disponibili in questo gioco.'
 }
 MSG_NAME_NO_LONGER_AVAILBLE = {
-    'en': "🤷‍♀️ The nmae *{}* is no longer available.",
+    'en': "🤷‍♀️ The name *{}* is no longer available.",
     'it': "🤷‍♀️ Il nome *{}* non è più disponibile."
 }
 MSG_NEW_GAME_CONFIRM = {
@@ -157,16 +157,16 @@ MSG_ENTERING_GAME_X = {
     'it': "🏁 Sei entrato nel gioco *{}*."
 }
 MSG_INVITE_PEOPLE = {
-    'en': "📮 You can invite other people to the game *{}* or press the button below 🔔 to announce it publicly.",
-    'it': "📮 Puoi invitare altre persone ad unirsi al gioco *{}* o premere il pulsante 🔔 per annunciarlo pubblicamente."
+    'en': "📮 You can invite other players to the game *{}* or press the button below 🔔 to announce it publicly.",
+    'it': "📮 Puoi invitare altri giocatori ad unirsi al gioco *{}* o premere il pulsante 🔔 per annunciarlo pubblicamente."
 }
 MSG_ANNOUNCE_GAME_PUBLICLY = {
     'en': "📮 New game created by {} with {} people and {} seats remaining. Join th egame clicking on {}.",
     'it': "📮 Nuovo gioco creato da {} con {} persone e {} posti rimanenti. Unisciti premendo su {}."
 }
 MSG_SENT_ANNOUNCEMENT = {
-    'en': "📮 Announcement sent!",
-    'it': "📮 Annuncio inviato!"
+    'en': "📮 Announcement sent! Let's wait for new players to join.",
+    'it': "📮 Annuncio inviato! Aspettiamo che altri giocatori si uniscano."
 }
 MSG_PLAYER_X_JOINED_GAME = {
     'en': "👤 Player *{}* joined the game.",
@@ -177,8 +177,8 @@ MSG_WAITING_FOR_X_PLAYERS = {
     'it': "😴 Stiamo aspettando {} altri giocatori..."
 }
 MSG_READY_TO_START = {
-    'en': "👟 All seats have been occupied! Let's start the game!",
-    'it': "👟 Tutti i posti sono stati occupati! Iniziamo il gioco!"
+    'en': "👟 All seats have been occupied, let's start the game!",
+    'it': "👟 Tutti i posti sono stati occupati, iniziamo il gioco!"
 }
 MSG_HAND_INFO = {
     'en': '🖐 Current Hand: {}\n📖 Reader: {}',
@@ -256,10 +256,6 @@ MSG_NO_GAME_TO_EXIT = {
     'en': "⛔️ You are not in a game",
     'it': "⛔️ Non sei in un gioco"
 }
-MSG_GAME_OVER = {
-    'en': "🎮 Game Over",
-    'it': "🎮 Gioco Terminato"
-}
 MSG_WINNER_SINGULAR = {
     'en': "🏆 The winner of the game is *{}*",
     'it': "🏆 Il vincitore del gioco è *{}*"
@@ -289,8 +285,8 @@ MSG_WRONG_INPUT_USE_BUTTONS = {
     'en': '⛔️ Wrong input, please use buttons below 🎛',
     'it': '⛔️ Input non valido, per favore usa i pulsanti 🎛'
 }
-
-MSG_TRANSLATE_TEST = {
-    'en': 'This is a translatable string',
-    'it': 'Questa è una lingua traducibile'
+MSG_COMMAND_NOT_RECOGNIZED = {
+    'en': '⛔️ The command has not been recognised.',
+    'it': '⛔️ Comando non riconosciuto.'
 }
+

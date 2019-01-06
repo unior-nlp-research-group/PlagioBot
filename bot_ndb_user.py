@@ -19,7 +19,7 @@ class NDB_User(NDB_Base):
             self.entry = entry
             return
         id_str = "{}:{}".format(application, serial_number)
-        key = CLIENT.key(KIND, id_str)        
+        key = CLIENT.key(KIND, id_str)
         self.entry = CLIENT.get(key)
         if not self.entry:
             self.entry = datastore.Entity(key=key, exclude_from_indexes=['variables'])
@@ -33,7 +33,7 @@ class NDB_User(NDB_Base):
                 variables = json.dumps({})
             )
             if not update:
-                self.put()                
+                self.put()
         if update:
             self.update_info(name, username)
 
@@ -43,7 +43,7 @@ class NDB_User(NDB_Base):
     def update_info(self, name, username):
         self.entry.update(
             name=name,
-            username=username,            
+            username=username,
         )
         self.put()
 
@@ -58,7 +58,7 @@ class NDB_User(NDB_Base):
     def get_current_game(self):
         if self.current_game_key is None:
             return None
-        from bot_ndb_game import NDB_Game    
+        from bot_ndb_game import NDB_Game
         return NDB_Game(entry=CLIENT.get(self.current_game_key))
 
     def is_bot(self):
@@ -70,11 +70,11 @@ class NDB_User(NDB_Base):
 
     def set_keyboard(self, value, put=True):
         self.set_var('KEYBOARD', value, put)
-    
+
     def get_keyboard(self):
         return self.get_var('KEYBOARD')
 
-    def set_var(self, var_name, var_value, put=True):        
+    def set_var(self, var_name, var_value, put=True):
         var_dict = json.loads(self.variables)
         # previous_value = var_dict.get(var_name,None)
         var_dict[var_name] = var_value
@@ -120,8 +120,8 @@ if __name__ == '__main__':
 
     entity = datastore.Entity(CLIENT.key('Game'))
     entity.update(
-        name='new_test', 
-        creator=fede_user_entry,     
+        name='new_test',
+        creator=fede_user_entry,
         players_keys = [fede_user_entry, katja_user_entry],
         number_players=4
     )

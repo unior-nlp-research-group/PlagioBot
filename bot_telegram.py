@@ -11,18 +11,18 @@ from bot_ndb_user import NDB_User
 
 BOT = telegram.Bot(token=key.TELEGRAM_API_TOKEN)
 
-def exception_reporter(func):    
+def exception_reporter(func):
     def exception_wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
         except Exception:
             report_string = '❗️ Exception {}'.format(traceback.format_exc()) #.splitlines()
-            logging.error(report_string)          
-            try:  
+            logging.error(report_string)
+            try:
                 report_master(report_string)
             except Exception:
                 report_string = '❗️ Exception {}'.format(traceback.format_exc())
-                logging.error(report_string)          
+                logging.error(report_string)
     return exception_wrapper
 
 def set_webhook():
@@ -42,45 +42,47 @@ def send_message_query(query, text, kb=None, markdown=True, remove_keyboard=Fals
     def get_next_page_of_users(cursor):
         query_iter = query.fetch(start_cursor=cursor, limit=100)
         page = next(query_iter.pages)
-        users = list(page)
+        entries = list(page)
         next_cursor = query_iter.next_page_token
-        return users, next_cursor
+        return entries, next_cursor
     cursor = None
-    while(True):    
-        users, cursor = get_next_page_of_users(cursor)
+    while(True):
+        entries, cursor = get_next_page_of_users(cursor)
+        users = [NDB_User(entry=e) for e in entries]
         send_message_multi(users, text, kb, markdown, remove_keyboard, **kwargs)
+        #logging.debug("sending invitation to {}".format(', '.join(u.get_name() for u in users)))
         if cursor == None:
             break
 
 def send_message_multi(users, text, kb=None, markdown=True, remove_keyboard=False, **kwargs):
     for u in users:
-        send_message(u, text, kb=kb, markdown=markdown, remove_keyboard=remove_keyboard, sleep=True, **kwargs)        
+        send_message(u, text, kb=kb, markdown=markdown, remove_keyboard=remove_keyboard, sleep=True, **kwargs)
 
 '''
 If kb==None keep last keyboard
 '''
 def send_message(user, text, kb=None, markdown=True, remove_keyboard=False, sleep=False, **kwargs):
-    #sendMessage(chat_id, text, parse_mode=None, disable_web_page_preview=None, disable_notification=False, 
+    #sendMessage(chat_id, text, parse_mode=None, disable_web_page_preview=None, disable_notification=False,
     # reply_to_message_id=None, reply_markup=None, timeout=None, **kwargs)
     if kb or remove_keyboard:
         reply_markup = telegram.ReplyKeyboardMarkup(kb, resize_keyboard=True) if kb else telegram.ReplyKeyboardRemove()
-        BOT.sendMessage(        
-            chat_id = user.serial_number, 
+        BOT.sendMessage(
+            chat_id = user.serial_number,
             text = text,
             parse_mode = telegram.ParseMode.MARKDOWN if markdown else None,
             reply_markup = reply_markup,
             **kwargs
         )
     else:
-        BOT.sendMessage(        
-            chat_id = user.serial_number, 
+        BOT.sendMessage(
+            chat_id = user.serial_number,
             text = text,
             parse_mode = telegram.ParseMode.MARKDOWN if markdown else None,
             **kwargs
         )
     if sleep:
-        time.sleep(0.1)   
-    
+        time.sleep(0.1)
+
 
 def send_text_document(user, file_name, file_content):
     import requests
@@ -89,7 +91,7 @@ def send_text_document(user, file_name, file_content):
     resp = requests.post(key.TELEGRAM_API_URL + 'sendDocument', data=data, files=files)
     logging.debug("Sent documnet. Response status code: {}".format(resp.status_code))
 
-def get_url_from_file_id(file_id):    
+def get_url_from_file_id(file_id):
     import requests
     logging.debug("TELEGRAM: Requested file_id: {}".format(file_id))
     r = requests.post(key.TELEGRAM_API_URL + 'getFile', data={'file_id': file_id})
@@ -113,4 +115,4 @@ def report_master(message):
     global bot_telegram_MASTER
     if bot_telegram_MASTER is None:
         bot_telegram_MASTER = NDB_User('telegram', key.TELEGRAM_BOT_MASTER_ID, update=False)
-    send_message(bot_telegram_MASTER, message, markdown=False)    
+    send_message(bot_telegram_MASTER, message, markdown=False)

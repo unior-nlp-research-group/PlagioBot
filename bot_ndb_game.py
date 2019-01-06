@@ -5,6 +5,7 @@ from google.cloud import datastore
 from bot_ndb_base import NDB_Base
 import key
 import json
+from bot_ndb_base import transactional
 
 import bot_ui as ux
 from utility import escape_markdown
@@ -14,10 +15,13 @@ KIND = 'Game'
 
 class NDB_Game(NDB_Base):
 
-    def __init__(self, name=None, creator=None, entry=None): 
+    def __init__(self, name=None, creator=None, entry=None, key=None):
         if entry:
             self.entry = entry
-            return                
+            return
+        if key:
+            self.entry = CLIENT.get(key)
+            return
         self.entry = datastore.Entity(key=CLIENT.key(KIND))
         self.entry.update(
             name = name,
@@ -26,14 +30,18 @@ class NDB_Game(NDB_Base):
             number_players = -1,
             variables = json.dumps({})
         )
-        self.put()             
+        self.put()
+
+    def refresh(self):
+        game = NDB_Game(key=self.key) #refreshing game from db
+        self.entry = game.entry # copied refreshed copy into self
 
     def get_name(self):
         return escape_markdown(self.name)
 
     def set_number_of_players(self, num_players):
         self.number_players = num_players
-        self.put() 
+        self.put()
 
     def get_player_index(self,i):
         from bot_ndb_user import NDB_User
@@ -45,7 +53,7 @@ class NDB_Game(NDB_Base):
         players = [NDB_User(entry=CLIENT.get(k)) for k in self.players_keys]
         return players
 
-    def get_variables(self):   
+    def get_variables(self):
         return json.loads(self.variables)
 
     def set_variables(self, var_dict):
@@ -55,12 +63,14 @@ class NDB_Game(NDB_Base):
     def available_seats(self):
         return self.number_players - len(self.players_keys)
 
+    @transactional
     def add_player(self, user):
+        self.refresh()        
         if self.state != "INITIAL":
             return False
         if self.available_seats==0:
             return False
-        self.players_keys.append(user.key)        
+        self.players_keys.append(user.key)
         self.put()
         user.set_current_game(self)
         return True
@@ -82,10 +92,10 @@ class NDB_Game(NDB_Base):
             'VOTES': [[0]*size for i in range(size)],
             'POINTS': [[0]*size for i in range(size)],
         })
-        self.state = 'STARTED'        
-        self.setup_next_hand()   
+        self.state = 'STARTED'
+        self.setup_next_hand()
 
-    def get_game_creator_name(self):
+    def get_creator_name(self):
         creator_name = self.get_var('PLAYERS_NAMES')[0]
         return escape_markdown(creator_name)
 
@@ -97,7 +107,7 @@ class NDB_Game(NDB_Base):
 
     def setup_next_hand(self):
         var_dict = self.get_variables()
-        var_dict['HAND'] += 1        
+        var_dict['HAND'] += 1
         self.set_variables(var_dict)
 
     def is_last_hand(self):
@@ -107,7 +117,7 @@ class NDB_Game(NDB_Base):
 
     def get_current_hand_players_reader_writers(self):
         hand = self.get_var('HAND')
-        players = self.get_players() 
+        players = self.get_players()
         reader = players[hand-1]
         writers = [p for p in players if p != reader]
         return hand, players, reader, writers
@@ -115,7 +125,7 @@ class NDB_Game(NDB_Base):
     def set_reader_text_beginning(self, text):
         var_dict = self.get_variables()
         var_dict['TEXT_BEGINNINGS'].append(text)
-        self.set_variables(var_dict)   
+        self.set_variables(var_dict)
 
     def get_reader_text_beginning(self):
         var_dict = self.get_variables()
@@ -140,7 +150,7 @@ class NDB_Game(NDB_Base):
         shuffled_continuations = [hand_continuations[i] for i in shuffled_indexes]
         return shuffled_indexes, shuffled_continuations
 
-    def set_voted_index_and_points_and_get_remaining(self, user, voted_index):        
+    def set_voted_index_and_points_and_get_remaining(self, user, voted_index):
         var_dict = self.get_variables()
         hand_index = var_dict['HAND']-1
         names = var_dict['PLAYERS_NAMES']
@@ -159,7 +169,7 @@ class NDB_Game(NDB_Base):
 
     def get_shuffled_continuations_voters_name(self):
         var_dict = self.get_variables()
-        hand_index = var_dict['HAND']-1        
+        hand_index = var_dict['HAND']-1
         shuffled_indexes = var_dict['SHUFFLE_INDEXES'][hand_index]
         hand_votes = var_dict['VOTES'][hand_index]
         shuffled_continuations_voters_name = [[] for i in range(self.number_players)]
@@ -174,7 +184,7 @@ class NDB_Game(NDB_Base):
 
     def get_hand_point_summary(self):
         var_dict = self.get_variables()
-        hand_index = var_dict['HAND']-1 
+        hand_index = var_dict['HAND']-1
         hand_points = var_dict['POINTS'][hand_index]
         players_names = var_dict['PLAYERS_NAMES']
         return '\n'.join(['- {}: {}'.format(players_names[i], hand_points[i]) for i in range(self.number_players)])
@@ -183,7 +193,7 @@ class NDB_Game(NDB_Base):
         var_dict = self.get_variables()
         points = var_dict['POINTS']
         players_names = var_dict['PLAYERS_NAMES']
-        string_list = []        
+        string_list = []
         for i in range(self.number_players):
             total_points = sum(hand_points[i] for hand_points in points)
             string_list.append('- {}: {}'.format(players_names[i], total_points))
@@ -193,8 +203,9 @@ class NDB_Game(NDB_Base):
         var_dict = self.get_variables()
         points = var_dict['POINTS']
         players_names = var_dict['PLAYERS_NAMES']
-        max_point = max(points)        
-        winner_names = [players_names[i] for i,p in enumerate(points) if p==max_point]
+        players_total_points = [sum(hand_points[i] for hand_points in points) for i in range(self.number_players)]
+        max_point = max(players_total_points)
+        winner_names = [players_names[i] for i,p in enumerate(players_total_points) if p==max_point]
         return winner_names
 
     def set_var(self, var_name, var_value, put=True):
@@ -206,9 +217,11 @@ class NDB_Game(NDB_Base):
 
     def get_var(self, var_name):
         var_dict = self.get_variables()
-        return var_dict.get(var_name,None)    
+        return var_dict.get(var_name,None)
 
 def get_game_from_id(game_id):
+    from utility import represents_int
+    assert represents_int(game_id)
     key = CLIENT.key(KIND, game_id)
     entry = CLIENT.get(key)
     if entry:
@@ -219,18 +232,18 @@ def get_game_from_id(game_id):
 def get_ongoing_game(name):
     query = CLIENT.query(kind=KIND)
     query.add_filter('name', '=', name)
-    query.add_filter('state', '=', 'INITIAL')    
+    query.add_filter('state', '=', 'INITIAL')
     matched = list(query.fetch(1))
     if matched:
         return NDB_Game(entry=matched[0])
     else:
         return None
-    
+
     #keys = list([entity.key for entity in query.fetch(limit=1)])
-    
+
 if __name__ == '__main__':
     #game = NDB_Game('test',4)
     print('test room available: {}'.format(get_ongoing_game('test')))
     print('test1 room available: {}'.format(get_ongoing_game('test1')))
-    
+
 
