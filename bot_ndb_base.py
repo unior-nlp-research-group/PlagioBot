@@ -9,6 +9,13 @@ CLIENT = datastore.Client()
 
 class NDB_Base(object):
 
+    def __init__(self, entry=None, key=None):
+        assert entry or key
+        if entry:
+            self.entry = entry            
+        if key:
+            self.entry = CLIENT.get(key)
+
     def __getattr__(self, attr):
         if attr == 'key':
             return self.entry.key
@@ -46,6 +53,7 @@ def transactional(func):
         for _ in range(5):
             try:
                 with CLIENT.transaction():
+                    args[0].refresh() #args[0] is self
                     return func(*args, **kwargs)
             except google.cloud.exceptions.Conflict:
                 continue

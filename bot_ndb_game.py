@@ -16,11 +16,8 @@ KIND = 'Game'
 class NDB_Game(NDB_Base):
 
     def __init__(self, name=None, creator=None, entry=None, key=None):
-        if entry:
-            self.entry = entry
-            return
-        if key:
-            self.entry = CLIENT.get(key)
+        if entry or key:
+            super().__init__(entry=entry, key=key)
             return
         self.entry = datastore.Entity(key=CLIENT.key(KIND))
         self.entry.update(
@@ -33,6 +30,7 @@ class NDB_Game(NDB_Base):
         self.put()
 
     def refresh(self):
+        logging.debug('Refreshing game {}'.format(self.get_name()))
         game = NDB_Game(key=self.key) #refreshing game from db
         self.entry = game.entry # copied refreshed copy into self
 
@@ -64,8 +62,7 @@ class NDB_Game(NDB_Base):
         return self.number_players - len(self.players_keys)
 
     @transactional
-    def add_player(self, user):
-        self.refresh()        
+    def add_player(self, user):          
         if self.state != "INITIAL":
             return False
         if self.available_seats==0:
@@ -87,9 +84,10 @@ class NDB_Game(NDB_Base):
             'SPECIAL_RULES': '',
             'HAND': 0,
             'TEXT_BEGINNINGS': [],
+            'TEXT_INFO':[],
             'TEXT_CONTINUATIONS': [['']*size for i in range(size)],
             'SHUFFLE_INDEXES': shuffles,
-            'VOTES': [[0]*size for i in range(size)],
+            'VOTES': [[-1]*size for i in range(size)],
             'POINTS': [[0]*size for i in range(size)],
         })
         self.state = 'STARTED'
@@ -131,6 +129,16 @@ class NDB_Game(NDB_Base):
         var_dict = self.get_variables()
         return var_dict['TEXT_BEGINNINGS'][-1]
 
+    def set_reader_text_info(self, text):
+        var_dict = self.get_variables()
+        var_dict['TEXT_INFO'].append(text)
+        self.set_variables(var_dict)
+
+    def get_reader_text_info(self):
+        var_dict = self.get_variables()
+        return var_dict['TEXT_INFO'][-1]
+
+    @transactional
     def set_player_text_continuation_and_get_remaining(self, user, text):
         var_dict = self.get_variables()
         player_index = self.players_keys.index(user.key)
@@ -150,6 +158,7 @@ class NDB_Game(NDB_Base):
         shuffled_continuations = [hand_continuations[i] for i in shuffled_indexes]
         return shuffled_indexes, shuffled_continuations
 
+    @transactional
     def set_voted_index_and_points_and_get_remaining(self, user, voted_index):
         var_dict = self.get_variables()
         hand_index = var_dict['HAND']-1

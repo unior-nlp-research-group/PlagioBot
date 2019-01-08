@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import parameters
 
 # ================================
 # SYMBOLS
@@ -105,8 +106,8 @@ MSG_NO_START_COMMAND_AVAILABLE_DURING_GAME = {
     'it': "⛔ Il comando /start non è disponibile durante il gioco. Scrivi /exit\\_game se vuoi terminare il gioco."
 }
 MSG_INFO = {
-    'en': "🏗 Plagio bot the game of creative writers!",
-    'it': "🏗 Plagio bot il gioco degli scrittori creativi!"
+    'en': "{}".format(parameters.INSTRUCTION_URL_EN),
+    'it': "{}".format(parameters.INSTRUCTION_URL_IT)
 }
 MSG_WORK_IN_PROGRESS = {
     'en': "🏗 System under maintanance, please try later.",
@@ -116,7 +117,7 @@ MSG_CHANGE_LANGUAGE = {
     'en': "🇬🇧 ⇆ 🇮🇹 Change Language",
     'it': "🇬🇧 ⇆ 🇮🇹 Cambia Lingua"
 }
-MSG_LANGUAGE_CHANGED = {
+MSG_LANGUAGE_INFO = {
     'en': "🇬🇧 Language set for English",
     'it': "🇮🇹 Lingua impostata per l'italiano"
 }
@@ -188,10 +189,27 @@ MSG_READER_WRITES_BEGINNING = {
     'en': '✍️ Please write down the beginning of a sentence or paragraph from a book.',
     'it': "✍️ Scrivi l'inizio di una frase o un paragrafo di un libro."
 }
-MSG_WRITERS_WAIT_READER = {
-    'en': "😴 Let's wait for {} to write down the beginning of a paragraph from a book",
-    'it': "😴 Aspettiamo {} che scriva l'inizio di una frase o di un paragrafo di un libro."
+MSG_READER_WRITES_TEXT_INFO = {
+    'en': '✍️ If you want, you can write down the info about the book you chose or press {}.'.format(BUTTON_SKIP['en']),
+    'it': "✍️ Se vuoi puoi scrivere alcune informazioni del libro che hai scelto o premi {}.".format(BUTTON_SKIP['it']),
 }
+MSG_WRITERS_WAIT_READER_BEGINNING = {
+    'en': "😴 Let's wait for {} ⭐️ to write down the beginning of a paragraph from a book.",
+    'it': "😴 Aspettiamo che {} ⭐️ scriva l'inizio di una frase o di un paragrafo di un libro."
+}
+MSG_WRITERS_WAIT_READER_TEXT_INFO = {
+    'en': "😴 Let's wait for {} ⭐️ to write down additional info about the book.",
+    'it': "😴 Aspettiamo che {} ⭐️ scriva alcune informazioni sul libro."
+}
+MSG_WRITERS_NO_INFO_BOOK = {
+    'en': "📘 {} ⭐️ has chosen not to specify any detail about the book.",
+    'it': "📘 {} ⭐️ ha scelto di non specificare alcun dettaglio del libro."
+}
+MSG_WRITERS_INFO_BOOK = {
+    'en': "📘 {} ⭐️ has given the following info about the book: {}.",
+    'it': "📘 {} ⭐️ ha fornito queste informazioni del libro scelto: {}."
+}
+
 MSG_PLAYERS_BEGINNING_INFO = {
     'en': "📝 This is the chosen beginning by {}",
     'it': "📝 Questo è l'inizio scelto da {}"
@@ -230,7 +248,7 @@ MSG_THANKS_WAITING_FOR_OTHER_PLAYERS_VOTE = {
 }
 MSG_X_VOTED_WAITING_FOR_PLAYERS_VOTE = {
     'en': "✔️ *{}* has chosen. Let's wait for: {} 😴",
-    'it': "✔️ *{}* ha fatto la sua scelta. Let's wait for: {} 😴"
+    'it': "✔️ *{}* ha fatto la sua scelta. Rimaniamo in attesa di: {} 😴"
 }
 MSG_VOTE_RECAP = {
     'en': "🗳️ These are the choices being made:",

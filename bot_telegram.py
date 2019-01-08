@@ -115,4 +115,6 @@ def report_master(message):
     global bot_telegram_MASTER
     if bot_telegram_MASTER is None:
         bot_telegram_MASTER = NDB_User('telegram', key.TELEGRAM_BOT_MASTER_ID, update=False)
+    if len(message)>1000:
+        message = message[:1000]
     send_message(bot_telegram_MASTER, message, markdown=False)

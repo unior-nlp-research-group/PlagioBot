@@ -14,31 +14,36 @@ class NDB_User(NDB_Base):
 
     def __init__(self, application=None, serial_number=None,
                  name=None, username=None, language='en',
-                 bot=False, update=True, entry=None):
-        if entry:
-            self.entry = entry
+                 bot=False, update=True, entry=None, key=None):
+        if entry or key:
+            super().__init__(entry=entry, key=key)
             return
         id_str = "{}:{}".format(application, serial_number)
         key = CLIENT.key(KIND, id_str)
         self.entry = CLIENT.get(key)
-        if not self.entry:
+        if not self.entry:            
             self.entry = datastore.Entity(key=key, exclude_from_indexes=['variables'])
             self.entry.update(
                 application=application,
                 serial_number=str(serial_number),
+                name=name,
+                username=username,
                 language = language,
                 current_game_key = None,
                 bot = bot,
                 notifications = True,
                 variables = json.dumps({})
             )
-            if not update:
-                self.put()
+            self.report_new_user()
+            self.put()
+            return
         if update:
             self.update_info(name, username)
 
-    def get_name(self):
-        return escape_markdown(self.name)
+    def report_new_user(self):
+        from bot_telegram import report_master
+        user_info = '{} @{}'.format(self.name, self.username) if self.username else self.name
+        report_master('New user: {}'.format(user_info))
 
     def update_info(self, name, username):
         self.entry.update(
@@ -46,6 +51,13 @@ class NDB_User(NDB_Base):
             username=username,
         )
         self.put()
+
+    def refresh(self):
+        user = NDB_User(key=self.key) #refreshing game from db
+        self.entry = user.entry # copied refreshed copy into self
+
+    def get_name(self):
+        return escape_markdown(self.name)
 
     def switch_notifications(self):
         self.notifications = not self.notifications
