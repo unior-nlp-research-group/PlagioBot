@@ -20,7 +20,7 @@ class NDB_User(NDB_Base):
             return
         id_str = "{}:{}".format(application, serial_number)
         key = CLIENT.key(KIND, id_str)
-        self.entry = CLIENT.get(key)
+        self.entry = CLIENT.get(key)        
         if not self.entry:            
             self.entry = datastore.Entity(key=key, exclude_from_indexes=['variables'])
             self.entry.update(
@@ -28,7 +28,7 @@ class NDB_User(NDB_Base):
                 serial_number=str(serial_number),
                 name=name,
                 username=username,
-                language = language,
+                language = language if language in ['en','it'] else 'en',
                 current_game_key = None,
                 bot = bot,
                 notifications = True,

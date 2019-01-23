@@ -157,9 +157,9 @@ MSG_ENTERING_GAME_X = {
     'en': "🏁 You entered game *{}*.",
     'it': "🏁 Sei entrato nel gioco *{}*."
 }
-MSG_INVITE_PEOPLE = {
-    'en': "📮 You can invite other players to the game *{}* or press the button below 🔔 to announce it publicly.",
-    'it': "📮 Puoi invitare altri giocatori ad unirsi al gioco *{}* o premere il pulsante 🔔 per annunciarlo pubblicamente."
+MSG_INVITE_PEOPLE_OR_ANNOUNCE = {
+    'en': "📮 Please invite other players to the game *{}* or press the button below 🔔 to announce it publicly.",
+    'it': "📮 Invita altri giocatori ad unirsi al gioco *{}* o premere il pulsante 🔔 per annunciarlo pubblicamente."
 }
 MSG_ANNOUNCE_GAME_PUBLICLY = {
     'en': "📮 New game created by {} with {} people and {} seats remaining. Join th egame clicking on {}.",
@@ -173,9 +173,13 @@ MSG_PLAYER_X_JOINED_GAME = {
     'en': "👤 Player *{}* joined the game.",
     'it': "👤 Il giocatore *{}* si è unito al gioco."
 }
-MSG_WAITING_FOR_X_PLAYERS = {
-    'en': "😴 Waiting for {} other players...",
-    'it': "😴 Stiamo aspettando {} altri giocatori..."
+MSG_WAITING_FOR_X_PLAYERS_PL = {
+    'en': "😴 Waiting for {} more players...\n📮 Please invite other players to the game *{}*.",
+    'it': "😴 Stiamo aspettando {} altri giocatori...\n📮 Invita altri giocatori ad unirsi al gioco *{}*."
+}
+MSG_WAITING_FOR_X_PLAYERS_SG = {
+    'en': "😴 Waiting for {} more player...\n📮 Please invite another player to the game *{}*.",
+    'it': "😴 Stiamo aspettando {} altro giocatore...\n📮 Invita un altro giocatori ad unirsi al gioco *{}*."
 }
 MSG_READY_TO_START = {
     'en': "👟 All seats have been occupied, let's start the game!",
@@ -224,7 +228,11 @@ MSG_WRITERS_WRITE_CONTINUATION = {
 }
 MSG_THANKS_FOR_CONTINUATION = {
     'en': "😀 Thanks! Let's wait for the other players to write the continuations. 😴",
-    'it': "😀 Grazie! Aspettiamo che gli altri giocatori inseriscano la loro coninuazione. 😴"
+    'it': "😀 Grazie! Aspetta che gli altri giocatori inseriscano la loro coninuazione. 😴"
+}
+MSG_ALREADY_SENT_CONTINUATION = {
+    'en': "🤐 You have already sent a continuation! Let's wait for the other players to write the continuations. 😴",
+    'it': "🤐 Hai già inserito la continuazione! Aspetta che gli altri giocatori inseriscano la loro coninuazione. 😴"
 }
 MSG_X_GAVE_CONTINUATION_WAITING_FOR_PLAYERS_NAME_CONTINUATION = {
     'en': "📝 Received continuation of *{}*. Let's wait for: {} 😴",
@@ -234,7 +242,7 @@ MSG_INTRO_NUMBERED_TEXT = {
     'en': "📝 These are all the complete texts in random order:",
     'it': "📝 Queste sono tutte i testi completi in ordine casuale:"
 }
-MSG_WAIT_FOR_PLAYERS_TO_VOTE = {
+MSG_WAIT_FOR_PLAYERS_TO_VOTE_PL = {
     'en': "😴 Let's wait for the other players to guess.",
     'it': "😴 Rimaniamo in attesa della scelta degli altri giocatori."
 }
@@ -244,7 +252,11 @@ MSG_VOTE = {
 }
 MSG_THANKS_WAITING_FOR_OTHER_PLAYERS_VOTE = {
     'en': "😀 Thanks, let's wait for the other players to guess. 😴",
-    'it': "😀 Grazie, rimaniamo in attesa della scelta degli altri giocatori. 😴"
+    'it': "😀 Grazie, rimani in attesa della scelta degli altri giocatori. 😴"
+}
+MSG_ALREADY_VOTED_WAITING_FOR_OTHER_PLAYERS_VOTE = {
+    'en': "🤐 You already voted! Let's wait for the other players to guess. 😴",
+    'it': "🤐 Hai già votato! Rimani in attesa della scelta degli altri giocatori. 😴"
 }
 MSG_X_VOTED_WAITING_FOR_PLAYERS_VOTE = {
     'en': "✔️ *{}* has chosen. Let's wait for: {} 😴",

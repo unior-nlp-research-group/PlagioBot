@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import telegram
+import telegram.error
 import key
 import logging
 import traceback
@@ -24,6 +25,20 @@ def exception_reporter(func):
                 report_string = '❗️ Exception {}'.format(traceback.format_exc())
                 logging.error(report_string)
     return exception_wrapper
+
+def rety_on_network_error(func):
+    def retry_on_network_error_wrapper(*args, **kwargs):
+        for retry_num in range(1, 5):
+            try:
+                return func(*args, **kwargs)
+            except telegram.error.NetworkError:
+                report_string = '⚠️️ Caught network error, on {} attemp. Retrying...'.format(retry_num)
+                logging.warning(report_string)            
+                report_master(report_string)
+        report_string = '❗️ Exception: persistent network error'
+        logging.error(report_string)            
+        report_master(report_string)            
+    return retry_on_network_error_wrapper
 
 def set_webhook():
     s = BOT.setWebhook(key.WEBHOOK_TELEGRAM_BASE)
@@ -61,6 +76,7 @@ def send_message_multi(users, text, kb=None, markdown=True, remove_keyboard=Fals
 '''
 If kb==None keep last keyboard
 '''
+@rety_on_network_error
 def send_message(user, text, kb=None, markdown=True, remove_keyboard=False, sleep=False, **kwargs):
     #sendMessage(chat_id, text, parse_mode=None, disable_web_page_preview=None, disable_notification=False,
     # reply_to_message_id=None, reply_markup=None, timeout=None, **kwargs)

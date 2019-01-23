@@ -19,7 +19,7 @@ class NDB_Game(NDB_Base):
         if entry or key:
             super().__init__(entry=entry, key=key)
             return
-        self.entry = datastore.Entity(key=CLIENT.key(KIND))
+        self.entry = datastore.Entity(key=CLIENT.key(KIND),exclude_from_indexes=['variables'])
         self.entry.update(
             name = name,
             state = "INITIAL", # INITIAL, STARTED, ENDED, INTERRUPTED
@@ -138,6 +138,13 @@ class NDB_Game(NDB_Base):
         var_dict = self.get_variables()
         return var_dict['TEXT_INFO'][-1]
 
+    def player_has_already_written_continuation(self, user):
+        var_dict = self.get_variables()
+        player_index = self.players_keys.index(user.key)
+        hand_index = var_dict['HAND']-1
+        hand_continuations = var_dict['TEXT_CONTINUATIONS'][hand_index]
+        return hand_continuations[player_index] != ''
+
     @transactional
     def set_player_text_continuation_and_get_remaining(self, user, text):
         var_dict = self.get_variables()
@@ -157,6 +164,13 @@ class NDB_Game(NDB_Base):
         shuffled_indexes = var_dict['SHUFFLE_INDEXES'][hand_index]
         shuffled_continuations = [hand_continuations[i] for i in shuffled_indexes]
         return shuffled_indexes, shuffled_continuations
+
+    def user_has_already_voted(self, user):
+        var_dict = self.get_variables()
+        hand_index = var_dict['HAND']-1
+        user_index = self.players_keys.index(user.key)
+        hand_votes = var_dict['VOTES'][hand_index]
+        return hand_votes[user_index] != -1
 
     @transactional
     def set_voted_index_and_points_and_get_remaining(self, user, voted_index):
