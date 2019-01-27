@@ -28,3 +28,8 @@ def escape_markdown(text):
     for char in '*_`[':
         text = text.replace(char, '\\'+char)
     return text
+
+def add_full_stop_if_missing_end_puct(text):
+    if text[-1] not in ['.','!','?']:
+        text = text + '.'
+    return text
