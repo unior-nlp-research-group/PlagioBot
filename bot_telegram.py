@@ -26,6 +26,7 @@ def exception_reporter(func):
                 logging.error(report_string)
     return exception_wrapper
 
+@exception_reporter
 def rety_on_network_error(func):
     def retry_on_network_error_wrapper(*args, **kwargs):
         for retry_num in range(1, 5):
