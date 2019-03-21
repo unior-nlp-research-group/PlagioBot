@@ -32,9 +32,11 @@ def rety_on_network_error(func):
             try:
                 return func(*args, **kwargs)
             except telegram.error.NetworkError:
-                report_string = '⚠️️ Caught network error, on {} attemp. Retrying...'.format(retry_num)
-                logging.warning(report_string)            
+                sleep_secs = pow(2,retry_num)
+                report_string = '⚠️️ Caught network error, on {} attemp. Retrying after {} secs...'.format(retry_num,sleep_secs)
+                logging.warning(report_string)                 
                 report_master(report_string)
+                time.sleep(sleep_secs)
         report_string = '❗️ Exception: persistent network error'
         logging.error(report_string)            
         report_master(report_string)            
