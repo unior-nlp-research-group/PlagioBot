@@ -2,6 +2,8 @@
 
 import telegram
 import telegram.error
+# from telegram.error import (TelegramError, Unauthorized, BadRequest, 
+#                             TimedOut, ChatMigrated, NetworkError)
 import key
 import logging
 import traceback
@@ -11,6 +13,22 @@ from bot_ndb_user import NDB_User
 
 
 BOT = telegram.Bot(token=key.TELEGRAM_API_TOKEN)
+
+# def error_callback(bot, update, error):
+#     try:
+#         raise error
+#     except Unauthorized:
+#         # remove update.message.chat_id from conversation list
+#     except BadRequest:
+#         # handle malformed requests - read more below!
+#     except TimedOut:
+#         # handle slow connection problems
+#     except NetworkError:
+#         # handle other connection problems
+#     except ChatMigrated as e:
+#         # the chat_id of a group has changed, use e.new_chat_id instead
+#     except TelegramError:
+#         # handle all other telegram related errors
 
 def exception_reporter(func):
     def exception_wrapper(*args, **kwargs):

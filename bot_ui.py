@@ -157,9 +157,13 @@ MSG_ENTERING_GAME_X = {
     'en': "🏁 You entered game *{}*.",
     'it': "🏁 Sei entrato nel gioco *{}*."
 }
+# MSG_INVITE_PEOPLE_OR_ANNOUNCE = {
+#     'en': "📮 Please invite other players to the game *{}* or press the button below 🔔 to announce it publicly.",
+#     'it': "📮 Invita altri giocatori ad unirsi al gioco *{}* o premere il pulsante 🔔 per annunciarlo pubblicamente."
+# }
 MSG_INVITE_PEOPLE_OR_ANNOUNCE = {
-    'en': "📮 Please invite other players to the game *{}* or press the button below 🔔 to announce it publicly.",
-    'it': "📮 Invita altri giocatori ad unirsi al gioco *{}* o premere il pulsante 🔔 per annunciarlo pubblicamente."
+    'en': "📮 Please invite other players to the game *{}*.",
+    'it': "📮 Invita altri giocatori ad unirsi al gioco *{}*."
 }
 MSG_ANNOUNCE_GAME_PUBLICLY = {
     'en': "📮 New game created by {} with {} people and {} seats remaining. Join th egame clicking on {}.",

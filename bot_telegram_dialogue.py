@@ -243,10 +243,11 @@ def state_WAITING_FOR_OTHER_PLAYERS(user, message_obj):
         msg = ux.MSG_ENTERING_GAME_X[lang].format(game.get_name())
         send_message(user, msg, remove_keyboard=True)
         if user == players[0]:
-            kb = [[ux.BUTTON_ANNOUNCE_GAME_PUBLICLY[lang]]]
-            user.set_keyboard(kb)
+            # kb = [[ux.BUTTON_ANNOUNCE_GAME_PUBLICLY[lang]]]
+            # user.set_keyboard(kb)
             msg_invite = ux.MSG_INVITE_PEOPLE_OR_ANNOUNCE[lang].format(game.get_name())
-            send_message(user, msg_invite, kb)
+            # send_message(user, msg_invite, kb)
+            send_message(user, msg_invite, remove_keyboard=True)
         else:
             msg_other_players = ux.MSG_PLAYER_X_JOINED_GAME[lang].format(user.get_name())
             send_message_multi(players, msg_other_players)
