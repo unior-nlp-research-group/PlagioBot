@@ -183,7 +183,7 @@ MSG_WAITING_FOR_X_PLAYERS_PL = {
 }
 MSG_WAITING_FOR_X_PLAYERS_SG = {
     'en': "😴 Waiting for {} more player...\n📮 Please invite another player to the game *{}*.",
-    'it': "😴 Stiamo aspettando {} altro giocatore...\n📮 Invita un altro giocatori ad unirsi al gioco *{}*."
+    'it': "😴 Stiamo aspettando {} altro giocatore...\n📮 Invita un altro giocatore ad unirsi al gioco *{}*."
 }
 MSG_READY_TO_START = {
     'en': "👟 All seats have been occupied, let's start the game!",
