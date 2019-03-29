@@ -14,6 +14,7 @@ from bot_ndb_user import NDB_User
 
 BOT = telegram.Bot(token=key.TELEGRAM_API_TOKEN)
 
+# see https://github.com/python-telegram-bot/python-telegram-bot/wiki/Exception-Handling
 # def error_callback(bot, update, error):
 #     try:
 #         raise error

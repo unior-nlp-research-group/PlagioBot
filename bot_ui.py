@@ -232,7 +232,7 @@ MSG_WRITERS_WRITE_CONTINUATION = {
 }
 MSG_THANKS_FOR_CONTINUATION = {
     'en': "😀 Thanks! Let's wait for the other players to write the continuations. 😴",
-    'it': "😀 Grazie! Aspetta che gli altri giocatori inseriscano la loro coninuazione. 😴"
+    'it': "😀 Grazie! Aspetta che gli altri giocatori inseriscano la loro continuazione. 😴"
 }
 MSG_ALREADY_SENT_CONTINUATION = {
     'en': "🤐 You have already sent a continuation! Let's wait for the other players to write the continuations. 😴",
