@@ -12,17 +12,13 @@ IT_FLAG_SYMBOL = '🇮🇹'
 EN_FLAG_SYMBOL = '🇬🇧'
 
 # ================================
+# SYMBOLS
+# ================================
+LANGUAGES = ['it','en']
+
+# ================================
 # BUTTONS
 # ================================
-
-START_BUTTON = {
-    'en': "🚩 START",
-    'it': "🚩 INIZIO"
-}
-HELP_BUTTON = {
-    'en': "🆘 HELP",
-    'it': "🆘 AIUTO"
-}
 
 BUTTON_YES = {
     'en': '✅ YES',
@@ -125,13 +121,17 @@ MSG_CHOOSE_GAME_NAME = {
     'en': "✍️ Choose the name of an existing game or a create a new one.",
     'it': "✍️ Scegli il nome di un gioco esistente o creane uno nuovo."
 }
-MSG_WRITE_GAME_SPECIAL_RULES = {
-    'en': "✍️ If you want you can write down any special rule you want to set for the game (e.g., rymes, length of sentences, etc...), or press {}".format(BUTTON_SKIP['en']),
-    'it': "✍️ Inserisci se vuoi delle regole particolari da adottare nel gioco (ad esempio rime, lunghezza frasi, ecc...), o premi {}".format(BUTTON_SKIP['it']),
-}
+# MSG_WRITE_GAME_SPECIAL_RULES = {
+#     'en': "✍️ If you want you can write down any special rule you want to set for the game (e.g., rymes, length of sentences, etc...), or press {}".format(BUTTON_SKIP['en']),
+#     'it': "✍️ Inserisci se vuoi delle regole particolari da adottare nel gioco (ad esempio rime, lunghezza frasi, ecc...), o premi {}".format(BUTTON_SKIP['it']),
+# }
 MSG_TELL_SPECIAL_RULES = {
     'en': "🧭 {} has chosen the following rules for the game: {}",
     'it': "🧭 {} ha scelto le seguenti regole del gioco: {}"
+}
+MSG_GAME_NOT_YET_READY = {
+    'en': '🤷‍♀️ The game "{}" has been just created, but still needs to be set up. Please try again in a bit.',
+    'it': '🤷‍♀️ Il gioco "{}" è appena stato creato, ma deve essere ancora impostato. Riprova tra qualche istante.'
 }
 MSG_GAME_ALREADY_STARTED = {
     'en': '🤷‍♀️ No more seats availbel on this game.',
@@ -159,11 +159,11 @@ MSG_ENTERING_GAME_X = {
 }
 # MSG_INVITE_PEOPLE_OR_ANNOUNCE = {
 #     'en': "📮 Please invite other players to the game *{}* or press the button below 🔔 to announce it publicly.",
-#     'it': "📮 Invita altri giocatori ad unirsi al gioco *{}* o premere il pulsante 🔔 per annunciarlo pubblicamente."
+#     'it': "📮 Invita altri/e giocatori/trici ad unirsi al gioco *{}* o premere il pulsante 🔔 per annunciarlo pubblicamente."
 # }
 MSG_INVITE_PEOPLE_OR_ANNOUNCE = {
     'en': "📮 Please invite other players to the game *{}*.",
-    'it': "📮 Invita altri giocatori ad unirsi al gioco *{}*."
+    'it': "📮 Invita altri/e giocatori/trici ad unirsi al gioco *{}*."
 }
 MSG_ANNOUNCE_GAME_PUBLICLY = {
     'en': "📮 New game created by {} with {} people and {} seats remaining. Join th egame clicking on {}.",
@@ -171,19 +171,19 @@ MSG_ANNOUNCE_GAME_PUBLICLY = {
 }
 MSG_SENT_ANNOUNCEMENT = {
     'en': "📮 Announcement sent! Let's wait for new players to join.",
-    'it': "📮 Annuncio inviato! Aspettiamo che altri giocatori si uniscano."
+    'it': "📮 Annuncio inviato! Aspettiamo che altri/e giocatori/trici si uniscano."
 }
 MSG_PLAYER_X_JOINED_GAME = {
     'en': "👤 Player *{}* joined the game.",
-    'it': "👤 Il giocatore *{}* si è unito al gioco."
+    'it': "👤 Il/a giocatore/ice *{}* si è unito al gioco."
 }
 MSG_WAITING_FOR_X_PLAYERS_PL = {
     'en': "😴 Waiting for {} more players...\n📮 Please invite other players to the game *{}*.",
-    'it': "😴 Stiamo aspettando {} altri giocatori...\n📮 Invita altri giocatori ad unirsi al gioco *{}*."
+    'it': "😴 Stiamo aspettando {} altri/e giocatori/trici...\n📮 Invita altri/e giocatori/trici ad unirsi al gioco *{}*."
 }
 MSG_WAITING_FOR_X_PLAYERS_SG = {
     'en': "😴 Waiting for {} more player...\n📮 Please invite another player to the game *{}*.",
-    'it': "😴 Stiamo aspettando {} altro giocatore...\n📮 Invita un altro giocatore ad unirsi al gioco *{}*."
+    'it': "😴 Stiamo aspettando {} altro/a giocatore/ice...\n📮 Invita un altro/a giocatore/ice ad unirsi al gioco *{}*."
 }
 MSG_READY_TO_START = {
     'en': "👟 All seats have been occupied, let's start the game!",
@@ -219,8 +219,8 @@ MSG_WRITERS_INFO_BOOK = {
 }
 
 MSG_PLAYERS_BEGINNING_INFO = {
-    'en': "📝 This is the chosen beginning by {}",
-    'it': "📝 Questo è l'inizio scelto da {}"
+    'en': "📘 This is the chosen beginning by {}",
+    'it': "📘 Questo è l'inizio scelto da {}"
 }
 MSG_READER_WRITE_CONTINUATION = {
     'en': "✍️ Please, write down the correct continuation of the sentence.",
@@ -232,11 +232,11 @@ MSG_WRITERS_WRITE_CONTINUATION = {
 }
 MSG_THANKS_FOR_CONTINUATION = {
     'en': "😀 Thanks! Let's wait for the other players to write the continuations. 😴",
-    'it': "😀 Grazie! Aspetta che gli altri giocatori inseriscano la loro continuazione. 😴"
+    'it': "😀 Grazie! Aspetta che gli altri/e giocatori/trici inseriscano la loro continuazione. 😴"
 }
 MSG_ALREADY_SENT_CONTINUATION = {
     'en': "🤐 You have already sent a continuation! Let's wait for the other players to write the continuations. 😴",
-    'it': "🤐 Hai già inserito la continuazione! Aspetta che gli altri giocatori inseriscano la loro coninuazione. 😴"
+    'it': "🤐 Hai già inserito la continuazione! Aspetta che gli altri/e giocatori/trici inseriscano la loro coninuazione. 😴"
 }
 MSG_X_GAVE_CONTINUATION_WAITING_FOR_PLAYERS_NAME_CONTINUATION = {
     'en': "📝 Received continuation of *{}*. Let's wait for: {} 😴",
@@ -248,39 +248,59 @@ MSG_INTRO_NUMBERED_TEXT = {
 }
 MSG_WAIT_FOR_PLAYERS_TO_VOTE_PL = {
     'en': "😴 Let's wait for the other players to guess.",
-    'it': "😴 Rimaniamo in attesa della scelta degli altri giocatori."
+    'it': "😴 Rimaniamo in attesa della scelta degli altri/e giocatori/trici."
 }
 MSG_VOTE = {
     'en': "🗳️ Please select the number of the continuation you think it's the orginal one.",
     'it': "🗳️ Seleziona il numero del testo che ritieni essere l'originale."
 }
-MSG_THANKS_WAITING_FOR_OTHER_PLAYERS_VOTE = {
-    'en': "😀 Thanks, let's wait for the other players to guess. 😴",
-    'it': "😀 Grazie, rimani in attesa della scelta degli altri giocatori. 😴"
+MSG_GUESSED_NO_VOTE = {
+    'en': "😀 Wow, you entered a continuation which is identical to the oriiginal one! no need to vote!",
+    'it': "😀 Wow, hai inserito la continuazione che è identica all'originale!\nNon hai bisogno di votare!",
+}
+MSG_THANKS = {
+    'en': "😀 Thanks!",
+    'it': "😀 Grazie!"
+}
+MSG_WAIT_FOR_OTHER_VOTES = {
+    'en': "😴 Let's wait for the other players to guess.",
+    'it': "😴 Rimani in attesa della scelta degli altri/e giocatori/trici."
 }
 MSG_ALREADY_VOTED_WAITING_FOR_OTHER_PLAYERS_VOTE = {
     'en': "🤐 You already voted! Let's wait for the other players to guess. 😴",
-    'it': "🤐 Hai già votato! Rimani in attesa della scelta degli altri giocatori. 😴"
+    'it': "🤐 Hai già votato! Rimani in attesa della scelta degli altri/e giocatori/trici. 😴"
 }
-MSG_X_VOTED_WAITING_FOR_PLAYERS_VOTE = {
-    'en': "✔️ *{}* has chosen. Let's wait for: {} 😴",
-    'it': "✔️ *{}* ha fatto la sua scelta. Rimaniamo in attesa di: {} 😴"
+MSG_X_VOTED = {
+    'en': "✔️ *{}* has chosen.",
+    'it': "✔️ *{}* ha fatto la sua scelta."
+}
+MSG_WAIT_FOR = {
+    'en': "😴 Let's wait for: {}",
+    'it': "😴 Rimaniamo in attesa di: {}"
 }
 MSG_VOTE_RECAP = {
     'en': "🗳️ These are the choices being made:",
     'it': "🗳️ Queste sono le scelte effettuate:"
 }
 MSG_VOTED_BY = {
-    'en': "Voted by:",
-    'it': "Votato da:"
+    'en': "Voted by: {}",
+    'it': "Votato da: {}"
+}
+MSG_GUESSED_BY_AND_VOTED_BY = {
+    'en': "Guessed by: {}. Voted by: {}.",
+    'it': "Indovinato da: {}. Votato da: {}."
 }
 MSG_POINT_HAND_SUMMARY = {
-    'en': "🖐 HAND POINTS:\n{}",
-    'it': "🖐 PUNTI MANO:\n{}"
+    'en': "🖐 LAST HAND POINTS",
+    'it': "🖐 PUNTI ULTIMA MANO"
 }
 MSG_POINT_GAME_SUMMARY = {
-    'en': "🎲 GAME POINTS:\n{}",
-    'it': "🎲 PUNTI GIOCO:\n{}"
+    'en': "🎲 GAME POINTS",
+    'it': "🎲 PUNTI GIOCO"
+}
+MSG_POINT_GAME_PARTIAL_SUMMARY = {
+    'en': "🎲 GAME POINTS (PARTIAL)",
+    'it': "🎲 PUNTI GIOCO (PARZIALI)"
 }
 MSG_EXIT_GAME = {
     'en': "🚪 Game has terminated because {} exited.",
@@ -292,11 +312,11 @@ MSG_NO_GAME_TO_EXIT = {
 }
 MSG_WINNER_SINGULAR = {
     'en': "🏆 The winner of the game is *{}*",
-    'it': "🏆 Il vincitore del gioco è *{}*"
+    'it': "🏆 Il/a vincitore/trice del gioco è *{}*"
 }
 MSG_WINNER_PLURAL = {
     'en': "🏆 The winners of the game are *{}*",
-    'it': "🏆 I vincitori del gioco sono *{}*"
+    'it': "🏆 I/le vincitori/trici del gioco sono *{}*"
 }
 
 MSG_WRONG_INPUT_WAIT_FOR_PLAYERS_TO_VOTE = {
@@ -319,8 +339,13 @@ MSG_WRONG_INPUT_USE_BUTTONS = {
     'en': '⛔️ Wrong input, please use buttons below 🎛',
     'it': '⛔️ Input non valido, per favore usa i pulsanti 🎛'
 }
+MSG_WRONG_BUTTON_INPUT = {
+    'en': '⛔️ Wrong input, you probably pressed a button twice.',
+    'it': '⛔️ Input non valido, probabilmente hai premuto un tasto due volte.'
+}
 MSG_COMMAND_NOT_RECOGNIZED = {
     'en': '⛔️ The command has not been recognised.',
     'it': '⛔️ Comando non riconosciuto.'
 }
 
+ALL_BUTTONS_TEXT_LIST = [v[l] for l in LANGUAGES for k,v in globals().items() if k.startswith('BUTTON_')]

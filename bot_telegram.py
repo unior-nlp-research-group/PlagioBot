@@ -95,6 +95,11 @@ def send_message_multi(users, text, kb=None, markdown=True, remove_keyboard=Fals
     for u in users:
         send_message(u, text, kb=kb, markdown=markdown, remove_keyboard=remove_keyboard, sleep=True, **kwargs)
 
+
+def send_messages(user, text_list, kb=None, markdown=True, remove_keyboard=False, sleep=True, **kwargs):
+    for text in text_list:
+        send_message(user, text, kb, markdown, remove_keyboard, sleep, **kwargs)
+
 '''
 If kb==None keep last keyboard
 '''
@@ -103,7 +108,11 @@ def send_message(user, text, kb=None, markdown=True, remove_keyboard=False, slee
     #sendMessage(chat_id, text, parse_mode=None, disable_web_page_preview=None, disable_notification=False,
     # reply_to_message_id=None, reply_markup=None, timeout=None, **kwargs)
     if kb or remove_keyboard:
-        reply_markup = telegram.ReplyKeyboardMarkup(kb, resize_keyboard=True) if kb else telegram.ReplyKeyboardRemove()
+        if remove_keyboard:
+            user.set_empy_keyboard()            
+            reply_markup = telegram.ReplyKeyboardRemove()
+        else:
+            reply_markup = telegram.ReplyKeyboardMarkup(kb, resize_keyboard=True)
         BOT.sendMessage(
             chat_id = user.serial_number,
             text = text,
@@ -121,13 +130,37 @@ def send_message(user, text, kb=None, markdown=True, remove_keyboard=False, slee
     if sleep:
         time.sleep(0.1)
 
+def send_typing_action(user, sleep_secs=None):    
+    BOT.sendChatAction(
+        chat_id = user.serial_number,
+        action = telegram.ChatAction.TYPING
+    )
+    if sleep_secs:
+        time.sleep(sleep_secs)
 
 def send_text_document(user, file_name, file_content):
     import requests
     files = [('document', (file_name, file_content, 'text/plain'))]
-    data = {'chat_id': user.serial_number,}
+    data = {'chat_id': user.serial_number}
     resp = requests.post(key.TELEGRAM_API_URL + 'sendDocument', data=data, files=files)
     logging.debug("Sent documnet. Response status code: {}".format(resp.status_code))
+
+def send_photo_from_data_multi(users, file_name, file_data, caption=None, sleep=False):
+    for u in users:
+        send_photo_from_data(u, file_name, file_data, caption)        
+
+
+def send_photo_from_data(user, file_name, file_data, caption=None, sleep=False):
+    import requests
+    files = [('photo', (file_name, file_data, 'image/png'))]
+    data = {'chat_id': user.serial_number}
+    if caption:
+        data['caption'] = caption
+    resp = requests.post(key.TELEGRAM_API_URL + 'sendPhoto', data=data, files=files)
+    logging.info('Sent photo. Response status code: {}'.format(resp.status_code))
+    if sleep:
+        time.sleep(0.1)
+
 
 def get_url_from_file_id(file_id):
     import requests
@@ -153,6 +186,10 @@ def report_master(message):
     global bot_telegram_MASTER
     if bot_telegram_MASTER is None:
         bot_telegram_MASTER = NDB_User('telegram', key.TELEGRAM_BOT_MASTER_ID, update=False)
-    if len(message)>1000:
-        message = message[:1000]
-    send_message(bot_telegram_MASTER, message, markdown=False)
+    max_length = 2000
+    if len(message)>max_length:
+        chunks = (message[0+i:max_length+i] for i in range(0, len(message), max_length))
+        for m in chunks:
+            send_message(bot_telegram_MASTER, m, markdown=False)    
+    else:
+        send_message(bot_telegram_MASTER, message, markdown=False)

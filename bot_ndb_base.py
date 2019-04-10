@@ -58,9 +58,15 @@ def transactional(func):
         for _ in range(5):
             try:
                 with CLIENT.transaction():
-                    args[0].refresh() #args[0] is self
+                    # log_str = "In transaction with func={} args={} kwargs={}".format(func.__name__, args, kwargs)
+                    # logging.debug(log_str)
+                    # report_master("🐛 {}".format(log_str))
+                    args[0].refresh() #args[0] is self (ndb_game or ndb_user)
                     return func(*args, **kwargs)
             except google.cloud.exceptions.Conflict:
+                log_str = "Conflict in transaction with func={} args={} kwargs={}".format(func.__name__, args, kwargs)
+                logging.debug(log_str)
+                report_master("🐛 {}".format(log_str))
                 continue
         else:
             report_string = '❗️ Concurrent transaction conflict'

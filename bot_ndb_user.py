@@ -13,7 +13,7 @@ KIND = 'User'
 class NDB_User(NDB_Base):
 
     def __init__(self, application=None, serial_number=None,
-                 name=None, username=None, language='en',
+                 name=None, username=None, language=None,
                  bot=False, update=True, entry=None, key=None):
         if entry or key:
             super().__init__(entry=entry, key=key)
@@ -28,22 +28,28 @@ class NDB_User(NDB_Base):
                 serial_number=str(serial_number),
                 name=name,
                 username=username,
-                language = language if language in ['en','it'] else 'en',
+                language = language if language in ['en','it'] else 'it',
                 current_game_key = None,
                 bot = bot,
                 notifications = True,
                 variables = json.dumps({})
             )
-            self.report_new_user()
+            self.report_new_user(language)
             self.put()
             return
         if update:
             self.update_info(name, username)
 
-    def report_new_user(self):
+    def __str__(self):
+        return 'NDB_User: {} ({})'.format(self.name, self.serial_number)
+
+    def __repr__(self):
+        return self.__str__()
+
+    def report_new_user(self, language):
         from bot_telegram import report_master
         user_info = '{} @{}'.format(self.name, self.username) if self.username else self.name
-        report_master('New user: {}'.format(user_info))
+        report_master('New user: {} ({}->{})'.format(user_info, language, self.language))
 
     def update_info(self, name, username):
         self.entry.update(
@@ -53,7 +59,7 @@ class NDB_User(NDB_Base):
         self.put()
 
     def refresh(self):
-        user = NDB_User(key=self.key) #refreshing game from db
+        user = NDB_User(key=self.key) #refreshing user from db
         self.entry = user.entry # copied refreshed copy into self
 
     def get_name(self):
@@ -83,6 +89,9 @@ class NDB_User(NDB_Base):
     def set_keyboard(self, value, put=True):
         self.set_var('KEYBOARD', value, put)
 
+    def set_empy_keyboard(self, put=True):
+        self.set_var('KEYBOARD', [], put)
+
     def get_keyboard(self):
         return self.get_var('KEYBOARD')
 
@@ -101,6 +110,9 @@ class NDB_User(NDB_Base):
 
     def is_master(self):
         return self.serial_number == key.TELEGRAM_BOT_MASTER_ID
+    
+    def is_tester(self):
+        return self.serial_number in key.TELEGRAM_TESTERS_IDS
 
 def get_query_lang_state_notification_on(lang, state):
     query = CLIENT.query(kind=KIND)
