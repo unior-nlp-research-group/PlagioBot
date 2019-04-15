@@ -175,7 +175,7 @@ MSG_SENT_ANNOUNCEMENT = {
 }
 MSG_PLAYER_X_JOINED_GAME = {
     'en': "👤 Player *{}* joined the game.",
-    'it': "👤 Il/a giocatore/ice *{}* si è unito al gioco."
+    'it': "👤 Il/a giocatore/ice *{}* si è unito/a al gioco."
 }
 MSG_WAITING_FOR_X_PLAYERS_PL = {
     'en': "😴 Waiting for {} more players...\n📮 Please invite other players to the game *{}*.",
@@ -230,13 +230,9 @@ MSG_WRITERS_WRITE_CONTINUATION = {
     'en': "✍️ Please, write down a possible continuation of the sentence.",
     'it': "✍️ Scrivi una possibile continuazione del testo."
 }
-MSG_THANKS_FOR_CONTINUATION = {
-    'en': "😀 Thanks! Let's wait for the other players to write the continuations. 😴",
-    'it': "😀 Grazie! Aspetta che gli altri/e giocatori/trici inseriscano la loro continuazione. 😴"
-}
 MSG_ALREADY_SENT_CONTINUATION = {
-    'en': "🤐 You have already sent a continuation! Let's wait for the other players to write the continuations. 😴",
-    'it': "🤐 Hai già inserito la continuazione! Aspetta che gli altri/e giocatori/trici inseriscano la loro coninuazione. 😴"
+    'en': "🤐 You have already sent a continuation!\n😴 Let's wait for the other players to write the continuations.",
+    'it': "🤐 Hai già inserito la continuazione!\n😴 Aspetta che gli altri/e giocatori/trici inseriscano la loro coninuazione."
 }
 MSG_X_GAVE_CONTINUATION_WAITING_FOR_PLAYERS_NAME_CONTINUATION = {
     'en': "📝 Received continuation of *{}*. Let's wait for: {} 😴",
@@ -262,13 +258,9 @@ MSG_THANKS = {
     'en': "😀 Thanks!",
     'it': "😀 Grazie!"
 }
-MSG_WAIT_FOR_OTHER_VOTES = {
-    'en': "😴 Let's wait for the other players to guess.",
-    'it': "😴 Rimani in attesa della scelta degli altri/e giocatori/trici."
-}
-MSG_ALREADY_VOTED_WAITING_FOR_OTHER_PLAYERS_VOTE = {
-    'en': "🤐 You already voted! Let's wait for the other players to guess. 😴",
-    'it': "🤐 Hai già votato! Rimani in attesa della scelta degli altri/e giocatori/trici. 😴"
+MSG_ALREADY_VOTED_WAITING_FOR = {
+    'en': "🤐 You already voted!\n😴 Let's wait for: {}",
+    'it': "🤐 Hai già votato!\n😴 Rimani in attesa di: {}"
 }
 MSG_X_VOTED = {
     'en': "✔️ *{}* has chosen.",

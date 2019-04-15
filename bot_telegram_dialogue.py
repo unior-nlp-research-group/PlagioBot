@@ -15,7 +15,7 @@ import time
 # ================================
 # CONFIG
 # ================================
-DEBUG = True
+DEBUG = False
 
 # ================================
 # RESTART
@@ -405,8 +405,9 @@ def state_GAME_PLAYERS_WRITE_CONTINUATIONS(user, message_obj):
                 remaining_names = game.set_player_text_continuation_and_get_remaining(user, continuation)            
                 if len(remaining_names)>0:
                     all_but_users = [p for p in players if p!=user]
-                    send_message(user, ux.MSG_THANKS_FOR_CONTINUATION[lang])
                     remaining_names_str = ', '.join(remaining_names)
+                    msgs = [ux.MSG_THANKS[lang],ux.MSG_WAIT_FOR[lang].format(remaining_names_str)]
+                    send_messages(user, msgs, remove_keyboard=True)
                     logging.debug("Remainig names ({}): {}".format(len(remaining_names), remaining_names_str))
                     send_message_multi(all_but_users, ux.MSG_X_GAVE_CONTINUATION_WAITING_FOR_PLAYERS_NAME_CONTINUATION[lang].format(user.get_name(), remaining_names_str))
                 else:
@@ -416,46 +417,53 @@ def state_GAME_PLAYERS_WRITE_CONTINUATIONS(user, message_obj):
             send_message(user, ux.MSG_WRONG_INPUT_USE_TEXT[lang])
 
 # ================================
-# GAME_PLAYERS_WRITE_CONTINUATIONS
+# GAME_PLAYERS_WRITE_CONTINUATIONS 
+# invoked only for last user inserting continuation
 # ================================
 def state_GAME_VOTE_CONTINUATION(user, message_obj):
     game = user.get_current_game()
     _, players, reader, writers = game.get_current_hand_players_reader_writers()
     lang = players[0].language
-    exact_guesses = game.get_number_exact_guesses()
-    all_guessed_correctly = exact_guesses == len(players) - 1
-    shuffled_indexes, shuffled_continuations = game.get_shuffled_mapping_and_continuations()
-    mapping, shuffled_continuations = game.get_shuffled_mapping_and_continuations()
+    # continuations_info = game.get_hand_continuations_info()
+    exact_guessers_indexes = game.get_guessers_indexes()
+    exact_guessers = [players[i] for i in exact_guessers_indexes]
+    exact_guessers_names = [p.get_name() for p in exact_guessers]
+    all_guessed_correctly = len(exact_guessers_indexes) == len(players) - 1
+    shuffled_continuations = game.get_shuffled_continuations()
+    # report_master("🐛 exact_guessers_names: {}".format(exact_guessers_names))
+    # correct_continuation_position = game.get_correct_continuation_shuffled_index() + 1 
+    remaining_names = game.get_names_remaining_voters()
+    remaining_names_str = ', '.join(remaining_names)
 
     def recap_votes():
         beginning = game.get_reader_text_beginning()
         msg_summary = ux.MSG_VOTE_RECAP[lang]
         send_message_multi(players, msg_summary, remove_keyboard=True)
-        shuf_cont_voters_names = game.get_shuffled_continuations_voters()
-        guessers_names = game.get_guessers_names()
-        report_master("🐛 guessers_names: {}".format(guessers_names))
+        shuf_cont_voters_names = game.get_shuffled_continuations_voters()                
         for i, cont in enumerate(shuffled_continuations):
-            author = game.get_player_index(shuffled_indexes[i])
-            author_name = author.get_name()
-            if author==reader:
-                author_name += ' ⭐️'
+            authors_indexes = game.get_continuations_authors_indexes(cont)
+            authors = [players[i] for i in authors_indexes]            
             voters_names = shuf_cont_voters_names[i]
             voters_summay = str(len(voters_names))
             if voters_names:
                 voters_summay += " ({})".format(', '.join(voters_names))
-            if guessers_names and author==reader:
-                guessers_summary = "{} ({})".format(len(guessers_names), ', '.join(guessers_names))
-                msg_summary = "{} *{}* → {} *{}*\n{}".format(
-                    i+1, author_name, beginning, cont, ux.MSG_GUESSED_BY_AND_VOTED_BY[lang].format(guessers_summary, voters_summay))
+            if reader in authors:
+                guessers_summary = str(len(exact_guessers_names))
+                if exact_guessers_names:
+                    guessers_summary += " ({})".format(', '.join(exact_guessers_names))
+                msg_summary = "{} *{}* ⭐️ → {} *{}*\n{}".format(
+                    i+1, reader.get_name(), beginning, cont, \
+                    ux.MSG_GUESSED_BY_AND_VOTED_BY[lang].format(guessers_summary, voters_summay))
             else:
+                author_names = ', '.join(p.get_name() for p in authors)
                 msg_summary = "{} *{}* → {} *{}*\n{}".format(
-                    i+1, author_name, beginning, cont, ux.MSG_VOTED_BY[lang].format(voters_summay))
+                    i+1, author_names, beginning, cont, ux.MSG_VOTED_BY[lang].format(voters_summay))
             send_message_multi(players, msg_summary)
         send_message_multi(players, ux.MSG_POINT_HAND_SUMMARY[lang])
-        game.send_hand_point_img_data(players)                    
+        game.prepare_and_send_hand_point_img_data(players)                    
         if game.is_last_hand():
             send_message_multi(players, ux.MSG_POINT_GAME_SUMMARY[lang])
-            game.send_game_point_img_data(players, save=True)
+            game.prepare_and_send_game_point_img_data(players, save=True)
             winners_names = game.get_winner_names()
             winner_msg = ux.MSG_WINNER_SINGULAR[lang] if len(winners_names)==1 else ux.MSG_WINNER_PLURAL[lang]
             winner_msg = winner_msg.format(', '.join(winners_names))
@@ -463,7 +471,7 @@ def state_GAME_VOTE_CONTINUATION(user, message_obj):
             end_game(game, players)
         else:
             send_message_multi(players, ux.MSG_POINT_GAME_PARTIAL_SUMMARY[lang])
-            game.send_game_point_img_data(players)
+            game.prepare_and_send_game_point_img_data(players)
             game.setup_next_hand()
             redirect_to_state_multi(players, state_GAME_READER_WRITES_BEGINNING)
 
@@ -473,7 +481,7 @@ def state_GAME_VOTE_CONTINUATION(user, message_obj):
                 send_message_multi(writers, ux.MSG_GUESSED_NO_VOTE[lang], remove_keyboard=True)
                 state_GAME_VOTE_CONTINUATION(user, message_obj=True)
                 return            
-            #report_master("mapping: {}".format(mapping))
+            #report_master("player_to_shuffled_cont_index: {}".format(player_to_shuffled_cont_index))
             #report_master("shuffled_continuations: {}".format(shuffled_continuations))
             number_continuations = len(shuffled_continuations)
             intro_msg = ux.MSG_INTRO_NUMBERED_TEXT[lang]
@@ -483,16 +491,16 @@ def state_GAME_VOTE_CONTINUATION(user, message_obj):
                 cont_msg = "{}: {} *{}*".format(num, beginning, cont)
                 send_message_multi(players, cont_msg)
             send_message(reader, ux.MSG_WAIT_FOR_PLAYERS_TO_VOTE_PL[lang])
-            numbers_list = list(range(1,number_continuations+1))
-            reader_index = players.index(reader)
-            correct_continuation_position = mapping[reader_index] + 1 
+            numbers_list = list(range(1,number_continuations+1))            
+            
             #report_master("reader {} continuation in position: {}".format(reader.get_name(), correct_continuation_position))            
             for w in writers:
                 w_index = players.index(w)
-                w_shuffled_number = mapping[w_index] + 1
+                w_shuffled_number = game.get_continuation_shuffled_index(w_index) + 1
                 #report_master("writer {} continuation in position {}".format(w.get_name(), w_shuffled_number))
-                if w_shuffled_number == correct_continuation_position:    
-                    send_messages(w, [ux.MSG_GUESSED_NO_VOTE[lang],ux.MSG_WAIT_FOR_OTHER_VOTES[lang]], remove_keyboard=True)
+                if w_index in exact_guessers_indexes:    
+                    msgs = [ux.MSG_GUESSED_NO_VOTE[lang],ux.MSG_WAIT_FOR[lang].format(remaining_names_str)]
+                    send_messages(w, msgs, remove_keyboard=True)
                 else:
                     kb = [[str(i) for i in numbers_list if i != w_shuffled_number]]
                     w.set_keyboard(kb)
@@ -504,20 +512,21 @@ def state_GAME_VOTE_CONTINUATION(user, message_obj):
             send_message(user, ux.MSG_WRONG_INPUT_WAIT_FOR_PLAYERS_TO_VOTE[lang])
         else:
             text_input = message_obj.text
-            if game.has_user_already_voted(user):
-                send_message(user, ux.MSG_ALREADY_VOTED_WAITING_FOR_OTHER_PLAYERS_VOTE[lang])
+            if game.has_user_already_voted(user):                
+                send_message(user, ux.MSG_ALREADY_VOTED_WAITING_FOR[lang].format(remaining_names_str))
                 return
             kb = user.get_keyboard()
             if text_input in utility.flatten(kb):
-                voted_number = int(text_input)                
-                voted_player_index = shuffled_indexes[voted_number-1]
-                remaining_names = game.set_voted_index_and_points_and_get_remaining(user, voted_player_index)
+                voted_shuffled_index = int(text_input) - 1
+                remaining_names = game.set_voted_indexes_and_points_and_get_remaining(user, voted_shuffled_index)
+                remaining_names_str = ', '.join(remaining_names)
                 all_but_users = [p for p in players if p!=user]
                 send_message_multi(all_but_users, ux.MSG_X_VOTED[lang].format(user.get_name()))
                 if len(remaining_names)>0:
                     user.set_keyboard([])
-                    send_messages(user, [ux.MSG_THANKS[lang],ux.MSG_WAIT_FOR_OTHER_VOTES[lang]], remove_keyboard=True)
-                    send_message_multi(all_but_users, ux.MSG_WAIT_FOR[lang].format(', '.join(remaining_names)))
+                    msgs = [ux.MSG_THANKS[lang],ux.MSG_WAIT_FOR[lang].format(remaining_names_str)]
+                    send_messages(user, msgs, remove_keyboard=True)
+                    send_message_multi(all_but_users, ux.MSG_WAIT_FOR[lang].format(remaining_names_str))
                 else:
                     #only once
                     recap_votes()                    

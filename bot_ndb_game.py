@@ -11,6 +11,9 @@ import bot_ui as ux
 from utility import escape_markdown
 from random import shuffle
 import parameters
+import itertools
+
+from bot_telegram import report_master
 
 CLIENT = datastore.Client()
 KIND = 'Game'
@@ -54,7 +57,7 @@ class NDB_Game(NDB_Base):
         self.number_players = num_players
         self.put()
 
-    def get_player_index(self,i):
+    def get_player_at_index(self,i):
         from bot_ndb_user import NDB_User
         key = self.players_keys[i]
         return NDB_User(entry=CLIENT.get(key))
@@ -89,18 +92,22 @@ class NDB_Game(NDB_Base):
 
     def setup(self):
         players = self.get_players()
-        size = self.number_players            
+        size = self.number_players  #used only locally  
         self.variables = json.dumps({
             'PLAYERS_NAMES': [p.get_name() for p in players],
             'SPECIAL_RULES': '',
             'HAND': 0,
             'TEXT_BEGINNINGS': [],
             'TEXT_INFO':[],
-            'TEXT_CONTINUATIONS': [['']*size for i in range(size)], # one per player in order of players
-            'TEXT_CONTINUATIONS_UNIQUE': [[] for i in range(size)], #  set of (unique) continuations in alphabetical order
-            'CONTINUATIONS_SHUFFLED_INDEXES': [[] for i in range(size)], # random indexes of unique continuations
-            'PLAYER_CONT_SHUF_INDEX_MAPPING': [[] for i in range(size)], # CONTINUATIONS_SHUFFLED_INDEX for each player (in order)
-            'VOTES': [[-1]*size for i in range(size)], # player index voted by each writer (reader remains at -1)
+            'PLAYERS_CONTINUATIONS': [['']*size for i in range(size)], # one per player in order of players
+            'CONTINUATIONS_INFO': [{} for i in range(size)], 
+                # for each continuation in key: 
+                # {
+                #     shuffled_index: int,
+                #     authors: list(int) -> index of players writing that continuation
+                #     correct: bool -> if correct continuation
+                #     voted_by: list(int) -> indexes of players voting that continuation
+                # }
             'HAND_POINTS': [[0]*size for i in range(size)],
             'GAME_POINTS': [],
             'WINNERS': []
@@ -160,8 +167,8 @@ class NDB_Game(NDB_Base):
         var_dict = self.get_variables()
         player_index = self.players_keys.index(user.key)
         hand_index = var_dict['HAND']-1
-        hand_continuations = var_dict['TEXT_CONTINUATIONS'][hand_index]
-        return hand_continuations[player_index] != ''
+        players_continuations = var_dict['PLAYERS_CONTINUATIONS'][hand_index]
+        return players_continuations[player_index] != ''
 
     @transactional
     def set_player_text_continuation_and_get_remaining(self, user, text):
@@ -170,88 +177,94 @@ class NDB_Game(NDB_Base):
         player_index = self.players_keys.index(user.key)
         names = var_dict['PLAYERS_NAMES']
         hand_index = var_dict['HAND']-1
-        hand_continuations = var_dict['TEXT_CONTINUATIONS'][hand_index]
-        correct_continuation = hand_continuations[hand_index]
-        hand_continuations[player_index] = text
-        exact_continuation = text == correct_continuation
-        if exact_continuation:
-            hand_points = var_dict['HAND_POINTS'][hand_index]
-            user_index = self.players_keys.index(user.key)
-            hand_points[user_index] += parameters.POINTS_FOR_EXACT_GUESSING
+        players_continuations = var_dict['PLAYERS_CONTINUATIONS'][hand_index]
+        players_continuations[player_index] = text
         self.set_variables(var_dict)
-        remaining_names = [names[i] for i,t in enumerate(hand_continuations) if t=='']
+        remaining_names = [names[i] for i,t in enumerate(players_continuations) if t=='']
         logging.debug('{} Exiting transactional set_player_text_continuation_and_get_remaining'.format(user.get_name()))
         return remaining_names
-
-    def get_guessers_names(self):
-        var_dict = self.get_variables()
-        names = var_dict['PLAYERS_NAMES']
-        hand_index = var_dict['HAND']-1
-        hand_continuations = var_dict['TEXT_CONTINUATIONS'][hand_index]
-        correct_continuation = hand_continuations[hand_index]
-        exact_continuation_indexes = [i for i,c in enumerate(hand_continuations) if c==correct_continuation and i!=hand_index]
-        guessers_names = [n for i,n in enumerate(names) if i in exact_continuation_indexes]
-        return guessers_names
-
+        
     def prepare_voting(self):
         var_dict = self.get_variables()
         hand_index = var_dict['HAND']-1
-        hand_continuations = var_dict['TEXT_CONTINUATIONS'][hand_index]
-        hand_continuations_unique = sorted(set(hand_continuations))
-        var_dict['TEXT_CONTINUATIONS_UNIQUE'][hand_index] = hand_continuations_unique
-        size_unique_continuations = len(hand_continuations_unique)
-        shuffled_indexes = list(range(size_unique_continuations))
+        continuations_info = var_dict['CONTINUATIONS_INFO'][hand_index]
+        players_continuations = var_dict['PLAYERS_CONTINUATIONS'][hand_index]
+        players_continuations_unique = sorted(set(players_continuations))
+        shuffled_indexes = list(range(len(players_continuations_unique)))
         shuffle(shuffled_indexes)
-        var_dict['CONTINUATIONS_SHUFFLED_INDEXES'][hand_index] = shuffled_indexes
-        shuffled_continuations = [hand_continuations_unique[i] for i in shuffled_indexes]
-        mapping = var_dict['PLAYER_CONT_SHUF_INDEX_MAPPING'][hand_index]
-        for i in range(len(hand_continuations)):
-            mapping.append(shuffled_continuations.index(hand_continuations[i]))
+        for i,unique_cont in enumerate(players_continuations_unique):
+            continuations_info[unique_cont] = {
+                'shuffled_index': shuffled_indexes[i],
+                'authors_indexes': [i for i,c in enumerate(players_continuations) if c == unique_cont],
+                'correct': players_continuations[hand_index] == unique_cont,
+                'voted_by': []
+            }
         self.set_variables(var_dict)
 
-    def get_shuffled_mapping_and_continuations(self):
+    def get_guessers_indexes(self):
         var_dict = self.get_variables()
         hand_index = var_dict['HAND']-1
-        hand_continuations_unique = var_dict['TEXT_CONTINUATIONS_UNIQUE'][hand_index]
-        shuffled_indexes = var_dict['CONTINUATIONS_SHUFFLED_INDEXES'][hand_index]      
-        shuffled_continuations = [hand_continuations_unique[i] for i in shuffled_indexes]
-        mapping = var_dict['PLAYER_CONT_SHUF_INDEX_MAPPING'][hand_index]
-        return mapping, shuffled_continuations
+        continuations_info = var_dict['CONTINUATIONS_INFO'][hand_index]
+        continuation_correct_info = next(info for c,info in continuations_info.items() if info['correct'])
+        return [i for i in continuation_correct_info['authors_indexes'] if i!=hand_index]
 
-    def get_number_exact_guesses(self):
-        var_dict = self.get_variables()
-        hand_index = var_dict['HAND']-1
-        hand_continuations = var_dict['TEXT_CONTINUATIONS'][hand_index]
-        correct_continuation = hand_continuations[hand_index]
-        exact_guesses = sum(1 for c in hand_continuations if c == correct_continuation) - 1
-        return exact_guesses
+    # def get_correct_continuation_shuffled_index(self):
+    #     var_dict = self.get_variables()
+    #     hand_index = var_dict['HAND']-1
+    #     continuations_info = var_dict['CONTINUATIONS_INFO'][hand_index]
+    #     correct_continuation_shuffled_index = next(info['shuffled_index'] for info in continuations_info.values() if info['correct'])
+    #     return correct_continuation_shuffled_index
+
+    def get_continuation_shuffled_index(self, author_index):
+            var_dict = self.get_variables()
+            hand_index = var_dict['HAND']-1
+            continuations_info = var_dict['CONTINUATIONS_INFO'][hand_index]
+            author_shuffled_index = next(info['shuffled_index'] for info in continuations_info.values() if author_index in info['authors_indexes'])
+            return author_shuffled_index
 
     def has_user_already_voted(self, user):
+        user_index = self.players_keys.index(user.key)
         var_dict = self.get_variables()
         hand_index = var_dict['HAND']-1
-        user_index = self.players_keys.index(user.key)
-        hand_votes = var_dict['VOTES'][hand_index]
-        return hand_votes[user_index] != -1
+        continuations_info = var_dict['CONTINUATIONS_INFO'][hand_index]
+        return any(user_index in info['voted_by'] for info in continuations_info.values())
+
+    def get_names_remaining_voters(self):
+        var_dict = self.get_variables()
+        hand_index = var_dict['HAND']-1
+        continuations_info = var_dict['CONTINUATIONS_INFO'][hand_index]
+        names = var_dict['PLAYERS_NAMES']        
+        voted_by_list = [info['voted_by'] for info in continuations_info.values()] 
+        voters_indexes = list(itertools.chain(*voted_by_list))
+        exact_author_list = next(info['authors_indexes'] for info in continuations_info.values() if info['correct'])
+        remaining_names = [n for i,n in enumerate(names) if i not in voters_indexes and i not in exact_author_list] 
+        return remaining_names   
 
     @transactional
-    def set_voted_index_and_points_and_get_remaining(self, user, voted_player_index):
-        logging.debug('{} Entering transactional set_voted_index_and_points_and_get_remaining'.format(user.get_name()))
+    def set_voted_indexes_and_points_and_get_remaining(self, user, voted_shuffled_index):
+        logging.debug('{} Entering transactional set_voted_indexes_and_points_and_get_remaining'.format(user.get_name()))
         var_dict = self.get_variables()
         hand_index = var_dict['HAND']-1
-        names = var_dict['PLAYERS_NAMES']
+        continuations_info = var_dict['CONTINUATIONS_INFO'][hand_index]
         user_index = self.players_keys.index(user.key)
-        assert user_index != hand_index # reader doesn't receive points
-        hand_votes = var_dict['VOTES'][hand_index]
-        hand_points = var_dict['HAND_POINTS'][hand_index]
-        hand_votes[user_index] = voted_player_index
-        if voted_player_index == hand_index:
-            hand_points[user_index] += parameters.POINTS_FOR_CORRECT_VOTING
-        else:
-            hand_points[voted_player_index] += parameters.POINTS_FOR_BEING_VOTED
+        assert user_index != hand_index # reader doesn't receive points        
+        names = var_dict['PLAYERS_NAMES']        
+        voted_cont_info = next(info for c,info in continuations_info.items() if info['shuffled_index']==voted_shuffled_index)
+        voted_cont_info['voted_by'].append(user_index)   
+        voted_by_list = [info['voted_by'] for info in continuations_info.values()] 
+        voters_indexes = list(itertools.chain(*voted_by_list))        
+        # report_master("🐛 voters_indexes: {}".format(voters_indexes))
+        exact_author_list = next(info['authors_indexes'] for info in continuations_info.values() if info['correct'])
+        remaining_names = [n for i,n in enumerate(names) if i not in voters_indexes and i not in exact_author_list] 
         self.set_variables(var_dict)
-        remaining_names = [names[i] for i,t in enumerate(hand_votes) if t==-1 and i!=hand_index]
-        logging.debug('{} Exiting transactional set_voted_index_and_points_and_get_remaining'.format(user.get_name()))
+        logging.debug('{} Exiting transactional set_voted_indexes_and_points_and_get_remaining'.format(user.get_name()))
         return remaining_names
+
+    def get_hand_continuations_info(self):
+        var_dict = self.get_variables()
+        hand_index = var_dict['HAND']-1
+        continuations_info = var_dict['CONTINUATIONS_INFO'][hand_index]        
+        return continuations_info
 
     '''
     For each continuations (in shuffled order), 
@@ -260,19 +273,53 @@ class NDB_Game(NDB_Base):
     def get_shuffled_continuations_voters(self):
         var_dict = self.get_variables()
         hand_index = var_dict['HAND']-1
-        shuffled_indexes = var_dict['CONTINUATIONS_SHUFFLED_INDEXES'][hand_index]
-        hand_votes = var_dict['VOTES'][hand_index]
-        shuf_cont_voters_names = [[] for i in range(self.number_players)]
         players_names = var_dict['PLAYERS_NAMES']
-        for i in range(self.number_players):            
-            player_index_voted_by_player_i = hand_votes[i]
-            if player_index_voted_by_player_i == -1: # exclude reader and writer who guess the continuation
-                continue
-            shuffled_voted_index_by_player_i = shuffled_indexes.index(player_index_voted_by_player_i)
-            shuf_cont_voters_names[shuffled_voted_index_by_player_i].append(players_names[i])
+        continuations_info = var_dict['CONTINUATIONS_INFO'][hand_index]
+        shuf_cont_voters_names = []
+        for cont_info in sorted(continuations_info.values(), key=lambda i: i['shuffled_index']):
+            voeters_name = [n for i,n in enumerate(players_names) if i in cont_info['voted_by']]
+            shuf_cont_voters_names.append(voeters_name)
         return shuf_cont_voters_names
 
-    def send_hand_point_img_data(self, players):
+    def get_shuffled_continuations(self):
+        var_dict = self.get_variables()
+        hand_index = var_dict['HAND']-1
+        continuations_info = var_dict['CONTINUATIONS_INFO'][hand_index]
+        shuffled_continuations = [k for k,v in sorted(continuations_info.items(), key=lambda kv: kv[1]['shuffled_index'])]
+        return shuffled_continuations
+
+    def get_continuations_authors_indexes(self, continuation):
+        var_dict = self.get_variables()
+        hand_index = var_dict['HAND']-1
+        continuations_info = var_dict['CONTINUATIONS_INFO'][hand_index]
+        authors_indexes = continuations_info[continuation]['authors_indexes']
+        return authors_indexes
+
+    def prepare_hand_poins(self):
+        var_dict = self.get_variables()
+        hand_index = var_dict['HAND']-1
+        continuations_info = var_dict['CONTINUATIONS_INFO'][hand_index]
+        continuation_correct_info = next(info for c,info in continuations_info.items() if info['correct'])
+        hand_points = var_dict['HAND_POINTS'][hand_index]
+        for i in range(self.number_players):
+            if i==hand_index:
+                continue # reader doesn't give/receive points
+            cont_i_info = next(info for info in continuations_info.values() if i in info['authors_indexes'])
+            cont_voted_info = next((info for info in continuations_info.values() if i in info['voted_by']),None)
+            if cont_i_info['correct']:
+                hand_points[i] += parameters.POINTS_FOR_EXACT_GUESSING
+            if i in continuation_correct_info['voted_by']:
+                hand_points[i] += parameters.POINTS_FOR_CORRECT_VOTING
+            if cont_voted_info and not cont_voted_info['correct']: # give points only if continuation is not the exact one (reader)
+                for j in cont_voted_info['authors_indexes']:
+                    hand_points[j] += parameters.POINTS_FOR_BEING_VOTED
+        self.set_variables(var_dict)         
+
+
+    def prepare_and_send_hand_point_img_data(self, players):
+        # prepare hand points:
+        self.prepare_hand_poins()            
+        
         from render_leaderboard import get_image_data_from_points
         from bot_telegram import send_photo_from_data_multi
         var_dict = self.get_variables()
@@ -282,7 +329,7 @@ class NDB_Game(NDB_Base):
         img_data = get_image_data_from_points(players_names, hand_points)
         send_photo_from_data_multi(players, 'leaderboard_hand.png', img_data, sleep=True)
 
-    def send_game_point_img_data(self, players, save=False):
+    def prepare_and_send_game_point_img_data(self, players, save=False):
         from render_leaderboard import get_image_data_from_points
         from bot_telegram import send_photo_from_data_multi
         var_dict = self.get_variables()

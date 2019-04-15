@@ -1,10 +1,9 @@
-pylint==2.1.1
-Flask==1.0.2
-#google-cloud-storage==1.13.0
-google-cloud-logging==1.8.0
-google-cloud-datastore==1.7.3
-requests==2.19.1
-python-telegram-bot==11.1.0
+pylint
+Flask
+google-cloud-logging
+google-cloud-datastore
+requests
+python-telegram-bot
 decorator
 grpcio
 gunicorn
