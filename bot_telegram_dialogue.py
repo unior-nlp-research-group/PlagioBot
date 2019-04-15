@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from bot_telegram import BOT, send_message, send_messages, send_typing_action, send_text_document, send_message_multi, send_message_query, exception_reporter, report_master
+from bot_telegram import BOT, send_message, send_messages, send_typing_action, send_text_document, send_message_multi, exception_reporter, report_master
 import utility
 import bot_ui as ux
 import telegram
-import bot_ndb_user
-from bot_ndb_user import NDB_User
-import bot_ndb_game
-from bot_ndb_game import NDB_Game
+import bot_firestore_user
+from bot_firestore_user import User
+import bot_firestore_game
+from bot_firestore_game import Game
 import utility
 import time
 
 # ================================
 # CONFIG
 # ================================
-DEBUG = False
+DEBUG = True
 
 # ================================
 # RESTART
@@ -41,7 +41,7 @@ def redirect_to_state(user, new_function, message_obj=None):
     if user.state != new_state:
         logging.debug("In redirect_to_state. current_state:{0}, new_state: {1}".format(str(user.state), str(new_state)))
         user.state = new_state
-        user.put()
+        user.save()
     repeat_state(user, message_obj)
 
 
@@ -145,13 +145,13 @@ def state_CHOOSE_ROOM_NAME(user, message_obj):
                 send_message(user, ux.MSG_WRONG_BUTTON_INPUT[lang], kb)
             else:
                 room_name = text_input.upper()
-                game = bot_ndb_game.get_ongoing_game(room_name)
+                game = Game.get_ongoing_game(room_name)
                 if game:
                     if game.just_created():
                         send_message(user, ux.MSG_GAME_NOT_YET_READY[lang].format(room_name), kb)
                         send_typing_action(user, sleep_secs=2)
                         repeat_state(user)
-                    elif game.add_player(user):
+                    elif Game.add_player(game, user):
                         redirect_to_state(user, state_WAITING_FOR_OTHER_PLAYERS)
                     else:
                         send_message(user, ux.MSG_GAME_ALREADY_STARTED[lang], kb)
@@ -177,11 +177,11 @@ def state_CREATE_GAME(user, message_obj):
         kb = user.get_keyboard()
         if text_input in utility.flatten(kb):
             if text_input == ux.BUTTON_YES[lang]:
-                if (bot_ndb_game.get_ongoing_game(room_name)):
+                if (Game.get_ongoing_game(room_name)):
                     send_message(user, ux.MSG_NAME_NO_LONGER_AVAILBLE[lang].format(room_name))
                     redirect_to_state(user, state_CHOOSE_ROOM_NAME)
                 else:
-                    game = NDB_Game(room_name, user)
+                    game = Game(room_name, user)
                     user.set_current_game(game)
                     redirect_to_state(user, state_CHOOSE_NUMBER_PLAYERS)
             elif text_input == ux.BUTTON_NO[lang]:
@@ -265,8 +265,8 @@ def state_WAITING_FOR_OTHER_PLAYERS(user, message_obj):
         else:
             msg_other_players = ux.MSG_PLAYER_X_JOINED_GAME[lang].format(user.get_name())
             send_message_multi(players, msg_other_players)
-            available_seats = game.available_seats()
-            if available_seats==0:
+            get_available_seats = game.get_available_seats()
+            if get_available_seats==0:
                 send_message_multi(players, ux.MSG_READY_TO_START[lang])
                 special_rules = game.get_special_rules()
                 if special_rules:
@@ -276,13 +276,13 @@ def state_WAITING_FOR_OTHER_PLAYERS(user, message_obj):
                 game.setup()
                 redirect_to_state_multi(players, state_GAME_READER_WRITES_BEGINNING)
             else:
-                if available_seats>1:
-                    msg_waiting = ux.MSG_WAITING_FOR_X_PLAYERS_PL[lang].format(available_seats, game.get_name())
+                if get_available_seats>1:
+                    msg_waiting = ux.MSG_WAITING_FOR_X_PLAYERS_PL[lang].format(get_available_seats, game.get_name())
                 else:
-                    msg_waiting = ux.MSG_WAITING_FOR_X_PLAYERS_SG[lang].format(available_seats, game.get_name())
+                    msg_waiting = ux.MSG_WAITING_FOR_X_PLAYERS_SG[lang].format(get_available_seats, game.get_name())
                 send_message_multi(players, msg_waiting)
     else:
-        available_seats = game.available_seats()
+        get_available_seats = game.get_available_seats()
         if user == players[0]:
             text_input = message_obj.text
             kb = user.get_keyboard()
@@ -290,16 +290,16 @@ def state_WAITING_FOR_OTHER_PLAYERS(user, message_obj):
                 if text_input==ux.BUTTON_ANNOUNCE_GAME_PUBLICLY[lang]:
                     send_message(user, ux.MSG_SENT_ANNOUNCEMENT[lang], remove_keyboard=True)
                     command = utility.escape_markdown('/game_{}'.format(game.key.id))
-                    announce_msg = ux.MSG_ANNOUNCE_GAME_PUBLICLY[lang].format(user.get_name(), game.number_players, available_seats, command)
-                    query = bot_ndb_user.get_query_lang_state_notification_on(lang, 'state_INITIAL')
-                    send_message_query(query, announce_msg)
+                    announce_msg = ux.MSG_ANNOUNCE_GAME_PUBLICLY[lang].format(user.get_name(), game.number_players, get_available_seats, command)
+                    users = User.get_user_lang_state_notification_on(lang, 'state_INITIAL')
+                    send_message_multi(users, announce_msg)
                     return
                 else:
                     assert(False)
-        if available_seats>1:
-            msg = ux.MSG_WAITING_FOR_X_PLAYERS_PL[lang].format(available_seats, game.get_name())
+        if get_available_seats>1:
+            msg = ux.MSG_WAITING_FOR_X_PLAYERS_PL[lang].format(get_available_seats, game.get_name())
         else:
-            msg = ux.MSG_WAITING_FOR_X_PLAYERS_SG[lang].format(available_seats, game.get_name())
+            msg = ux.MSG_WAITING_FOR_X_PLAYERS_SG[lang].format(get_available_seats, game.get_name())
         send_message(user, msg)
 
 # ================================
@@ -536,9 +536,9 @@ def state_GAME_VOTE_CONTINUATION(user, message_obj):
 
 def end_game(game, players):
     for p in players:
-        p.current_game_key = None
+        p.current_game_id = None
     game.state = 'ENDED'                        
-    game.put()
+    game.save()
     restart_multi(players)
 
 def interrupt_game(game, user):
@@ -546,11 +546,11 @@ def interrupt_game(game, user):
     players = game.get_players()
     lang = players[0].language
     for p in players:
-        p.current_game_key = None
+        p.current_game_id = None
     if len(players) > 0:
         send_message_multi(players, ux.MSG_EXIT_GAME[lang].format(user.get_name()))
     restart_multi(players)
-    game.put()
+    game.save()
 
 def deal_with_universal_commands(user, text_input):
     #logging.debug('In universal command with input "{}". User is master: {}'.format(text_input, user.is_master()))
@@ -581,7 +581,7 @@ def deal_with_universal_commands(user, text_input):
         if not utility.represents_int(game_id):
             send_message(user, ux.MSG_COMMAND_NOT_RECOGNIZED[lang])
         else:
-            game = bot_ndb_game.get_game_from_id(int(game_id))
+            game = Game.get(game_id)
             if game:
                 if game.add_player(user):
                     redirect_to_state(user, state_WAITING_FOR_OTHER_PLAYERS)
@@ -600,15 +600,6 @@ def deal_with_universal_commands(user, text_input):
             import render_leaderboard
             img_data = render_leaderboard.test()
             send_photo_from_data(user, 'test.png', img_data, caption='test')
-            return True
-        if text_input == '/test':
-            from bot_ndb_base import CLIENT
-            fede_user_entry = CLIENT.get(CLIENT.key('User','telegram:130870321'))
-            fede_user = NDB_User(entry=fede_user_entry)
-            game = fede_user.get_current_game()
-            _, players, _, _ = game.get_current_hand_players_reader_writers()
-            for p in players:
-                p.set_keyboard([['new_test']])
             return True
         if text_input == '/exception':
             1/0
@@ -632,7 +623,13 @@ def deal_with_request(request_json):
     last_name = user_obj.last_name if user_obj.last_name else ''
     name = (user_obj.first_name + ' ' + last_name).strip()
     language = user_obj.language_code
-    user = NDB_User('telegram', user_obj.id, name, username, language)
+    
+    user = User.get_user('telegram', user_obj.id)
+    if user == None:
+        user = User.create_user('telegram', user_obj.id, name, username, language)
+        report_master('New user: {}'.format(user.get_name_at_username()))
+    else:
+        user.update_user(name, username)
 
     if message_obj.text:
         text_input = message_obj.text        

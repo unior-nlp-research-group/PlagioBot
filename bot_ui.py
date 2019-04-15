@@ -190,8 +190,8 @@ MSG_READY_TO_START = {
     'it': "👟 Tutti i posti sono stati occupati, iniziamo il gioco!"
 }
 MSG_HAND_INFO = {
-    'en': '🖐 Current Hand: {}\n📖 Reader: {}',
-    'it': '🖐 Mano: {}\n📖 Lettore: {}'
+    'en': '🖐 Current Hand: {}\n📖 Reader: {} ⭐️',
+    'it': '🖐 Mano: {}\n📖 Lettore: {} ⭐️'
 }
 MSG_READER_WRITES_BEGINNING = {
     'en': '✍️ Please write down the beginning of a sentence or paragraph from a book.',

@@ -9,7 +9,7 @@ import logging
 import traceback
 import bot_ui
 import time
-from bot_ndb_user import NDB_User
+from bot_firestore_user import User
 
 
 BOT = telegram.Bot(token=key.TELEGRAM_API_TOKEN)
@@ -75,21 +75,21 @@ def delete_webhook():
 def get_webhook_info():
     print(BOT.get_webhook_info())
 
-def send_message_query(query, text, kb=None, markdown=True, remove_keyboard=False, **kwargs):
-    def get_next_page_of_users(cursor):
-        query_iter = query.fetch(start_cursor=cursor, limit=100)
-        page = next(query_iter.pages)
-        entries = list(page)
-        next_cursor = query_iter.next_page_token
-        return entries, next_cursor
-    cursor = None
-    while(True):
-        entries, cursor = get_next_page_of_users(cursor)
-        users = [NDB_User(entry=e) for e in entries]
-        send_message_multi(users, text, kb, markdown, remove_keyboard, **kwargs)
-        #logging.debug("sending invitation to {}".format(', '.join(u.get_name() for u in users)))
-        if cursor == None:
-            break
+# def send_message_query(query, text, kb=None, markdown=True, remove_keyboard=False, **kwargs):
+#     def get_next_page_of_users(cursor):
+#         query_iter = query.fetch(start_cursor=cursor, limit=100)
+#         page = next(query_iter.pages)
+#         entries = list(page)
+#         next_cursor = query_iter.next_page_token
+#         return entries, next_cursor
+#     cursor = None
+#     while(True):
+#         entries, cursor = get_next_page_of_users(cursor)
+#         users = [User(entry=e) for e in entries]
+#         send_message_multi(users, text, kb, markdown, remove_keyboard, **kwargs)
+#         #logging.debug("sending invitation to {}".format(', '.join(u.get_name() for u in users)))
+#         if cursor == None:
+#             break
 
 def send_message_multi(users, text, kb=None, markdown=True, remove_keyboard=False, **kwargs):
     for u in users:
@@ -185,7 +185,7 @@ bot_telegram_MASTER = None
 def report_master(message):
     global bot_telegram_MASTER
     if bot_telegram_MASTER is None:
-        bot_telegram_MASTER = NDB_User('telegram', key.TELEGRAM_BOT_MASTER_ID, update=False)
+        bot_telegram_MASTER = User('telegram', key.TELEGRAM_BOT_MASTER_ID, update=False)
     max_length = 2000
     if len(message)>max_length:
         chunks = (message[0+i:max_length+i] for i in range(0, len(message), max_length))

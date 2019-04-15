@@ -1,10 +1,12 @@
 pylint
 Flask
+google-cloud
 google-cloud-logging
-google-cloud-datastore
 requests
 python-telegram-bot
 decorator
 grpcio
 gunicorn
 Pillow
+firebase-admin
+firestore_model
