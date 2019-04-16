@@ -40,8 +40,7 @@ def redirect_to_state(user, new_function, message_obj=None):
     new_state = new_function.__name__
     if user.state != new_state:
         logging.debug("In redirect_to_state. current_state:{0}, new_state: {1}".format(str(user.state), str(new_state)))
-        user.state = new_state
-        user.save()
+        user.set_state(new_state)
     repeat_state(user, message_obj)
 
 
@@ -55,7 +54,7 @@ def repeat_state(user, message_obj=None):
         return
     method = possibles.get(state)
     if not method:
-        msg = "⚠️ User {} sent to unknown method state: {}".format(user.serial_number, state)
+        msg = "⚠️ User {} sent to unknown method state: {}".format(user.serial_id, state)
         report_master(msg)
     else:
         method(user, message_obj)
@@ -85,7 +84,8 @@ def state_INITIAL(user, message_obj):
             elif text_input == ux.BUTTON_INFO[lang]:
                 send_message(user, ux.MSG_INFO[lang])
             elif text_input == ux.BUTTON_CHANGE_LANGUAGE[lang]:
-                redirect_to_state(user, state_CHANGE_LANGUAGE)
+                user.switch_language()
+                repeat_state(user)
             elif text_input in [ux.BUTTON_DISABLE_NOTIFICATIONS[lang], ux.BUTTON_ENABLE_NOTIFICATIONS[lang]]:
                 user.switch_notifications()
                 repeat_state(user)
@@ -94,34 +94,6 @@ def state_INITIAL(user, message_obj):
         else:
             send_message(user, ux.MSG_WRONG_INPUT_USE_BUTTONS[lang], kb)
 
-# ================================
-# Change Language
-# ================================
-def state_CHANGE_LANGUAGE(user, message_obj):
-    lang = user.language
-    if message_obj is None:
-        msg = ux.MSG_CHANGE_LANGUAGE[lang]
-        kb = [[ux.IT_FLAG_SYMBOL, ux.EN_FLAG_SYMBOL],[ux.BUTTON_BACK[lang]]]
-        user.set_keyboard(kb)
-        send_message(user, msg, kb)
-    else:
-        text_input = message_obj.text
-        kb = user.get_keyboard()
-        if text_input in utility.flatten(kb):
-            if text_input == ux.IT_FLAG_SYMBOL:
-                user.language = lang = 'it'
-                send_message(user, ux.MSG_LANGUAGE_INFO[lang])
-                restart_user(user)
-            elif text_input == ux.EN_FLAG_SYMBOL:
-                user.language = lang = 'en'
-                send_message(user, ux.MSG_LANGUAGE_INFO[lang])
-                restart_user(user)
-            elif text_input == ux.BUTTON_BACK[lang]:
-                restart_user(user)
-            else:
-                assert(False)
-        else:
-            send_message(user, ux.MSG_WRONG_INPUT_USE_BUTTONS[lang], kb)
 
 # ================================
 # Choose Room Name
@@ -181,7 +153,7 @@ def state_CREATE_GAME(user, message_obj):
                     send_message(user, ux.MSG_NAME_NO_LONGER_AVAILBLE[lang].format(room_name))
                     redirect_to_state(user, state_CHOOSE_ROOM_NAME)
                 else:
-                    game = Game(room_name, user)
+                    game = Game.create_game(room_name, user.id)
                     user.set_current_game(game)
                     redirect_to_state(user, state_CHOOSE_NUMBER_PLAYERS)
             elif text_input == ux.BUTTON_NO[lang]:
@@ -289,7 +261,7 @@ def state_WAITING_FOR_OTHER_PLAYERS(user, message_obj):
             if text_input in utility.flatten(kb):
                 if text_input==ux.BUTTON_ANNOUNCE_GAME_PUBLICLY[lang]:
                     send_message(user, ux.MSG_SENT_ANNOUNCEMENT[lang], remove_keyboard=True)
-                    command = utility.escape_markdown('/game_{}'.format(game.key.id))
+                    command = utility.escape_markdown('/game_{}'.format(game.id))
                     announce_msg = ux.MSG_ANNOUNCE_GAME_PUBLICLY[lang].format(user.get_name(), game.number_players, get_available_seats, command)
                     users = User.get_user_lang_state_notification_on(lang, 'state_INITIAL')
                     send_message_multi(users, announce_msg)
@@ -537,12 +509,11 @@ def state_GAME_VOTE_CONTINUATION(user, message_obj):
 def end_game(game, players):
     for p in players:
         p.current_game_id = None
-    game.state = 'ENDED'                        
-    game.save()
+    game.set_state('ENDED')
     restart_multi(players)
 
 def interrupt_game(game, user):
-    game.state = 'INTERRUPTED'
+    game.set_state('INTERRUPTED')
     players = game.get_players()
     lang = players[0].language
     for p in players:
@@ -550,7 +521,6 @@ def interrupt_game(game, user):
     if len(players) > 0:
         send_message_multi(players, ux.MSG_EXIT_GAME[lang].format(user.get_name()))
     restart_multi(players)
-    game.save()
 
 def deal_with_universal_commands(user, text_input):
     #logging.debug('In universal command with input "{}". User is master: {}'.format(text_input, user.is_master()))
@@ -633,7 +603,7 @@ def deal_with_request(request_json):
 
     if message_obj.text:
         text_input = message_obj.text        
-        logging.debug('Message from @{} in state {} with text {}'.format(user.serial_number, user.state, text_input))
+        logging.debug('Message from @{} in state {} with text {}'.format(user.serial_id, user.state, text_input))
         if DEBUG and not user.is_tester():
             send_message(user, ux.MSG_WORK_IN_PROGRESS[user.language])
             return

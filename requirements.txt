@@ -9,4 +9,4 @@ grpcio
 gunicorn
 Pillow
 firebase-admin
-firestore_model
+# firestore_model

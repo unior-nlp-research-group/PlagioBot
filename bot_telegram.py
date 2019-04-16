@@ -114,7 +114,7 @@ def send_message(user, text, kb=None, markdown=True, remove_keyboard=False, slee
         else:
             reply_markup = telegram.ReplyKeyboardMarkup(kb, resize_keyboard=True)
         BOT.sendMessage(
-            chat_id = user.serial_number,
+            chat_id = user.serial_id,
             text = text,
             parse_mode = telegram.ParseMode.MARKDOWN if markdown else None,
             reply_markup = reply_markup,
@@ -122,7 +122,7 @@ def send_message(user, text, kb=None, markdown=True, remove_keyboard=False, slee
         )
     else:
         BOT.sendMessage(
-            chat_id = user.serial_number,
+            chat_id = user.serial_id,
             text = text,
             parse_mode = telegram.ParseMode.MARKDOWN if markdown else None,
             **kwargs
@@ -132,7 +132,7 @@ def send_message(user, text, kb=None, markdown=True, remove_keyboard=False, slee
 
 def send_typing_action(user, sleep_secs=None):    
     BOT.sendChatAction(
-        chat_id = user.serial_number,
+        chat_id = user.serial_id,
         action = telegram.ChatAction.TYPING
     )
     if sleep_secs:
@@ -141,7 +141,7 @@ def send_typing_action(user, sleep_secs=None):
 def send_text_document(user, file_name, file_content):
     import requests
     files = [('document', (file_name, file_content, 'text/plain'))]
-    data = {'chat_id': user.serial_number}
+    data = {'chat_id': user.serial_id}
     resp = requests.post(key.TELEGRAM_API_URL + 'sendDocument', data=data, files=files)
     logging.debug("Sent documnet. Response status code: {}".format(resp.status_code))
 
@@ -153,7 +153,7 @@ def send_photo_from_data_multi(users, file_name, file_data, caption=None, sleep=
 def send_photo_from_data(user, file_name, file_data, caption=None, sleep=False):
     import requests
     files = [('photo', (file_name, file_data, 'image/png'))]
-    data = {'chat_id': user.serial_number}
+    data = {'chat_id': user.serial_id}
     if caption:
         data['caption'] = caption
     resp = requests.post(key.TELEGRAM_API_URL + 'sendPhoto', data=data, files=files)
@@ -185,7 +185,7 @@ bot_telegram_MASTER = None
 def report_master(message):
     global bot_telegram_MASTER
     if bot_telegram_MASTER is None:
-        bot_telegram_MASTER = User('telegram', key.TELEGRAM_BOT_MASTER_ID, update=False)
+        bot_telegram_MASTER = User.get_user('telegram', key.TELEGRAM_BOT_MASTER_ID)
     max_length = 2000
     if len(message)>max_length:
         chunks = (message[0+i:max_length+i] for i in range(0, len(message), max_length))

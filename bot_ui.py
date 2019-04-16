@@ -73,8 +73,8 @@ BUTTON_DISABLE_NOTIFICATIONS = {
     'it': "🔕 Disabilita Notifiche"
 }
 BUTTON_CHANGE_LANGUAGE = {
-    'en': '🇬🇧 ⇆ 🇮🇹',
-    'it': '🇬🇧 ⇆ 🇮🇹'
+    'en': '🇬🇧 → 🇮🇹',
+    'it': '🇮🇹 → 🇬🇧'
 }
 
 ####################

@@ -1,5 +1,5 @@
-# google project id: plagio
-# url: https://plagio.appspot.com
+# google project id: fireplagio (was plagio)
+# url: https://fireplagio.appspot.com
 
 entrypoint: gunicorn -b :$PORT bot_main:app
 runtime: python37
