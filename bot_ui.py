@@ -214,8 +214,8 @@ MSG_WRITERS_NO_INFO_BOOK = {
     'it': "📘 {} ⭐️ ha scelto di non specificare alcun dettaglio del libro."
 }
 MSG_WRITERS_INFO_BOOK = {
-    'en': "📘 {} ⭐️ has given the following info about the book: {}.",
-    'it': "📘 {} ⭐️ ha fornito queste informazioni del libro scelto: {}."
+    'en': "📘 {} ⭐️ has given the following info about the book: *{}*.",
+    'it': "📘 {} ⭐️ ha fornito queste informazioni del libro scelto: *{}*."
 }
 
 MSG_PLAYERS_BEGINNING_INFO = {
@@ -302,6 +302,23 @@ MSG_NO_GAME_TO_EXIT = {
     'en': "⛔️ You are not in a game",
     'it': "⛔️ Non sei in un gioco"
 }
+MSG_NO_GAME_NO_CHAT = {
+    'en': "⛔️ You are not in a game. You can send a chat message only inside a game.",
+    'it': "⛔️ Non sei in un gioco. Puoi mandare messaggi di testo solo in un gioco."
+}
+MSG_CHAT_MSG_TOO_LONG = {
+    'en': "⛔️ Message too long (max 200 characters).",
+    'it': "⛔️ Messagio troppo lungo (max 200 caratteri).",
+}
+MSG_CHAT_NO_PLAYERS_IN_ROOM = {
+    'en': "⛔️ No players in game to send the message to.",
+    'it': "⛔️ Non c'è alcun  giocatore/ice a cui mandare il messaggio.",
+}
+MSG_CHAT_SENT = {
+    'en': "📩 Message sent.",
+    'it': "📩 Messaggio inviato."
+}
+
 MSG_WINNER_SINGULAR = {
     'en': "🏆 The winner of the game is *{}*",
     'it': "🏆 Il/a vincitore/trice del gioco è *{}*"

@@ -19,7 +19,7 @@ app = Flask(__name__)
 def root():
     logging.debug("in root function")
     """Return a friendly HTTP greeting."""
-    return ("Progetto per risolvere in maniera automatica il gioco 'La Ghigliottina' parte del programma l'Eredità di Rai 1.", 200)
+    return ("Plagio Game.", 200)
 
 
 @app.errorhandler(404)

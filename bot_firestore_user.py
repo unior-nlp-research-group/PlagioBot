@@ -4,6 +4,7 @@ from utility import escape_markdown
 import json
 import logging
 
+# https://firebase.google.com/docs/firestore/manage-data/add-data
 from google.cloud import firestore
 
 from dataclasses import dataclass, field
@@ -15,7 +16,6 @@ from firestore_model import Model
 
 db = firestore.Client()
 firestore_model.db = db
-# transaction = db.transaction()
 
 
 @dataclass
@@ -27,11 +27,10 @@ class User(Model):
     language: str    
     bot: bool    
     state: str = field(default=None)
-    keyboard: str = field(default=None)
+    keyboard: List = None
     notifications: bool = field(default=True)    
     current_game_id: str = field(default=None)     
-    variables: str = field(default='{}', repr=False, compare=False)
-    # _max_attempts: int = 10 # for transactional
+    variables: Dict = field(default_factory=dict, compare=False)
 
     @staticmethod
     def make_id(application, serial_id):
@@ -77,7 +76,7 @@ class User(Model):
         self.state = state
         if save: self.save()
 
-    def switch_language(self, lang, save=True):
+    def switch_language(self, save=True):
         self.language = 'it' if self.language == 'en' else 'en'
         if save: self.save()
 
@@ -96,35 +95,26 @@ class User(Model):
         return Game.get(self.current_game_id)
 
     def set_keyboard(self, value, save=True):
-        self.keyboard = json.dumps(value, ensure_ascii=False)
+        self.keyboard = {str(i):v for i,v in enumerate(value)}
         if save: self.save()
 
     def set_empy_keyboard(self, save=True):
-        self.keyboard = None
+        self.keyboard = {}
         if save: self.save()
 
     def get_keyboard(self):
-        return json.loads(self.keyboard)
+        return [self.keyboard[str(i)] for i in range(len(self.keyboard))] 
 
     def reset_variables(self, save=True):
-        self.variables = '{}'
+        self.variables = {}
         if save: self.save()
-
-    def set_variables_from_dict(self, value_dict, save=True):
-        self.variables = json.dumps(value_dict, ensure_ascii=False)
-        if save: self.save()
-
-    def get_variables_as_dict(self):
-        return json.loads(self.variables)
 
     def set_var(self, var_name, var_value, save=True):
-        var_dict = json.loads(self.variables)
-        var_dict[var_name] = var_value        
-        self.set_variables_from_dict(var_dict, save)
+        self.variables[var_name] = var_value
+        if save: self.save()
 
     def get_var(self, var_name):
-        var_dict = json.loads(self.variables)
-        return var_dict.get(var_name,None)
+        return self.variables.get(var_name,None)
 
     def is_master(self):
         return self.serial_id == key.TELEGRAM_BOT_MASTER_ID

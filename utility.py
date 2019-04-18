@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+from time import time
 
 def flatten(L):
     ret = []
@@ -33,3 +33,9 @@ def add_full_stop_if_missing_end_puct(text):
     if text[-1] not in ['.','!','?']:
         text = text + '.'
     return text
+
+def get_milliseconds():
+  """
+    @return Milliseconds since the epoch
+  """
+  return int(round(time() * 1000))
