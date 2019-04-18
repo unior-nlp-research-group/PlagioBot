@@ -1,0 +1,3 @@
+exit_game - Esci dal gioco
+info - Informazione del gioco
+chat - Chat con gli altri giocatori
