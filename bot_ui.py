@@ -61,16 +61,20 @@ BUTTON_ADMIN = {
     'it': "🔑 Admin"
 }
 BUTTON_ENABLE_NOTIFICATIONS = {
-    'en': "🔔 Enable Notifications",
-    'it': "🔔 Attiva Notifiche"
+    'en': "🔕 → 🔔",
+    'it': "🔕 → 🔔"
 }
 BUTTON_ANNOUNCE_GAME_PUBLICLY = {
     'en': "🔔 Announce Game",
     'it': "🔔 Annuncia Gioco"
 }
+BUTTON_STOP_WAITING_START_GAME= {
+    'en': "🏁Start",
+    'it': "🏁Inizia"
+}
 BUTTON_DISABLE_NOTIFICATIONS = {
-    'en': "🔕 Disable Notifications",
-    'it': "🔕 Disabilita Notifiche"
+    'en': "🔔 → 🔕",
+    'it': "🔔 → 🔕"
 }
 BUTTON_CHANGE_LANGUAGE = {
     'en': '🇬🇧 → 🇮🇹',
@@ -109,6 +113,10 @@ MSG_WORK_IN_PROGRESS = {
     'en': "🏗 System under maintanance, please try later.",
     'it': "🏗 Sistema in manutenzione, riprova più tardi."
 }
+MSG_FEATURE_NOT_YET_IMPLEMENTED = {
+    'en': "🏗 This feature has not yet been implemented.",
+    'it': "🏗 Questa opzione non è ancora stata implementata."
+}
 MSG_CHANGE_LANGUAGE = {
     'en': "🇬🇧 ⇆ 🇮🇹 Change Language",
     'it': "🇬🇧 ⇆ 🇮🇹 Cambia Lingua"
@@ -118,7 +126,7 @@ MSG_LANGUAGE_INFO = {
     'it': "🇮🇹 Lingua impostata per l'italiano"
 }
 MSG_CHOOSE_GAME_NAME = {
-    'en': "✍️ Choose the name of an existing game or a create a new one.",
+    'en': "✍️ Choose the name of an existing game or create a new one.",
     'it': "✍️ Scegli il nome di un gioco esistente o creane uno nuovo."
 }
 # MSG_WRITE_GAME_SPECIAL_RULES = {
@@ -149,21 +157,29 @@ MSG_WRONG_INPUT_NUMBER_OF_PLAYERS = {
     'en': '⛔️ You must enter a name between 3 and 100',
     'it': '⛔️ Devi inserire un numero da 3 a 100'
 }
+MSG_WRONG_COMMAND = {
+    'en': '⛔️ Wrong command',
+    'it': '⛔️ Comando non riconosciuto'
+}
 MSG_NUMBER_OF_PLAYERS = {
-    'en': "🔢 Please enter the number of players.",
-    'it': "🔢 Inserisci il numero dei giocatori."
+    'en': "🔢 Please enter the maximum number of players for this game.",
+    'it': "🔢 Inserisci il numero massimo dei giocatori per questo gioco."
 }
 MSG_ENTERING_GAME_X = {
     'en': "🏁 You entered game *{}*.",
-    'it': "🏁 Sei entrato nel gioco *{}*."
+    'it': "🏁 Sei entrato/a nel gioco *{}*."
 }
-# MSG_INVITE_PEOPLE_OR_ANNOUNCE = {
-#     'en': "📮 Please invite other players to the game *{}* or press the button below 🔔 to announce it publicly.",
-#     'it': "📮 Invita altri/e giocatori/trici ad unirsi al gioco *{}* o premere il pulsante 🔔 per annunciarlo pubblicamente."
-# }
-MSG_INVITE_PEOPLE_OR_ANNOUNCE = {
-    'en': "📮 Please invite other players to the game *{}*.",
-    'it': "📮 Invita altri/e giocatori/trici ad unirsi al gioco *{}*."
+MSG_GAME_HAS_STARTED_WITH_PLAYERS = {
+    'en': "🏁Game has started with players: {}",
+    'it': "🏁Il gioco è iniziato con i giocoatori: {}"
+}
+MSG_NOT_ENOUGH_PLAYERS = {
+    'en': "📮 There needs to be at least {} players in the game to start. Please invite other players to the game or press the button below {} to announce it publicly.".format(parameters.MIN_NUM_OF_PLAYERS, BUTTON_ANNOUNCE_GAME_PUBLICLY['en']),
+    'it': "📮 Occorrono almeno {} giocatori/ici per iniziare il gioco. Invita altri partecipanti al gioco o premi il pulsante {} per annunciarlo pubblicamente.".format(parameters.MIN_NUM_OF_PLAYERS, BUTTON_ANNOUNCE_GAME_PUBLICLY['en']),
+}
+MSG_INVITE_PEOPLE_ANNOUNCE_OR_START = {
+    'en': "📮 Please invite other players to the game *{3}* or press the button {0} to announce it publicly. If there are at least {1} players in the game you can start with {2}.".format(BUTTON_ANNOUNCE_GAME_PUBLICLY['en'],parameters.MIN_NUM_OF_PLAYERS, BUTTON_STOP_WAITING_START_GAME['en'],"{}"),
+    'it': "📮 Invita altri/e giocatori/trici ad unirsi al gioco *{3}* o premere il pulsante {0} per annunciarlo pubblicamente. Se ci sono almento {1} giocatori nel gioco puoi iniziare comunque premendo {2}.".format(BUTTON_ANNOUNCE_GAME_PUBLICLY['en'],parameters.MIN_NUM_OF_PLAYERS, BUTTON_STOP_WAITING_START_GAME['en'],"{}"),
 }
 MSG_ANNOUNCE_GAME_PUBLICLY = {
     'en': "📮 New game created by {} with {} people and {} seats remaining. Join th egame clicking on {}.",
@@ -318,7 +334,6 @@ MSG_CHAT_SENT = {
     'en': "📩 Message sent.",
     'it': "📩 Messaggio inviato."
 }
-
 MSG_WINNER_SINGULAR = {
     'en': "🏆 The winner of the game is *{}*",
     'it': "🏆 Il/a vincitore/trice del gioco è *{}*"
@@ -328,6 +343,10 @@ MSG_WINNER_PLURAL = {
     'it': "🏆 I/le vincitori/trici del gioco sono *{}*"
 }
 
+MSG_WRONG_INPUT_ONLY_TEXT_ACCEPTED = {
+    'en': "⛔️ Wrong input, only text is accepted here.",
+    'it': "⛔️ Input non valido, devi inserire solo del testo."
+}
 MSG_WRONG_INPUT_WAIT_FOR_PLAYERS_TO_VOTE = {
     'en': "⛔️ Let's wait for the other players to vote.",
     'it': "⛔️ Attendiamo che le altre persone completino il voto."

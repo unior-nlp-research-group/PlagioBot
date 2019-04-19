@@ -11,11 +11,12 @@ import bot_firestore_game
 from bot_firestore_game import Game
 import utility
 import time
+import parameters
 
 # ================================
 # CONFIG
 # ================================
-DEBUG = True
+DEBUG = False
 
 # ================================
 # RESTART
@@ -71,7 +72,6 @@ def state_INITIAL(user, message_obj):
         ]
         notifications_button = [ux.BUTTON_DISABLE_NOTIFICATIONS[lang]] if user.notifications else [ux.BUTTON_ENABLE_NOTIFICATIONS[lang]]
         kb.append(notifications_button)
-        user.set_keyboard(kb)
         msg_notifications = ux.MSG_NOTIFICATIONS_ON[lang] if user.notifications else ux.MSG_NOTIFICATIONS_OFF[lang]
         msg = '\n\n'.join([ux.MSG_HOME[lang],ux.MSG_LANGUAGE_INFO[lang],msg_notifications])
         send_message(user, msg, kb)
@@ -102,7 +102,6 @@ def state_CHOOSE_ROOM_NAME(user, message_obj):
     lang = user.language
     if message_obj is None:
         kb = [[ux.BUTTON_BACK[lang]]]
-        user.set_keyboard(kb)
         send_message(user, ux.MSG_CHOOSE_GAME_NAME[lang], kb)
     else:
         text_input = message_obj.text
@@ -141,7 +140,6 @@ def state_CREATE_GAME(user, message_obj):
     room_name = user.get_var('GAME_NAME')
     if message_obj is None:
         kb = [[ux.BUTTON_YES[lang], ux.BUTTON_NO[lang]]]
-        user.set_keyboard(kb)
         msg = ux.MSG_NEW_GAME_CONFIRM[lang].format(room_name)
         send_message(user, msg, kb)
     else:
@@ -170,7 +168,6 @@ def state_CHOOSE_NUMBER_PLAYERS(user, message_obj):
     lang = user.language
     kb = [['3','4','5','6'],[ux.BUTTON_ABORT[lang]]]
     if message_obj is None:
-        user.set_keyboard(kb)
         send_message(user, ux.MSG_NUMBER_OF_PLAYERS[lang], kb)
     else:
         game = user.get_current_game()
@@ -181,9 +178,9 @@ def state_CHOOSE_NUMBER_PLAYERS(user, message_obj):
                 return
             else:
                 assert(utility.represents_int_between(text_input,3,6))
-        if utility.represents_int_between(text_input,2,100):
-            max_number_players = int(text_input)
-            game.set_max_number_of_players(max_number_players)
+        if utility.represents_int_between(text_input,parameters.MIN_NUM_OF_PLAYERS,100):
+            max_num_players = int(text_input)
+            game.set_max_number_of_players(max_num_players)
             # redirect_to_state(user, state_ENTER_SPECIAL_RULES)
             redirect_to_state(user, state_WAITING_FOR_OTHER_PLAYERS)
         else:
@@ -196,7 +193,6 @@ def state_CHOOSE_NUMBER_PLAYERS(user, message_obj):
 #     lang = user.language
 #     kb = [[ux.BUTTON_SKIP[lang]],[ux.BUTTON_ABORT[lang]]]
 #     if message_obj is None:
-#         user.set_keyboard(kb)
 #         send_message(user, ux.MSG_WRITE_GAME_SPECIAL_RULES[lang], kb)
 #     else:
 #         game = user.get_current_game()
@@ -224,16 +220,20 @@ def state_CHOOSE_NUMBER_PLAYERS(user, message_obj):
 def state_WAITING_FOR_OTHER_PLAYERS(user, message_obj):    
     game = user.get_current_game()
     players = game.get_players()
-    lang = players[0].language
+    # logging.debug("players[0]: {}".format(players[0]))
+    lang = players[0].language    
     if message_obj is None:
         msg = ux.MSG_ENTERING_GAME_X[lang].format(game.get_name())
-        send_message(user, msg, remove_keyboard=True)
+        send_message(user, msg, remove_keyboard=True)        
+        # logging.debug("user: {}".format(user))
+        # logging.debug("user == players[0]: {}".format(user == players[0]))
         if user == players[0]:
-            # kb = [[ux.BUTTON_ANNOUNCE_GAME_PUBLICLY[lang]]]
-            # user.set_keyboard(kb)
-            msg_invite = ux.MSG_INVITE_PEOPLE_OR_ANNOUNCE[lang].format(game.get_name())
-            # send_message(user, msg_invite, kb)
-            send_message(user, msg_invite, remove_keyboard=True)
+            kb = [
+                [ux.BUTTON_ANNOUNCE_GAME_PUBLICLY[lang]],
+                [ux.BUTTON_STOP_WAITING_START_GAME[lang]]
+            ]
+            msg_invite = ux.MSG_INVITE_PEOPLE_ANNOUNCE_OR_START[lang].format(game.get_name())
+            send_message(user, msg_invite, kb)            
         else:
             msg_other_players = ux.MSG_PLAYER_X_JOINED_GAME[lang].format(user.get_name())
             send_message_multi(players, msg_other_players)
@@ -245,8 +245,10 @@ def state_WAITING_FOR_OTHER_PLAYERS(user, message_obj):
                 #     creator_name = players[0].get_name()
                 #     special_rules_msg = ux.MSG_TELL_SPECIAL_RULES[lang].format(creator_name, special_rules)
                 #     send_message_multi(players, special_rules_msg)
-                game.setup()
-                redirect_to_state_multi(players, state_GAME_READER_WRITES_BEGINNING)
+                if game.setup(user):
+                    redirect_to_state_multi(players, state_GAME_READER_WRITES_BEGINNING)
+                else:
+                    send_message(user, ux.MSG_GAME_ALREADY_STARTED[lang])
             else:
                 if get_available_seats>1:
                     msg_waiting = ux.MSG_WAITING_FOR_X_PLAYERS_PL[lang].format(get_available_seats, game.get_name())
@@ -259,13 +261,25 @@ def state_WAITING_FOR_OTHER_PLAYERS(user, message_obj):
             text_input = message_obj.text
             kb = user.get_keyboard()
             if text_input in utility.flatten(kb):
-                if text_input==ux.BUTTON_ANNOUNCE_GAME_PUBLICLY[lang]:
-                    send_message(user, ux.MSG_SENT_ANNOUNCEMENT[lang], remove_keyboard=True)
+                if text_input == ux.BUTTON_ANNOUNCE_GAME_PUBLICLY[lang]:
+                    # send_message(user, ux.MSG_FEATURE_NOT_YET_IMPLEMENTED[lang])
+                    kb = [[ux.BUTTON_STOP_WAITING_START_GAME[lang]]]
+                    send_message(user, ux.MSG_SENT_ANNOUNCEMENT[lang], kb)
                     command = utility.escape_markdown('/game_{}'.format(game.id))
-                    announce_msg = ux.MSG_ANNOUNCE_GAME_PUBLICLY[lang].format(user.get_name(), game.max_number_players, get_available_seats, command)
+                    announce_msg = ux.MSG_ANNOUNCE_GAME_PUBLICLY[lang].format(user.get_name(), game.max_num_players, get_available_seats, command)
                     users = User.get_user_lang_state_notification_on(lang, 'state_INITIAL')
                     send_message_multi(users, announce_msg)
-                    return
+                elif text_input == ux.BUTTON_STOP_WAITING_START_GAME[lang]:
+                    if len(players) >= parameters.MIN_NUM_OF_PLAYERS:
+                        if game.setup(user):
+                            redirect_to_state_multi(players, state_GAME_READER_WRITES_BEGINNING)
+                            return
+                        else:
+                            send_message(user, ux.MSG_GAME_ALREADY_STARTED[lang])
+                            return
+                    else:
+                        send_message(user, ux.MSG_NOT_ENOUGH_PLAYERS[lang])                        
+                        return
                 else:
                     assert(False)
         if get_available_seats>1:
@@ -282,6 +296,9 @@ def state_GAME_READER_WRITES_BEGINNING(user, message_obj):
     hand, players, reader, writers = game.get_current_hand_players_reader_writers()
     lang = players[0].language
     if message_obj is None:
+        if hand == 0:
+            msg_all = ux.MSG_GAME_HAS_STARTED_WITH_PLAYERS[lang].format(', '.join(game.players_names))
+            send_message(user, msg_all, remove_keyboard=True)        
         if user == players[0]:
             msg_intro = ux.MSG_HAND_INFO[lang].format(hand, reader.get_name())
             send_message_multi(players, msg_intro)
@@ -317,7 +334,6 @@ def state_GAME_READER_WRITES_TEXT_INFO(user, message_obj):
             kb = [[ux.BUTTON_SKIP[lang]]]
             msg_reader = ux.MSG_READER_WRITES_TEXT_INFO[lang]
             send_message(reader, msg_reader, kb)    
-            reader.set_keyboard(kb)        
             msg_writers = ux.MSG_WRITERS_WAIT_READER_TEXT_INFO[lang].format(reader.get_name())
             send_message_multi(writers, msg_writers)            
     else:
@@ -444,7 +460,7 @@ def state_GAME_VOTE_CONTINUATION(user, message_obj):
         else:
             send_message_multi(players, ux.MSG_POINT_GAME_PARTIAL_SUMMARY[lang])
             game.prepare_and_send_game_point_img_data(players)
-            game.setup_next_hand()
+            game.setup_next_hand(user)
             redirect_to_state_multi(players, state_GAME_READER_WRITES_BEGINNING)
 
     if message_obj is None:
@@ -475,7 +491,6 @@ def state_GAME_VOTE_CONTINUATION(user, message_obj):
                     send_messages(w, msgs, remove_keyboard=True)
                 else:
                     kb = [[str(i) for i in numbers_list if i != w_shuffled_number]]
-                    w.set_keyboard(kb)
                     send_message(w, ux.MSG_VOTE[lang], kb, sleep=True)
     else:
         if all_guessed_correctly:
@@ -495,7 +510,6 @@ def state_GAME_VOTE_CONTINUATION(user, message_obj):
                 all_but_users = [p for p in players if p!=user]
                 send_message_multi(all_but_users, ux.MSG_X_VOTED[lang].format(user.get_name()))
                 if len(remaining_names)>0:
-                    user.set_keyboard([])
                     msgs = [ux.MSG_THANKS[lang],ux.MSG_WAIT_FOR[lang].format(remaining_names_str)]
                     send_messages(user, msgs, remove_keyboard=True)
                     send_message_multi(all_but_users, ux.MSG_WAIT_FOR[lang].format(remaining_names_str))
@@ -546,9 +560,9 @@ def deal_with_universal_commands(user, text_input):
         else:
             send_message(user, ux.MSG_NO_GAME_TO_EXIT[lang])
         return True
-    if text_input == '/chat ':
+    if text_input.startswith('/chat '):
         game = user.get_current_game()
-        chat_msg = ' '.join(text_input.split[1:])
+        chat_msg = ' '.join(text_input.split()[1:])
         if game:
             if len(text_input)>200:
                 send_message(user, ux.MSG_CHAT_MSG_TOO_LONG[lang])    
@@ -556,8 +570,8 @@ def deal_with_universal_commands(user, text_input):
                 players = game.get_players()
                 other_players = [p for p in players if p != user]
                 if other_players:
-                    send_message_multi(other_players, "📩 *{}*: {}".format(user.get_name(), text_input))
-                    send_message(user, MSG_CHAT_SENT)
+                    send_message_multi(other_players, "📩 *{}*: {}".format(user.get_name(), chat_msg))
+                    send_message(user, ux.MSG_CHAT_SENT[lang])
                 else:
                     send_message(user, ux.MSG_CHAT_NO_PLAYERS_IN_ROOM[lang])
         else:
@@ -565,17 +579,14 @@ def deal_with_universal_commands(user, text_input):
         return True
     if text_input.startswith('/game_'):
         game_id = text_input.split('/game_')[1]
-        if not utility.represents_int(game_id):
-            send_message(user, ux.MSG_COMMAND_NOT_RECOGNIZED[lang])
-        else:
-            game = Game.get(game_id)
-            if game:
-                if game.add_player(user):
-                    redirect_to_state(user, state_WAITING_FOR_OTHER_PLAYERS)
-                else:
-                    send_message(user, ux.MSG_NAME_NO_LONGER_AVAILBLE[lang])
+        game = Game.get(game_id)
+        if game:
+            if game.add_player(user):
+                redirect_to_state(user, state_WAITING_FOR_OTHER_PLAYERS)
             else:
                 send_message(user, ux.MSG_NAME_NO_LONGER_AVAILBLE[lang])
+        else:
+            send_message(user, ux.MSG_WRONG_COMMAND[lang])
         return True
     if user.is_master():
         if text_input == '/debug':
@@ -626,7 +637,9 @@ def deal_with_request(request_json):
             return
         if deal_with_universal_commands(user, text_input):
             return
-    repeat_state(user, message_obj=message_obj)
+        repeat_state(user, message_obj=message_obj)
+    else:
+        send_message(user, ux.MSG_WRONG_INPUT_ONLY_TEXT_ACCEPTED[user.language])
 
 possibles = globals().copy()
 possibles.update(locals())

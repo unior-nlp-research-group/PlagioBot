@@ -26,9 +26,10 @@ class Game(Model):
     name: str
     creator_id: str
     players_id: List
+    players_names: List = None
     state: str = "INITIAL" # INITIAL, STARTED, ENDED, INTERRUPTED
     sub_state: str = "INITIAL:JUST_CREATED" #INITIAL:JUST_CREATED, INITIAL:WAITING_FOR_PLAYERS    
-    max_number_players: int = -1
+    max_num_players: int = -1
     num_players: int = -1
     variables: Dict = field(default_factory=dict)
 
@@ -54,9 +55,9 @@ class Game(Model):
     def get_name(self):
         return escape_markdown(self.name)
 
-    def set_max_number_of_players(self, num_players):
+    def set_max_number_of_players(self, max_num_players):
         self.sub_state = "INITIAL:WAITING_FOR_PLAYERS"
-        self.max_number_players = num_players
+        self.max_num_players = max_num_players
         self.save()
 
     def get_player_at_index(self,i):  
@@ -70,7 +71,7 @@ class Game(Model):
         return players
 
     def get_available_seats(self):
-        return self.max_number_players - len(self.players_id)
+        return self.max_num_players - len(self.players_id)
 
     def set_state(self, state, sub_state=None, save=True):
         self.state = state
@@ -110,37 +111,53 @@ class Game(Model):
         result = update_in_transaction(db.transaction())        
         return result
 
+    # --------------------------
+    # TRANSACTIONAL OPERATION
+    # --------------------------
+    def setup(self, user):
 
-    def setup(self):
-        players = self.get_players()
-        self.num_players = num_hands = len(self.players_id)
-        self.state = 'STARTED'
-        self.variables = {
-            'PLAYERS_NAMES': [p.get_name() for p in players],
-            'SPECIAL_RULES': '',
-            'HAND': 1,
-            'TEXT_BEGINNINGS': [],
-            'TEXT_INFO':[],
-            'PLAYERS_CONTINUATIONS': [{} for i in range(num_hands)], # one per player in order of players
-            'CONTINUATIONS_INFO': [{} for i in range(num_hands)], 
-                # for each continuation in key: 
-                # {
-                #     shuffled_index: int,
-                #     authors: list(int) -> index of players writing that continuation
-                #     correct: bool -> if correct continuation
-                #     voted_by: list(int) -> indexes of players voting that continuation
-                # }
-            'HAND_POINTS': [{str(i):0 for i in range(num_hands)} for i in range(num_hands)], 
-            'GAME_POINTS': [],
-            'WINNERS_NAMES': []
-        }
-        self.save()
+        @firestore.transactional 
+        def update_in_transaction(transaction): 
+            logging.debug('{} Entering transactional stop_new_players'.format(user.get_name()))                      
+            self.refresh_from_transaction(transaction)
+            if self.state != 'INITIAL':
+                return False
+            players = self.get_players()
+            self.num_players = num_hands = len(self.players_id)
+            self.state = 'STARTED'
+            self.players_names = [p.get_name() for p in players]
+            self.variables = {
+                'SPECIAL_RULES': '',
+                'HAND': 1,
+                'TEXT_BEGINNINGS': [],
+                'TEXT_INFO':[],
+                'PLAYERS_CONTINUATIONS': [{} for i in range(num_hands)], # one per player in order of players
+                'CONTINUATIONS_INFO': [{} for i in range(num_hands)], 
+                    # for each continuation in key: 
+                    # {
+                    #     shuffled_index: int,
+                    #     authors: list(int) -> index of players writing that continuation
+                    #     correct: bool -> if correct continuation
+                    #     voted_by: list(int) -> indexes of players voting that continuation
+                    # }
+                'HAND_POINTS': [{str(i):0 for i in range(num_hands)} for i in range(num_hands)], 
+                'GAME_POINTS': [],
+                'WINNERS_NAMES': []
+            }
+            self.save_transactional(transaction)            
+            logging.debug('{} Exiting transactional add_player'.format(user.get_name()))                      
+            return True
+
+        return update_in_transaction(db.transaction())
+
+
+
 
     def just_created(self):
         return self.sub_state == 'INITIAL:JUST_CREATED'
 
     def get_creator_name(self):
-        creator_name = self.variables['PLAYERS_NAMES'][0]
+        creator_name = self.players_names[0]
         return escape_markdown(creator_name)
 
     def setup_next_hand(self, save=True):
@@ -187,7 +204,7 @@ class Game(Model):
             logging.debug('{} Entering transactional set_player_text_continuation_and_get_remaining'.format(user.get_name()))                      
             self.refresh_from_transaction(transaction)
             player_index = self.players_id.index(user.id)
-            names = self.variables['PLAYERS_NAMES']
+            names = self.players_names
             hand_index = self.variables['HAND']-1
             current_players_continuations = self.variables['PLAYERS_CONTINUATIONS'][hand_index]
             current_players_continuations[str(player_index)] = text
@@ -245,7 +262,7 @@ class Game(Model):
     def get_names_remaining_voters(self):        
         hand_index = self.variables['HAND']-1
         continuations_info = self.variables['CONTINUATIONS_INFO'][hand_index]
-        names = self.variables['PLAYERS_NAMES']        
+        names = self.players_names        
         voted_by_list = [info['voted_by'] for info in continuations_info.values()] 
         voters_indexes = list(itertools.chain(*voted_by_list))
         exact_author_list = next(info['authors_indexes'] for info in continuations_info.values() if info['correct'])
@@ -261,12 +278,12 @@ class Game(Model):
         def update_in_transaction(transaction): 
             logging.debug('{} Entering transactional set_voted_indexes_and_points_and_get_remaining'.format(user.get_name()))
             self.refresh_from_transaction(transaction)
-            names = self.variables['PLAYERS_NAMES']
+            names = self.players_names
             hand_index = self.variables['HAND']-1
             continuations_info = self.variables['CONTINUATIONS_INFO'][hand_index]
             player_index = self.players_id.index(user.id)
             assert player_index != hand_index # reader doesn't receive points        
-            names = self.variables['PLAYERS_NAMES']        
+            names = self.players_names        
             voted_cont_info = next(info for c,info in continuations_info.items() if info['shuffled_index']==voted_shuffled_index)
             voted_cont_info['voted_by'].append(player_index)   
             voted_by_list = [info['voted_by'] for info in continuations_info.values()] 
@@ -294,7 +311,7 @@ class Game(Model):
     def get_shuffled_continuations_voters(self):
         
         hand_index = self.variables['HAND']-1
-        players_names = self.variables['PLAYERS_NAMES']
+        players_names = self.players_names
         continuations_info = self.variables['CONTINUATIONS_INFO'][hand_index]
         shuf_cont_voters_names = []
         for cont_info in sorted(continuations_info.values(), key=lambda i: i['shuffled_index']):
@@ -346,7 +363,7 @@ class Game(Model):
         
         hand_index = self.variables['HAND']-1
         current_hand_points = self.variables['HAND_POINTS'][hand_index]
-        players_names = self.variables['PLAYERS_NAMES']
+        players_names = self.players_names
         current_hand_points_list = [current_hand_points[str(i)] for i in range(self.num_players)]
         img_data = get_image_data_from_points(players_names, current_hand_points_list)
         send_photo_from_data_multi(players, 'leaderboard_hand.png', img_data, sleep=True)
@@ -356,7 +373,7 @@ class Game(Model):
         from bot_telegram import send_photo_from_data_multi
         
         points = self.variables['HAND_POINTS']
-        players_names = self.variables['PLAYERS_NAMES']
+        players_names = self.players_names
         self.variables['GAME_POINTS'] = [
             sum(current_hand_points[str(i)] for current_hand_points in points) 
             for i in range(self.num_players)
@@ -367,7 +384,7 @@ class Game(Model):
         send_photo_from_data_multi(players, 'leaderboard_hand.png', img_data, sleep=True)
 
     def get_winner_names(self):        
-        players_names = self.variables['PLAYERS_NAMES']
+        players_names = self.players_names
         max_point = max(self.variables['GAME_POINTS'])
         winner_names = [players_names[i] for i,p in enumerate(self.variables['GAME_POINTS']) if p==max_point]
         self.variables['WINNERS_NAMES'] = winner_names

@@ -22,19 +22,22 @@ firestore_model.db = db
 class User(Model):
     application: str
     serial_id: str
-    name: str
-    username: str
-    language: str    
-    bot: bool    
-    state: str = field(default=None)
-    keyboard: List = None
-    notifications: bool = field(default=True)    
-    current_game_id: str = field(default=None)     
-    variables: Dict = field(default_factory=dict, compare=False)
+    name: str #= field(compare=False)
+    username: str #= field(compare=False)
+    language: str #= field(compare=False)
+    bot: bool = False #field(default=False, compare=False)
+    state: str = None #field(default=None, compare=False)
+    keyboard: List = None #field(default=None, compare=False)
+    notifications: bool = True #field(default=True, compare=False)    
+    current_game_id: str = None #field(default=None, compare=False)     
+    variables: Dict = field(default_factory=dict)
 
     @staticmethod
     def make_id(application, serial_id):
         return '{}_{}'.format(application, serial_id)
+
+    def __eq__(self, other):
+        return type(self) == type(other) and self.id == other.id
 
     @staticmethod
     def create_user(application, serial_id, name, username, language, bot=False):
@@ -129,6 +132,9 @@ class User(Model):
             ('state', '==', state)
         ]).get()
         return list(users_generator)
+
+def get_fede():
+    return User.get_user('telegram', key.TELEGRAM_BOT_MASTER_ID)
 
 if __name__ == "__main__":
     user = User.create_user('test','123','name','username','it')

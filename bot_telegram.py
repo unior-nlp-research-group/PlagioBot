@@ -2,8 +2,7 @@
 
 import telegram
 import telegram.error
-# from telegram.error import (TelegramError, Unauthorized, BadRequest, 
-#                             TimedOut, ChatMigrated, NetworkError)
+from telegram.error import TelegramError, Unauthorized, BadRequest, TimedOut, ChatMigrated, NetworkError
 import key
 import logging
 import traceback
@@ -112,6 +111,7 @@ def send_message(user, text, kb=None, markdown=True, remove_keyboard=False, slee
             user.set_empy_keyboard()            
             reply_markup = telegram.ReplyKeyboardRemove()
         else:
+            user.set_keyboard(kb)
             reply_markup = telegram.ReplyKeyboardMarkup(kb, resize_keyboard=True)
         BOT.sendMessage(
             chat_id = user.serial_id,
@@ -121,12 +121,16 @@ def send_message(user, text, kb=None, markdown=True, remove_keyboard=False, slee
             **kwargs
         )
     else:
-        BOT.sendMessage(
-            chat_id = user.serial_id,
-            text = text,
-            parse_mode = telegram.ParseMode.MARKDOWN if markdown else None,
-            **kwargs
-        )
+        try:
+            BOT.sendMessage(
+                chat_id = user.serial_id,
+                text = text,
+                parse_mode = telegram.ParseMode.MARKDOWN if markdown else None,
+                **kwargs
+            )
+        except Unauthorized:
+            logging.debug('User has blocked Bot: {}'.format(user))
+            user.switch_notifications()
     if sleep:
         time.sleep(0.1)
 
