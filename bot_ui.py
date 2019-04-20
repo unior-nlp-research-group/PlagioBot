@@ -48,9 +48,13 @@ BUTTON_SKIP = {
     'en': "➡️ SKIP",
     'it': "➡️ SALTA"
 }
-BUTTON_START_GAME = {
-    'en': '🎯 START GAME',
-    'it': '🎯 INIZIO GIOCO'
+BUTTON_NEW_GAME = {
+    'en': '🆕🎯 NEW GAME',
+    'it': '🆕🎯 NUOVO GIOCO'
+}
+BUTTON_JOIN_GAME = {
+    'en': '🏹🎯 JOIN GAME',
+    'it': '🏹🎯 ENTRA IN UN GIOCO'
 }
 BUTTON_CONTACT_US = {
     'en': "📩 CONTACT US",
@@ -69,8 +73,8 @@ BUTTON_ANNOUNCE_GAME_PUBLICLY = {
     'it': "🔔 Annuncia Gioco"
 }
 BUTTON_STOP_WAITING_START_GAME= {
-    'en': "🏁Start",
-    'it': "🏁Inizia"
+    'en': "🏁 Start",
+    'it': "🏁 Inizia"
 }
 BUTTON_DISABLE_NOTIFICATIONS = {
     'en': "🔔 → 🔕",
@@ -125,10 +129,15 @@ MSG_LANGUAGE_INFO = {
     'en': "🇬🇧 Language set for English",
     'it': "🇮🇹 Lingua impostata per l'italiano"
 }
-MSG_CHOOSE_GAME_NAME = {
-    'en': "✍️ Choose the name of an existing game or create a new one.",
-    'it': "✍️ Scegli il nome di un gioco esistente o creane uno nuovo."
+MSG_CHOOSE_EXITING_GAME_NAME = {
+    'en': "✍️ Choose the name of an existing game.",
+    'it': "✍️ Scegli il nome di un gioco esistente."
 }
+MSG_CHOOSE_NEW_GAME_NAME = {
+    'en': "✍️ Choose a new game name.",
+    'it': "✍️ Scegli il nome di un nuovo gioco."
+}
+
 # MSG_WRITE_GAME_SPECIAL_RULES = {
 #     'en': "✍️ If you want you can write down any special rule you want to set for the game (e.g., rymes, length of sentences, etc...), or press {}".format(BUTTON_SKIP['en']),
 #     'it': "✍️ Inserisci se vuoi delle regole particolari da adottare nel gioco (ad esempio rime, lunghezza frasi, ecc...), o premi {}".format(BUTTON_SKIP['it']),
@@ -138,20 +147,28 @@ MSG_TELL_SPECIAL_RULES = {
     'it': "🧭 {} ha scelto le seguenti regole del gioco: {}"
 }
 MSG_GAME_NOT_YET_READY = {
-    'en': '🤷‍♀️ The game "{}" has been just created, but still needs to be set up. Please try again in a bit.',
-    'it': '🤷‍♀️ Il gioco "{}" è appena stato creato, ma deve essere ancora impostato. Riprova tra qualche istante.'
+    'en': '🤷‍♀️ The game *{}* has been just created, but still needs to be set up. Please try again in a bit.',
+    'it': '🤷‍♀️ Il gioco *{}* è appena stato creato, ma deve essere ancora impostato. Riprova tra qualche istante.'
+}
+MSG_GAME_ALREADY_ACTIVE = {
+    'en': '🤷‍♀️ A game with this name is already active. Choose another name.',
+    'it': '🤷‍♀️ Un gioco con questo nome è già in corso. Scegli un altro nome.'
 }
 MSG_GAME_ALREADY_STARTED = {
     'en': '🤷‍♀️ No more seats availbel on this game.',
     'it': '🤷‍♀️ Non ci sono posti disponibili in questo gioco.'
 }
 MSG_NAME_NO_LONGER_AVAILBLE = {
-    'en': "🤷‍♀️ The name *{}* is no longer available.",
-    'it': "🤷‍♀️ Il nome *{}* non è più disponibile."
+    'en': "🤷‍♀️ The game *{}* is no longer available.",
+    'it': "🤷‍♀️ Il gioco *{}* non è più disponibile."
+}
+MSG_NAME_DOES_NOT_EXIST = {
+    'en': "🤷‍♀️ The game *{}* does not exist.",
+    'it': "🤷‍♀️ Il gioco *{}* non esiste."
 }
 MSG_NEW_GAME_CONFIRM = {
-    'en': '🆕 No game "{}" exists. Do you want to create it?',
-    'it': '🆕 Nessun gioco con il nome "{}" esiste. Vuoi crearne uno?'
+    'en': '🆕 No game *{}* exists. Do you want to create it?',
+    'it': '🆕 Il gioco *{}* non esiste. Vuoi crearne uno?'
 }
 MSG_WRONG_INPUT_NUMBER_OF_PLAYERS = {
     'en': '⛔️ You must enter a name between 3 and 100',
@@ -160,6 +177,10 @@ MSG_WRONG_INPUT_NUMBER_OF_PLAYERS = {
 MSG_WRONG_COMMAND = {
     'en': '⛔️ Wrong command',
     'it': '⛔️ Comando non riconosciuto'
+}
+MSG_CANT_JOIN_ALREADY_IN_GAME = {
+    'en': '⛔️ You can open a new game when you are already in a game. You have to exit first.',
+    'it': "⛔️ Non puoi unirti ad un gioco quando sei già all'interno di un gioco. Devi prima uscire."
 }
 MSG_NUMBER_OF_PLAYERS = {
     'en': "🔢 Please enter the maximum number of players for this game.",
@@ -256,7 +277,7 @@ MSG_X_GAVE_CONTINUATION_WAITING_FOR_PLAYERS_NAME_CONTINUATION = {
 }
 MSG_INTRO_NUMBERED_TEXT = {
     'en': "📝 These are all the complete texts in random order:",
-    'it': "📝 Queste sono tutte i testi completi in ordine casuale:"
+    'it': "📝 Queste sono tutti i testi completi in ordine casuale:"
 }
 MSG_WAIT_FOR_PLAYERS_TO_VOTE_PL = {
     'en': "😴 Let's wait for the other players to guess.",
@@ -269,6 +290,14 @@ MSG_VOTE = {
 MSG_GUESSED_NO_VOTE = {
     'en': "😀 Wow, you entered a continuation which is identical to the oriiginal one! no need to vote!",
     'it': "😀 Wow, hai inserito la continuazione che è identica all'originale!\nNon hai bisogno di votare!",
+}
+MSG_X_PLAYER_SG_GUESSED_EXACT_CONTINUATIONS = {
+    'en': "🤠 {} has inserted the original continuation and doesn't need to vote!",
+    'it': "🤠 {} ha inserito la continuazione originale e non deve votare!",
+}
+MSG_X_PLAYERS_PL_GUESSED_EXACT_CONTINUATIONS = {
+    'en': "🤠 {} have inserted the original continuation and don't need to vote!",
+    'it': "🤠 {} hanno inserito la continuazione originale e non devono votare!",
 }
 MSG_THANKS = {
     'en': "😀 Thanks!",
@@ -317,6 +346,10 @@ MSG_EXIT_GAME = {
 MSG_NO_GAME_TO_EXIT = {
     'en': "⛔️ You are not in a game",
     'it': "⛔️ Non sei in un gioco"
+}
+MSG_ONLY_CREATOR_CAN_TERMINATE_GAME = {
+    'en': "⛔️ Only the person who has created the game can terminate it.",
+    'it': "⛔️ Solo la persona che ha creato il gioco può terminarlo."
 }
 MSG_NO_GAME_NO_CHAT = {
     'en': "⛔️ You are not in a game. You can send a chat message only inside a game.",

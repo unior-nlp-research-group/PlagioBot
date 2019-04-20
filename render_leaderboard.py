@@ -16,7 +16,7 @@ def get_image_data_from_points(names, points, show=False):
     ranks_players_point = {p: [n for i,n in enumerate(names) if points[i]==p] for p in set(points)}        
     table = []
     for r,(points,name_list) in enumerate(sorted(ranks_players_point.items(),key=lambda x: x[0], reverse=True), 1):
-        rank = '🥇' if r==1 else '🥈' if r==2 else '🥉' if r==3 else r
+        rank = '🥇' if r==1 else '🥈' if r==2 else '🥉' if r==3 else str(r)
         for name in name_list:
             table.append([rank, name, str(points)])
     img_data = get_image_data_from_table(table, alignment = 'clr', show=show)
@@ -59,8 +59,13 @@ def test(show=False):
         ['🥉', 'ALEX', '1', '3']
     ]
     alignment = 'clcc'
-    #return get_image_data_from_table(result_table, alignment, show)
-    return get_image_data_from_points(names=['BOB','PETER','ALEX'], points=[5,3,1], show=show)
+    return get_image_data_from_table(result_table, alignment, show)
+
+def test1(show=False):
+    # return get_image_data_from_points(names=['BOB','PETER','ALEX'], points=[5,3,1], show=show)
+    return get_image_data_from_points(names=['A','B','C','D','E','F','G','H'], points=[1, 2, 1, 2, 1, 4, 0, 3], show=show)
+
 
 if __name__ == "__main__": 
-    test(show=True)
+    # test(show=True)
+    test1(show=True)
