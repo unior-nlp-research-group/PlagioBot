@@ -302,7 +302,8 @@ def state_WAITING_FOR_OTHER_PLAYERS(user, message_obj):
 # ================================
 def state_GAME_READER_WRITES_BEGINNING(user, message_obj):
     game = user.get_current_game()
-    hand, players, reader, writers = game.get_current_hand_players_reader_writers()
+    hand = game.get_hand_number()
+    players, reader, writers = game.get_current_hand_players_reader_writers()
     lang = players[0].language
     if message_obj is None:
         if hand == 1:
@@ -336,7 +337,7 @@ def state_GAME_READER_WRITES_BEGINNING(user, message_obj):
 # ================================
 def state_GAME_READER_WRITES_TEXT_INFO(user, message_obj):
     game = user.get_current_game()
-    _, players, reader, writers = game.get_current_hand_players_reader_writers()
+    players, reader, writers = game.get_current_hand_players_reader_writers()
     lang = players[0].language
     if message_obj is None:
         if user == players[0]:
@@ -376,7 +377,7 @@ def state_GAME_READER_WRITES_TEXT_INFO(user, message_obj):
 # ================================
 def state_GAME_PLAYERS_WRITE_CONTINUATIONS(user, message_obj):
     game = user.get_current_game()
-    _, players, reader, writers = game.get_current_hand_players_reader_writers()
+    players, reader, writers = game.get_current_hand_players_reader_writers()
     lang = players[0].language
     if message_obj is None:
         if user == players[0]:
@@ -419,7 +420,7 @@ def state_GAME_PLAYERS_WRITE_CONTINUATIONS(user, message_obj):
 # ================================
 def state_GAME_VOTE_CONTINUATION(user, message_obj):
     game = user.get_current_game()
-    _, players, reader, writers = game.get_current_hand_players_reader_writers()
+    players, reader, writers = game.get_current_hand_players_reader_writers()
     lang = players[0].language
     # continuations_info = game.get_hand_continuations_info()
     exact_guessers_indexes = game.get_guessers_indexes()

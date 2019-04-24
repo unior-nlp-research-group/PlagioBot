@@ -26,9 +26,10 @@ class Game(Model):
     name: str
     creator_id: str
     players_id: List
-    players_names: List = None
+    mode: str = "DEFAULT" # "TEACHER", "DEMO"
     state: str = "INITIAL" # INITIAL, STARTED, ENDED, INTERRUPTED
     sub_state: str = "INITIAL:JUST_CREATED" #INITIAL:JUST_CREATED, INITIAL:WAITING_FOR_PLAYERS    
+    players_names: List = None                
     max_num_players: int = -1
     num_players: int = -1
     variables: Dict = field(default_factory=dict)
@@ -167,12 +168,19 @@ class Game(Model):
     def is_last_hand(self):
         return self.variables['HAND'] == self.num_players
 
+    def get_reader_index(self):
+        if self.mode == 'TEACHER':
+            return 0
+        return self.variables['HAND'] - 1
+
+    def get_hand_number(self):
+        return self.variables['HAND']
+
     def get_current_hand_players_reader_writers(self):
-        hand = self.variables['HAND']
         players = self.get_players()
-        reader = players[hand-1]
+        reader = players[self.get_reader_index()]
         writers = [p for p in players if p != reader]
-        return hand, players, reader, writers
+        return players, reader, writers
 
     def set_reader_text_beginning(self, text, save=True):        
         self.variables['TEXT_BEGINNINGS'].append(text)
@@ -224,7 +232,7 @@ class Game(Model):
         players_continuations_unique = sorted(set(current_players_continuations.values()))
         shuffled_indexes = list(range(len(players_continuations_unique)))
         shuffle(shuffled_indexes)
-        original_continuation = current_players_continuations[str(hand_index)]
+        original_continuation = current_players_continuations[str(self.get_reader_index())]
         for i,unique_cont in enumerate(players_continuations_unique):
             continuations_info[unique_cont] = {
                 'shuffled_index': shuffled_indexes[i],
@@ -241,7 +249,7 @@ class Game(Model):
         hand_index = self.variables['HAND']-1
         continuations_info = self.variables['CONTINUATIONS_INFO'][hand_index]
         continuation_correct_info = next(info for c,info in continuations_info.items() if info['correct'])
-        return [i for i in continuation_correct_info['authors_indexes'] if i!=hand_index]
+        return [i for i in continuation_correct_info['authors_indexes'] if i!=self.get_reader_index()]
 
     def get_continuation_shuffled_index(self, author_index):            
         hand_index = self.variables['HAND']-1
@@ -282,7 +290,7 @@ class Game(Model):
             hand_index = self.variables['HAND']-1
             continuations_info = self.variables['CONTINUATIONS_INFO'][hand_index]
             player_index = self.players_id.index(user.id)
-            assert player_index != hand_index # reader doesn't receive points        
+            assert player_index != self.get_reader_index() # reader doesn't receive points        
             names = self.players_names        
             voted_cont_info = next(info for c,info in continuations_info.items() if info['shuffled_index']==voted_shuffled_index)
             voted_cont_info['voted_by'].append(player_index)   
@@ -298,8 +306,7 @@ class Game(Model):
         self.refresh()
         return result
 
-    def get_hand_continuations_info(self):
-        
+    def get_hand_continuations_info(self):        
         hand_index = self.variables['HAND']-1
         continuations_info = self.variables['CONTINUATIONS_INFO'][hand_index]        
         return continuations_info
@@ -308,8 +315,7 @@ class Game(Model):
     For each continuations (in shuffled order), 
     return the list of player names voting that continuation
     '''
-    def get_shuffled_continuations_voters(self):
-        
+    def get_shuffled_continuations_voters(self):        
         hand_index = self.variables['HAND']-1
         players_names = self.players_names
         continuations_info = self.variables['CONTINUATIONS_INFO'][hand_index]
@@ -319,28 +325,26 @@ class Game(Model):
             shuf_cont_voters_names.append(voeters_name)
         return shuf_cont_voters_names
 
-    def get_shuffled_continuations(self):
-        
+    def get_shuffled_continuations(self):        
         hand_index = self.variables['HAND']-1
         continuations_info = self.variables['CONTINUATIONS_INFO'][hand_index]
         shuffled_continuations = [k for k,v in sorted(continuations_info.items(), key=lambda kv: kv[1]['shuffled_index'])]
         return shuffled_continuations
 
-    def get_continuations_authors_indexes(self, continuation):
-        
+    def get_continuations_authors_indexes(self, continuation):        
         hand_index = self.variables['HAND']-1
         continuations_info = self.variables['CONTINUATIONS_INFO'][hand_index]
         authors_indexes = continuations_info[continuation]['authors_indexes']
         return authors_indexes
 
-    def prepare_hand_poins(self):
-        
+    def prepare_hand_poins(self):        
         hand_index = self.variables['HAND']-1
         continuations_info = self.variables['CONTINUATIONS_INFO'][hand_index]
         continuation_correct_info = next(info for c,info in continuations_info.items() if info['correct'])
         current_hand_points = self.variables['HAND_POINTS'][hand_index]
+        reader_index = self.get_reader_index()
         for i in range(self.num_players):
-            if i==hand_index:
+            if i==reader_index:
                 continue # reader doesn't give/receive points
             cont_i_info = next(info for info in continuations_info.values() if i in info['authors_indexes'])
             cont_voted_info = next((info for info in continuations_info.values() if i in info['voted_by']),None)            
@@ -348,14 +352,15 @@ class Game(Model):
                 current_hand_points[str(i)] += parameters.POINTS_FOR_EXACT_GUESSING
             if i in continuation_correct_info['voted_by']:
                 current_hand_points[str(i)] += parameters.POINTS_FOR_CORRECT_VOTING
-            if cont_voted_info and not cont_voted_info['correct']: # give points only if continuation is not the exact one (reader)
+            if cont_voted_info and not cont_voted_info['correct']: 
+                # give points only if continuation is not the exact one (reader)
                 for j in cont_voted_info['authors_indexes']:
                     current_hand_points[str(j)] += parameters.POINTS_FOR_BEING_VOTED
         self.save()
 
 
     def prepare_and_send_hand_point_img_data(self, players):
-        # prepare hand points:
+        # prepare hand_index points:
         self.prepare_hand_poins()            
         
         from render_leaderboard import get_image_data_from_points
@@ -363,8 +368,11 @@ class Game(Model):
         
         hand_index = self.variables['HAND']-1
         current_hand_points = self.variables['HAND_POINTS'][hand_index]
-        players_names = self.players_names
+        players_names = list(self.players_names)
         current_hand_points_list = [current_hand_points[str(i)] for i in range(self.num_players)]
+        if self.mode == 'TEACHER':
+            del(players_names[0])
+            del(current_hand_points_list[0])
         img_data = get_image_data_from_points(players_names, current_hand_points_list)
         send_photo_from_data_multi(players, 'leaderboard_hand.png', img_data, sleep=True)
 
@@ -373,11 +381,14 @@ class Game(Model):
         from bot_telegram import send_photo_from_data_multi
         
         points = self.variables['HAND_POINTS']
-        players_names = self.players_names
-        self.variables['GAME_POINTS'] = [
+        players_names = list(self.players_names)
+        self.variables['GAME_POINTS'] = game_points = [
             sum(current_hand_points[str(i)] for current_hand_points in points) 
             for i in range(self.num_players)
         ]
+        if self.mode == 'TEACHER':
+            del(players_names[0])
+            del(game_points[0])
         if save:            
             self.save()
         img_data = get_image_data_from_points(players_names, self.variables['GAME_POINTS'])
