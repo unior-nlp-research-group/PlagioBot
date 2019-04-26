@@ -611,8 +611,9 @@ def deal_with_universal_commands(user, text_input):
         return True
     if user.is_master():
         if text_input == '/debug':
+            import json
             game = user.get_current_game()
-            send_text_document(user, 'tmp_vars.json', game.variables)
+            send_text_document(user, 'tmp_vars.json', json.dumps(game.variables))
             return True
         if text_input == '/test_image':
             from bot_telegram import send_photo_from_data
