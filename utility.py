@@ -34,6 +34,15 @@ def add_full_stop_if_missing_end_puct(text):
         text = text + '.'
     return text
 
+def normalize_apostrophe(text):    
+    for char in '’`':
+        text = text.replace(char, "'")
+    return text
+
+def normalize_continuation(text):
+    text = add_full_stop_if_missing_end_puct(text)
+    return text
+
 def get_milliseconds():
   """
     @return Milliseconds since the epoch
