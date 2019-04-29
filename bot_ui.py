@@ -404,9 +404,17 @@ MSG_WRONG_BUTTON_INPUT = {
     'en': '⛔️ Wrong input, you probably pressed a button twice.',
     'it': '⛔️ Input non valido, probabilmente hai premuto un tasto due volte.'
 }
+MSG_INPUT_TOO_SHORT = {
+    'en': '⛔️ Input too short.',
+    'it': '⛔️ Input troppo corto.'
+}
 MSG_COMMAND_NOT_RECOGNIZED = {
     'en': '⛔️ The command has not been recognised.',
     'it': '⛔️ Comando non riconosciuto.'
 }
 
 ALL_BUTTONS_TEXT_LIST = [v[l] for l in LANGUAGES for k,v in globals().items() if k.startswith('BUTTON_')]
+
+def text_is_button_or_digit(text):
+    import utility
+    return text in ux.ALL_BUTTONS_TEXT_LIST or utility.represents_int(text):
