@@ -402,7 +402,7 @@ def state_GAME_PLAYERS_WRITE_CONTINUATIONS(user, message_obj):
                 send_message(user, ux.MSG_WRONG_BUTTON_INPUT[lang])            
             else:
                 continuation = text_input.upper()
-                continuation = utility.add_full_stop_if_missing_end_puct(continuation)
+                continuation = utility.normalize_continuation(continuation)
                 remaining_names = game.set_player_text_continuation_and_get_remaining(user, continuation)            
                 if len(remaining_names)>0:
                     all_but_users = [p for p in players if p!=user]
