@@ -561,6 +561,12 @@ def deal_with_universal_commands(user, text_input):
             send_message(user, ux.MSG_WELCOME[lang])
             restart_user(user)
             return True
+    if text_input.startswith('/test'):
+        repetitions = int(text_input.split()[1])
+        for i in range(repetitions):
+            send_message(user, "Test {}".format(i+1))
+            time.sleep(1)
+        return True
     if text_input == '/state':
         s = user.state
         msg = "You are in state {}".format(s)
@@ -618,7 +624,7 @@ def deal_with_universal_commands(user, text_input):
         if text_input == '/refresh':
             repeat_state(user)
             return True
-        if text_input == '/test_image':
+        if text_input == '/image':
             from bot_telegram import send_photo_from_data
             import render_leaderboard
             img_data = render_leaderboard.test()

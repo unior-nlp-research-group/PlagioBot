@@ -34,12 +34,14 @@ def internal_error(error):
 
 @app.route(key.WEBHOOK_TELEGRAM_ROUTING, methods=['POST'])
 def telegram_webhook_handler():
-    import bot_telegram_dialogue
+    import threading
+    from bot_telegram_dialogue import deal_with_request
     import json
     request_json = request.get_json(force=True)
 
     logging.debug("TELEGRAM POST REQUEST: {}".format(json.dumps(request_json)))
 
-    bot_telegram_dialogue.deal_with_request(request_json)
+    # deal_with_request(request_json)
+    threading.Thread(target=deal_with_request, args=[request_json]).start()
 
     return ('',200)
