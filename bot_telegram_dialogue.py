@@ -114,7 +114,7 @@ def state_JOIN_ROOM_NAME(user, message_obj):
                     restart_user(user)
                 else:
                     assert(False)
-            elif text_input in ux.ALL_BUTTONS_TEXT_LIST:
+            elif ux.text_is_button_or_digit(text_input):
                 send_message(user, ux.MSG_WRONG_BUTTON_INPUT[lang], kb)
             else:
                 room_name = text_input.upper()
@@ -154,7 +154,7 @@ def state_NEW_ROOM_NAME(user, message_obj):
                     restart_user(user)
                 else:
                     assert(False)
-            elif text_input in ux.ALL_BUTTONS_TEXT_LIST:
+            elif ux.text_is_button_or_digit(text_input):
                 send_message(user, ux.MSG_WRONG_BUTTON_INPUT[lang], kb)
             else:
                 room_name = text_input.upper()
@@ -215,7 +215,7 @@ def state_CHOOSE_NUMBER_PLAYERS(user, message_obj):
 #                     redirect_to_state(user, state_WAITING_FOR_OTHER_PLAYERS)
 #                 else:
 #                     assert(False)
-#             elif text_input in ux.ALL_BUTTONS_TEXT_LIST:
+#             elif ux.text_is_button_or_digit(text_input):
 #                 send_message(user, ux.MSG_WRONG_BUTTON_INPUT[lang], kb)
 #             else:
 #                 game.set_var('SPECIAL_RULES',text_input)
@@ -319,8 +319,10 @@ def state_GAME_READER_WRITES_BEGINNING(user, message_obj):
         if user == reader:
             text_input = message_obj.text
             if text_input:
-                if text_input in ux.ALL_BUTTONS_TEXT_LIST:
+                if ux.text_is_button_or_digit(text_input):
                     send_message(user, ux.MSG_WRONG_BUTTON_INPUT[lang])
+                elif len(text_input) < parameters.MIN_BEGINNING_LENGTH:
+                    send_message(user, ux.MSG_INPUT_TOO_SHORT[lang])
                 else:
                     beginning = text_input.upper()
                     game.set_reader_text_beginning(beginning)
@@ -358,8 +360,10 @@ def state_GAME_READER_WRITES_TEXT_INFO(user, message_obj):
                         redirect_to_state_multi(players, state_GAME_PLAYERS_WRITE_CONTINUATIONS)
                     else:
                         assert(False)                
-                elif text_input in ux.ALL_BUTTONS_TEXT_LIST:
+                elif ux.text_is_button_or_digit(text_input):
                     send_message(user, ux.MSG_WRONG_BUTTON_INPUT[lang], kb)
+                elif len(text_input) < parameters.MIN_TEXT_INFO_LENGTH:
+                    send_message(user, ux.MSG_INPUT_TOO_SHORT[lang])
                 else:
                     game.set_reader_text_info(text_input)
                     msg_writers = ux.MSG_WRITERS_INFO_BOOK[lang].format(reader.get_name(), text_input)
@@ -394,8 +398,8 @@ def state_GAME_PLAYERS_WRITE_CONTINUATIONS(user, message_obj):
             send_message(user, ux.MSG_ALREADY_SENT_CONTINUATION[lang])
             return
         if text_input:
-            if text_input in ux.ALL_BUTTONS_TEXT_LIST:
-                send_message(user, ux.MSG_WRONG_BUTTON_INPUT[lang])
+            if ux.text_is_button_or_digit(text_input):
+                send_message(user, ux.MSG_WRONG_BUTTON_INPUT[lang])            
             else:
                 continuation = text_input.upper()
                 continuation = utility.add_full_stop_if_missing_end_puct(continuation)
