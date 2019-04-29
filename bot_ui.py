@@ -84,6 +84,18 @@ BUTTON_CHANGE_LANGUAGE = {
     'en': '🇬🇧 → 🇮🇹',
     'it': '🇮🇹 → 🇬🇧'
 }
+BUTTON_MODE_DEFAULT = {
+    'en': "⚛️ DEFAULT",
+    'it': "⚛️ TRADIZIONALE"
+}
+BUTTON_MODE_TEACHER = {
+    'en': "👩‍🏫 TEACHER",
+    'it': "👩‍🏫 INSEGNANTE"
+}
+BUTTON_MODE_DEMO = {
+    'en': "🤖 DEMO",
+    'it': "🤖 DEMO"
+}
 
 ####################
 # CONVERSATIONS
@@ -142,6 +154,14 @@ MSG_CHOOSE_NEW_GAME_NAME = {
 #     'en': "✍️ If you want you can write down any special rule you want to set for the game (e.g., rymes, length of sentences, etc...), or press {}".format(BUTTON_SKIP['en']),
 #     'it': "✍️ Inserisci se vuoi delle regole particolari da adottare nel gioco (ad esempio rime, lunghezza frasi, ecc...), o premi {}".format(BUTTON_SKIP['it']),
 # }
+MSG_SELECT_GAME_MODE = {
+    'en': "✔️ Please select the game mode:\n  • {}: every players choose a sentence to be completed\n  • {}: you will choose all the sentences".format(BUTTON_MODE_DEFAULT['en'],BUTTON_MODE_TEACHER['en']),
+    'it': "✔️ Seleziona la modalità di gioco:\n  • {}: ogni giocatore sceglie una frase da completare\n  • {}: tu sceglierai tutte le frasi".format(BUTTON_MODE_DEFAULT['it'],BUTTON_MODE_TEACHER['it'])
+}
+MSG_INSER_NUMBER_OF_HANDS = {
+    'en': "🔢 Please insert the number of hands to play.",
+    'it': "🔢 Seleziona il numero di mani da giocare."
+}
 MSG_TELL_SPECIAL_RULES = {
     'en': "🧭 {} has chosen the following rules for the game: {}",
     'it': "🧭 {} ha scelto le seguenti regole del gioco: {}"
@@ -396,6 +416,10 @@ MSG_WRONG_INPUT_USE_TEXT_OR_BUTTONS = {
     'en': '⛔️ Wrong input, please use text or buttons below 🎛',
     'it': '⛔️ Input non valido, per favore inserisci del testo o usa i pulsanti 🎛'
 }
+MSG_WRONG_INPUT_INSRT_NUMBER = {
+    'en': '⛔️ Wrong input, please insert a number 🔢',
+    'it': '⛔️ Input non valido, per favore inserisci un numero 🔢'
+}
 MSG_WRONG_INPUT_USE_BUTTONS = {
     'en': '⛔️ Wrong input, please use buttons below 🎛',
     'it': '⛔️ Input non valido, per favore usa i pulsanti 🎛'
@@ -417,4 +441,4 @@ ALL_BUTTONS_TEXT_LIST = [v[l] for l in LANGUAGES for k,v in globals().items() if
 
 def text_is_button_or_digit(text):
     import utility
-    return text in ux.ALL_BUTTONS_TEXT_LIST or utility.represents_int(text):
+    return text in ALL_BUTTONS_TEXT_LIST or utility.represents_int(text)

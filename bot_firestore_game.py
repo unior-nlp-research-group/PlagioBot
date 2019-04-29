@@ -25,10 +25,12 @@ db = firestore.Client()
 class Game(Model):
     name: str
     creator_id: str
-    players_id: List
-    mode: str = "DEFAULT" # "TEACHER", "DEMO"
+    players_id: List    
     state: str = "INITIAL" # INITIAL, STARTED, ENDED, INTERRUPTED
-    sub_state: str = "INITIAL:JUST_CREATED" #INITIAL:JUST_CREATED, INITIAL:WAITING_FOR_PLAYERS    
+    sub_state: str = "INITIAL:JUST_CREATED" #INITIAL:JUST_CREATED, INITIAL:WAITING_FOR_PLAYERS        
+    game_type: str = None # 'CONTINUATION', 'FILL'
+    game_mode: str = None # 'DEFAULT', 'TEACHER', 'DEMO'
+    num_hands: int = -1
     players_names: List = None                
     max_num_players: int = -1
     num_players: int = -1
@@ -44,6 +46,20 @@ class Game(Model):
         game.id = '{}_{}'.format(game.name, game.created)
         game.save()
         return game
+
+    def set_game_type(self, t, save=True):
+        assert t in ['CONTINUATION', 'FILL']
+        self.game_type = t
+        if save: self.save()
+
+    def set_game_mode(self, m, save=True):
+        assert m in ['DEFAULT', 'TEACHER', 'DEMO']
+        self.game_mode = m
+        if save: self.save()
+
+    def set_num_hands(self, h, save=True):
+        self.num_hands = h
+        if save: self.save()
 
     @staticmethod
     def get_game(name, timestamp):
@@ -124,7 +140,10 @@ class Game(Model):
             if self.state != 'INITIAL':
                 return False
             players = self.get_players()
-            self.num_players = num_hands = len(self.players_id)
+            self.num_players = len(self.players_id)
+            if self.game_mode == 'DEFAULT':
+                self.num_hands = self.num_players
+                # otherwise set manually
             self.state = 'STARTED'
             self.players_names = [p.get_name() for p in players]
             self.variables = {
@@ -132,8 +151,8 @@ class Game(Model):
                 'HAND': 1,
                 'TEXT_BEGINNINGS': [],
                 'TEXT_INFO':[],
-                'PLAYERS_CONTINUATIONS': [{} for i in range(num_hands)], # one per player in order of players
-                'CONTINUATIONS_INFO': [{} for i in range(num_hands)], 
+                'PLAYERS_CONTINUATIONS': [{} for i in range(self.num_hands)], # one per player in order of players
+                'CONTINUATIONS_INFO': [{} for i in range(self.num_hands)], 
                     # for each continuation in key: 
                     # {
                     #     shuffled_index: int,
@@ -141,7 +160,7 @@ class Game(Model):
                     #     correct: bool -> if correct continuation
                     #     voted_by: list(int) -> indexes of players voting that continuation
                     # }
-                'HAND_POINTS': [{str(i):0 for i in range(num_hands)} for i in range(num_hands)], 
+                'HAND_POINTS': [{str(i):0 for i in range(self.num_hands)} for i in range(self.num_hands)], 
                 'GAME_POINTS': [],
                 'WINNERS_NAMES': []
             }
@@ -150,9 +169,6 @@ class Game(Model):
             return True
 
         return update_in_transaction(db.transaction())
-
-
-
 
     def just_created(self):
         return self.sub_state == 'INITIAL:JUST_CREATED'
@@ -166,10 +182,10 @@ class Game(Model):
         if save: self.save()
 
     def is_last_hand(self):
-        return self.variables['HAND'] == self.num_players
+        return self.variables['HAND'] == self.num_hands
 
     def get_reader_index(self):
-        if self.mode == 'TEACHER':
+        if self.game_mode == 'TEACHER':
             return 0
         return self.variables['HAND'] - 1
 
@@ -370,7 +386,7 @@ class Game(Model):
         current_hand_points = self.variables['HAND_POINTS'][hand_index]
         players_names = list(self.players_names)
         current_hand_points_list = [current_hand_points[str(i)] for i in range(self.num_players)]
-        if self.mode == 'TEACHER':
+        if self.game_mode == 'TEACHER':
             del(players_names[0])
             del(current_hand_points_list[0])
         img_data = get_image_data_from_points(players_names, current_hand_points_list)
@@ -386,7 +402,7 @@ class Game(Model):
             sum(current_hand_points[str(i)] for current_hand_points in points) 
             for i in range(self.num_players)
         ]
-        if self.mode == 'TEACHER':
+        if self.game_mode == 'TEACHER':
             del(players_names[0])
             del(game_points[0])
         if save:            

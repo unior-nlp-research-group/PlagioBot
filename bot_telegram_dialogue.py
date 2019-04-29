@@ -189,11 +189,57 @@ def state_CHOOSE_NUMBER_PLAYERS(user, message_obj):
                 assert(utility.represents_int_between(text_input,3,6))
         if utility.represents_int_between(text_input,parameters.MIN_NUM_OF_PLAYERS,100):
             max_num_players = int(text_input)
-            game.set_max_number_of_players(max_num_players)
-            # redirect_to_state(user, state_ENTER_SPECIAL_RULES)
+            game.set_max_number_of_players(max_num_players)            
+            redirect_to_state(user, state_SELECT_GAME_MODE)
+        else:
+            send_message(user, ux.MSG_WRONG_INPUT_INSRT_NUMBER[lang], kb)
+
+# ================================
+# Select game mode
+# ================================
+def state_SELECT_GAME_MODE(user, message_obj):
+    lang = user.language
+    kb = [[ux.BUTTON_MODE_DEFAULT[lang], ux.BUTTON_MODE_TEACHER[lang]],[ux.BUTTON_ABORT[lang]]]
+    if message_obj is None:
+        send_message(user, ux.MSG_SELECT_GAME_MODE[lang], kb)
+    else:
+        game = user.get_current_game()
+        text_input = message_obj.text
+        if text_input:
+            if text_input in utility.flatten(kb):
+                if text_input == ux.BUTTON_ABORT[lang]:
+                    interrupt_game(game, user)
+                    restart_user(user)
+                elif text_input == ux.BUTTON_MODE_DEFAULT[lang]:
+                    game.set_game_mode("DEFAULT")
+                    redirect_to_state(user, state_WAITING_FOR_OTHER_PLAYERS)
+                else:
+                    game.set_game_mode("TEACHER")
+                    redirect_to_state(user, state_INSER_NUMBER_OF_HANDS)
+            elif ux.text_is_button_or_digit(text_input):
+                send_message(user, ux.MSG_WRONG_BUTTON_INPUT[lang], kb)                
+        else:
+            send_message(user, ux.MSG_WRONG_INPUT_USE_TEXT[lang], kb)
+
+# ================================
+# Insert number of hands
+# ================================
+def state_INSER_NUMBER_OF_HANDS(user, message_obj):
+    lang = user.language
+    kb = [['1','2','3','5','10'],[ux.BUTTON_ABORT[lang]]]
+    if message_obj is None:
+        send_message(user, ux.MSG_INSER_NUMBER_OF_HANDS[lang], kb)
+    else:
+        game = user.get_current_game()
+        text_input = message_obj.text
+        if text_input == ux.BUTTON_ABORT[lang]:
+            interrupt_game(game, user)
+        elif utility.represents_int(text_input):
+            number_of_hands = int(text_input)
+            game.set_num_hands(number_of_hands)            
             redirect_to_state(user, state_WAITING_FOR_OTHER_PLAYERS)
         else:
-            send_message(user, ux.MSG_WRONG_INPUT_USE_TEXT_OR_BUTTONS[lang], kb)
+            send_message(user, ux.MSG_WRONG_INPUT_INSRT_NUMBER[lang], kb)
 
 # ================================
 # Enter special rules
