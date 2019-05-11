@@ -64,7 +64,7 @@ def rety_on_network_error(func):
 def set_webhook():
     s = BOT.setWebhook(key.WEBHOOK_TELEGRAM_BASE)
     if s:
-        return "webhook setup ok"
+        return "webhook setup ok: {}".format(key.WEBHOOK_TELEGRAM_BASE)
     else:
         return "webhook setup failed"
 

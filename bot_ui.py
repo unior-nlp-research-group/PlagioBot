@@ -97,13 +97,21 @@ BUTTON_MODE_DEMO = {
     'en': "🤖 DEMO",
     'it': "🤖 DEMO"
 }
-BUTTON_TYPE_CONTINUE = {
-    'en': "👣 CONTINUE",
+BUTTON_TYPE_COMPLETION = {
+    'en': "👣 COMPLETION",
     'it': "👣 CONTINUA"
 }
 BUTTON_TYPE_FILL = {
     'en': "🕳 FILL",
     'it': "🕳 RIEMPI"
+}
+BUTTON_REWARD_MODE_CREATIVITY = {
+    'en': "🎭 CREATIVITY",
+    'it': "🎭 CREATIVITÀ"
+}
+BUTTON_REWARD_MODE_EXACTNESS = {
+    'en': "🎯 EXACTNESS",
+    'it': "🎯 ESATTEZZA"
 }
 
 ####################
@@ -168,8 +176,12 @@ MSG_SELECT_GAME_MODE = {
     'it': "✔️ Seleziona la modalità di gioco:\n  • {}: ogni giocatore sceglie una frase da completare\n  • {}: tu sceglierai tutte le frasi".format(BUTTON_MODE_DEFAULT['it'],BUTTON_MODE_TEACHER['it'])
 }
 MSG_SELECT_GAME_TYPE = {
-    'en': "✔️ Please select the game type:\n  • {}: continue the sentece\n  • {}: fill the gap".format(BUTTON_TYPE_CONTINUE['en'],BUTTON_TYPE_FILL['en']),
-    'it': "✔️ Seleziona il tipo di gioco:\n  • {}: continua la frase\n  • {}: inserisci la parola mancante".format(BUTTON_TYPE_CONTINUE['it'],BUTTON_TYPE_FILL['it'])
+    'en': "✔️ Please select the game type:\n  • {}: continue the sentece\n  • {}: fill the gap".format(BUTTON_TYPE_COMPLETION['en'],BUTTON_TYPE_FILL['en']),
+    'it': "✔️ Seleziona il tipo di gioco:\n  • {}: continua la frase\n  • {}: inserisci la parola mancante".format(BUTTON_TYPE_COMPLETION['it'],BUTTON_TYPE_FILL['it'])
+}
+MSG_SELECT_GAME_REWARD_MODE = {
+    'en': "✔️ Please select the game reward mode:\n  • {}: solutions different from the original are possible\n  • {}: only one solution is possible".format(BUTTON_REWARD_MODE_CREATIVITY['en'],BUTTON_REWARD_MODE_EXACTNESS['en']),
+    'it': "✔️ Seleziona il tipo di gioco:\n  • {}: soluzioni diversi dall'originale sono possibili d\n  • {}: solo una soluzione è possibile".format(BUTTON_REWARD_MODE_CREATIVITY['it'],BUTTON_REWARD_MODE_EXACTNESS['it'])
 }
 MSG_INSER_NUMBER_OF_HANDS = {
     'en': "🔢 Please insert the number of hands to play.",

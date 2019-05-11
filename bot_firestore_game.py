@@ -28,8 +28,9 @@ class Game(Model):
     players_id: List    
     state: str = "INITIAL" # INITIAL, STARTED, ENDED, INTERRUPTED
     sub_state: str = "INITIAL:JUST_CREATED" #INITIAL:JUST_CREATED, INITIAL:WAITING_FOR_PLAYERS        
-    game_type: str = None # 'CONTINUE', 'FILL'
+    game_type: str = None # 'COMPLETION', 'FILL'
     game_mode: str = None # 'DEFAULT', 'TEACHER', 'DEMO'
+    game_reward_mode: str = 'CREATIVITY' # 'CREATIVITY' 'EXACTNESS'
     num_hands: int = -1
     players_names: List = None                
     max_num_players: int = -1
@@ -48,8 +49,13 @@ class Game(Model):
         return game
 
     def set_game_type(self, t, save=True):
-        assert t in ['CONTINUE', 'FILL']
+        assert t in ['COMPLETION', 'FILL']
         self.game_type = t
+        if save: self.save()
+
+    def set_game_reward_mode(self, m, save=True):
+        assert m in ['CREATIVITY', 'EXACTNESS']
+        self.reward_mode = m
         if save: self.save()
 
     def set_game_mode(self, m, save=True):
@@ -374,13 +380,13 @@ class Game(Model):
             cont_i_info = next(info for info in continuations_info.values() if i in info['authors_indexes'])
             cont_voted_info = next((info for info in continuations_info.values() if i in info['voted_by']),None)            
             if cont_i_info['correct']:
-                current_hand_points[str(i)] += parameters.POINTS_FOR_EXACT_GUESSING
+                current_hand_points[str(i)] += parameters.POINTS[self.game_reward_mode]['EXACT_GUESSING']
             if i in continuation_correct_info['voted_by']:
-                current_hand_points[str(i)] += parameters.POINTS_FOR_CORRECT_VOTING
+                current_hand_points[str(i)] += parameters.POINTS[self.game_reward_mode]['CORRECT_VOTING']
             if cont_voted_info and not cont_voted_info['correct']: 
                 # give points only if continuation is not the exact one (reader)
                 for j in cont_voted_info['authors_indexes']:
-                    current_hand_points[str(j)] += parameters.POINTS_FOR_BEING_VOTED
+                    current_hand_points[str(j)] += parameters.POINTS[self.game_reward_mode]['POINTS_PER_RECEIVED_VOTE']
         self.save()
 
 
@@ -449,6 +455,11 @@ class Game(Model):
         except StopIteration:
             return None
 
+    @staticmethod
+    def get_game_state_stats():
+        for s in ['INITIAL', 'STARTED', 'ENDED', 'INTERRUPTED']:
+            count = len(list(Game.query([('state', '==', s)]).get()))
+            print("{}:{}".format(s, count))
 
 if __name__ == "__main__":
     # from bot_firestore_user import User
