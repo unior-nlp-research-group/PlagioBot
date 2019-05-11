@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import parameters
+import utility
 
 # ================================
 # SYMBOLS
@@ -96,6 +97,14 @@ BUTTON_MODE_DEMO = {
     'en': "🤖 DEMO",
     'it': "🤖 DEMO"
 }
+BUTTON_TYPE_CONTINUE = {
+    'en': "👣 CONTINUE",
+    'it': "👣 CONTINUA"
+}
+BUTTON_TYPE_FILL = {
+    'en': "🕳 FILL",
+    'it': "🕳 RIEMPI"
+}
 
 ####################
 # CONVERSATIONS
@@ -158,6 +167,10 @@ MSG_SELECT_GAME_MODE = {
     'en': "✔️ Please select the game mode:\n  • {}: every players choose a sentence to be completed\n  • {}: you will choose all the sentences".format(BUTTON_MODE_DEFAULT['en'],BUTTON_MODE_TEACHER['en']),
     'it': "✔️ Seleziona la modalità di gioco:\n  • {}: ogni giocatore sceglie una frase da completare\n  • {}: tu sceglierai tutte le frasi".format(BUTTON_MODE_DEFAULT['it'],BUTTON_MODE_TEACHER['it'])
 }
+MSG_SELECT_GAME_TYPE = {
+    'en': "✔️ Please select the game type:\n  • {}: continue the sentece\n  • {}: fill the gap".format(BUTTON_TYPE_CONTINUE['en'],BUTTON_TYPE_FILL['en']),
+    'it': "✔️ Seleziona il tipo di gioco:\n  • {}: continua la frase\n  • {}: inserisci la parola mancante".format(BUTTON_TYPE_CONTINUE['it'],BUTTON_TYPE_FILL['it'])
+}
 MSG_INSER_NUMBER_OF_HANDS = {
     'en': "🔢 Please insert the number of hands to play.",
     'it': "🔢 Seleziona il numero di mani da giocare."
@@ -185,6 +198,10 @@ MSG_NAME_NO_LONGER_AVAILBLE = {
 MSG_NAME_DOES_NOT_EXIST = {
     'en': "🤷‍♀️ The game *{}* does not exist.",
     'it': "🤷‍♀️ Il gioco *{}* non esiste."
+}
+MSG_GAME_NAME_ALREADY_STARTED = {
+    'en': "🤷‍♀️ The game *{}* has already started.",
+    'it': "🤷‍♀️ Il gioco *{}* è già iniziato."
 }
 MSG_NEW_GAME_CONFIRM = {
     'en': '🆕 No game *{}* exists. Do you want to create it?',
@@ -251,41 +268,56 @@ MSG_HAND_INFO = {
     'it': '🖐 Mano: {}\n📖 Lettore: {} ⭐️'
 }
 MSG_READER_WRITES_BEGINNING = {
-    'en': '✍️ Please write down the beginning of a sentence or paragraph from a book.',
-    'it': "✍️ Scrivi l'inizio di una frase o un paragrafo di un libro."
+    'en': '✍️ Please write down the beginning of a sentence or a paragraph from a book.',
+    'it': "✍️ Scrivi l'inizio di una frase o di un paragrafo di un libro."
+}
+MSG_READER_WRITES_SENTENCE_WITH_GAP = {
+    'en': '✍️ Please write down a sentence with the missing gap indicated with 3 question marks (\'???\' with no spaces).',
+    'it': "✍️ Scrivi una frase con una parte da completare indicata da 3 punti di domanda (\'???\' senza spazi)."
 }
 MSG_READER_WRITES_TEXT_INFO = {
-    'en': '✍️ If you want, you can write down the info about the book you chose or press {}.'.format(BUTTON_SKIP['en']),
-    'it': "✍️ Se vuoi puoi scrivere alcune informazioni del libro che hai scelto o premi {}.".format(BUTTON_SKIP['it']),
+    'en': '✍️ If you want, you can write down the info about the text or press {}.'.format(BUTTON_SKIP['en']),
+    'it': "✍️ Se vuoi puoi scrivere alcune informazioni sul testo o premi {}.".format(BUTTON_SKIP['it']),
 }
 MSG_WRITERS_WAIT_READER_BEGINNING = {
     'en': "😴 Let's wait for {} ⭐️ to write down the beginning of a paragraph from a book.",
     'it': "😴 Aspettiamo che {} ⭐️ scriva l'inizio di una frase o di un paragrafo di un libro."
 }
+MSG_WRITERS_WAIT_READER_SENTENCE_WITH_GAP = {
+    'en': "😴 Let's wait for {} ⭐️ to write down the sentence with a missing gap.",
+    'it': "😴 Aspettiamo che {} ⭐️ scriva una frase con una parte mancante da completare."
+}
 MSG_WRITERS_WAIT_READER_TEXT_INFO = {
-    'en': "😴 Let's wait for {} ⭐️ to write down additional info about the book.",
-    'it': "😴 Aspettiamo che {} ⭐️ scriva alcune informazioni sul libro."
+    'en': "😴 Let's wait for {} ⭐️ to write down additional info about the inserted text.",
+    'it': "😴 Aspettiamo che {} ⭐️ scriva alcune informazioni sul testo inserito."
 }
-MSG_WRITERS_NO_INFO_BOOK = {
-    'en': "📘 {} ⭐️ has chosen not to specify any detail about the book.",
-    'it': "📘 {} ⭐️ ha scelto di non specificare alcun dettaglio del libro."
+MSG_WRITERS_TEXT_INFO = {
+    'en': "💡 extra information: *{}*.",
+    'it': "💡 informazioni aggiuntive: *{}*."
 }
-MSG_WRITERS_INFO_BOOK = {
-    'en': "📘 {} ⭐️ has given the following info about the book: *{}*.",
-    'it': "📘 {} ⭐️ ha fornito queste informazioni del libro scelto: *{}*."
+MSG_PLAYERS_BEGINNING_INTRO = {
+    'en': "📖 This is the chosen beginning by {}",
+    'it': "📖 Questo è l'inizio scelto da {}"
 }
-
-MSG_PLAYERS_BEGINNING_INFO = {
-    'en': "📘 This is the chosen beginning by {}",
-    'it': "📘 Questo è l'inizio scelto da {}"
+MSG_PLAYERS_SENTENCE_WITH_GAP_INTRO = {
+    'en': "📖 This is the sentence with a missing gap inserted by {}:",
+    'it': "📖 Questo è la frase con la parte mancante inserita da {}:"
 }
-MSG_READER_WRITE_CONTINUATION = {
+MSG_READER_WRITE_CORRECT_CONTINUATION = {
     'en': "✍️ Please, write down the correct continuation of the sentence.",
     'it': "✍️ Scrivi la corretta continuazione del testo inserito."
 }
 MSG_WRITERS_WRITE_CONTINUATION = {
     'en': "✍️ Please, write down a possible continuation of the sentence.",
     'it': "✍️ Scrivi una possibile continuazione del testo."
+}
+MSG_READER_WRITE_CORRECT_MISSING_PART = {
+    'en': "✍️ Please, write down the correct completion for the missing part of the sentence.",
+    'it': "✍️ Scrivi la corretta parte mancante della frase."
+}
+MSG_WRITERS_WRITE_MISSING_PART = {
+    'en': "✍️ Please, write down a possible completion for the missing part of the sentence.",
+    'it': "✍️ Scrivi una possibile completamento della parte mancante della frase."
 }
 MSG_ALREADY_SENT_CONTINUATION = {
     'en': "🤐 You have already sent a continuation!\n😴 Let's wait for the other players to write the continuations.",
@@ -431,6 +463,14 @@ MSG_WRONG_BUTTON_INPUT = {
 MSG_INPUT_TOO_SHORT = {
     'en': '⛔️ Input too short.',
     'it': '⛔️ Input troppo corto.'
+}
+MSG_INPUT_NO_MARKDOWN = {
+    'en': '⛔️ Input cannot contains the following characters: {}'.format(utility.escape_markdown(utility.MARKDOWN_CHARS)),
+    'it': '⛔️ Il testo non può contenere i caratteri: {}'.format(utility.escape_markdown(utility.MARKDOWN_CHARS))
+}
+MSG_INPUT_NO_GAP = {
+    'en': '⛔️ The text you have inserted does not contain the sequence of 3 question marks (\'???\') to indicate the missing part to be completed.',
+    'it': '⛔️ Il testo inserito non contiene la sequenza di 3 punti di domanda (\'???\') per indicare la parte mancante da completare.'
 }
 MSG_COMMAND_NOT_RECOGNIZED = {
     'en': '⛔️ The command has not been recognised.',

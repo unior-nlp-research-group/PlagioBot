@@ -24,8 +24,13 @@ def represents_int_between(s, low, high):
         return True
     return False
 
+MARKDOWN_CHARS = '*_`['
+
+def contains_markdown(text):
+    return any(c in text for c in MARKDOWN_CHARS)
+
 def escape_markdown(text):
-    for char in '*_`[':
+    for char in MARKDOWN_CHARS:
         text = text.replace(char, '\\'+char)
     return text
 

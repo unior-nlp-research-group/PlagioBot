@@ -94,6 +94,10 @@ def send_message_multi(users, text, kb=None, markdown=True, remove_keyboard=Fals
     for u in users:
         send_message(u, text, kb=kb, markdown=markdown, remove_keyboard=remove_keyboard, sleep=True, **kwargs)
 
+def send_messages_multi(users, text_list, kb=None, markdown=True, remove_keyboard=False, **kwargs):
+    for u in users:
+        send_messages(u, text_list, kb=kb, markdown=markdown, remove_keyboard=remove_keyboard, sleep=True, **kwargs)
+
 
 def send_messages(user, text_list, kb=None, markdown=True, remove_keyboard=False, sleep=True, **kwargs):
     for text in text_list:
