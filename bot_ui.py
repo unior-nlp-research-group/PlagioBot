@@ -348,8 +348,8 @@ MSG_WAIT_FOR_PLAYERS_TO_VOTE_PL = {
     'it': "😴 Rimaniamo in attesa della scelta degli altri/e giocatori/trici."
 }
 MSG_VOTE = {
-    'en': "🗳️ Please select the number of the continuation you think it's the orginal one.",
-    'it': "🗳️ Seleziona il numero del testo che ritieni essere l'originale."
+    'en': "🗳️ Please select the number of the continuation you think it's the correct one.",
+    'it': "🗳️ Seleziona il numero del testo che ritieni essere quella corretta."
 }
 MSG_GUESSED_NO_VOTE = {
     'en': "😀 Wow, you entered a continuation which is identical to the oriiginal one! no need to vote!",
@@ -380,8 +380,8 @@ MSG_WAIT_FOR = {
     'it': "😴 Rimaniamo in attesa di: {}"
 }
 MSG_VOTE_RECAP = {
-    'en': "🗳️ These are the choices being made:",
-    'it': "🗳️ Queste sono le scelte effettuate:"
+    'en': "🗳️ These are the completion being made:",
+    'it': "🗳️ Questi sono i completamenti effettuati:"
 }
 MSG_VOTED_BY = {
     'en': "Voted by: {}",

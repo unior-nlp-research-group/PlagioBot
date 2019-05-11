@@ -563,6 +563,7 @@ def state_GAME_VOTE_CONTINUATION(user, message_obj):
     exact_guessers = [players[i] for i in exact_guessers_indexes]
     exact_guessers_names = [p.get_name() for p in exact_guessers]
     all_guessed_correctly = len(exact_guessers_indexes) == len(players) - 1
+    all_but_one_guessed_correctly = len(exact_guessers_indexes) == len(players) - 2
     shuffled_continuations = game.get_shuffled_continuations()
     # report_master("🐛 exact_guessers_names: {}".format(exact_guessers_names))
     # correct_continuation_position = game.get_correct_continuation_shuffled_index() + 1 
@@ -626,7 +627,10 @@ def state_GAME_VOTE_CONTINUATION(user, message_obj):
                 send_message_multi(players, msg)
             if all_guessed_correctly:
                 recap_votes()
-                return            
+                return     
+            elif all_but_one_guessed_correctly:       
+                recap_votes()
+                return     
             #report_master("player_to_shuffled_cont_index: {}".format(player_to_shuffled_cont_index))
             #report_master("shuffled_continuations: {}".format(shuffled_continuations))
             number_continuations = len(shuffled_continuations)

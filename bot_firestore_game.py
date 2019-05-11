@@ -55,7 +55,7 @@ class Game(Model):
 
     def set_game_reward_mode(self, m, save=True):
         assert m in ['CREATIVITY', 'EXACTNESS']
-        self.reward_mode = m
+        self.game_reward_mode = m
         if save: self.save()
 
     def set_game_mode(self, m, save=True):
@@ -150,7 +150,7 @@ class Game(Model):
             if self.game_mode == 'DEFAULT':
                 self.num_hands = self.num_players
                 # otherwise set manually
-            self.set_state('STARTED')
+            self.state = 'STARTED'
             self.players_names = [p.get_name() for p in players]
             self.variables = {
                 'SPECIAL_RULES': '',
