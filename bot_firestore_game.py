@@ -100,6 +100,10 @@ class Game(Model):
         self.state = state
         self.sub_state = sub_state
         if save: self.save()
+    
+    def set_sub_state(self, sub_state, save=True):
+        self.sub_state = sub_state
+        if save: self.save()
 
     def reset_variables(self, save=True):
         self.variables = {}
@@ -462,12 +466,4 @@ class Game(Model):
             print("{}:{}".format(s, count))
 
 if __name__ == "__main__":
-    # from bot_firestore_user import User
-    # user = User.create_user('test', '123', 'name', 'username', 'it')
-    # game = Game.create_game('test','creator_0000')
-    # game.set_state('INITIAL','INITIAL:WAITING_FOR_PLAYERS')
-    # game.add_player(user)
-    # print(game)
-    game = Game.get_game('TEST','1556831825181')
-    game.prepare_voting()
-
+    pass
