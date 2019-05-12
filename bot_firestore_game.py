@@ -150,7 +150,7 @@ class Game(Model):
             if self.game_mode == 'DEFAULT':
                 self.num_hands = self.num_players
                 # otherwise set manually
-            self.state = 'STARTED'
+            self.set_state('STARTED',save=False)
             self.players_names = [p.get_name() for p in players]
             self.variables = {
                 'SPECIAL_RULES': '',
