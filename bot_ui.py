@@ -231,6 +231,10 @@ MSG_CANT_JOIN_ALREADY_IN_GAME = {
     'en': '⛔️ You can open a new game when you are already in a game. You have to exit first.',
     'it': "⛔️ Non puoi unirti ad un gioco quando sei già all'interno di un gioco. Devi prima uscire."
 }
+MSG_CANT_JOIN_GAME = {
+    'en': '⛔️ The game you want to join has already started.',
+    'it': "⛔️ Il gioco a cui vuoi unirti è già iniziato."
+}
 MSG_NUMBER_OF_PLAYERS = {
     'en': "🔢 Please enter the maximum number of players for this game.",
     'it': "🔢 Inserisci il numero massimo dei giocatori per questo gioco."

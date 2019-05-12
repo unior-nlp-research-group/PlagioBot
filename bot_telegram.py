@@ -64,9 +64,9 @@ def rety_on_network_error(func):
 def set_webhook():
     s = BOT.setWebhook(key.WEBHOOK_TELEGRAM_BASE)
     if s:
-        return "webhook setup ok: {}".format(key.WEBHOOK_TELEGRAM_BASE)
+        print("webhook setup ok: {}".format(key.WEBHOOK_TELEGRAM_BASE))
     else:
-        return "webhook setup failed"
+        print("webhook setup failed")
 
 def delete_webhook():
     BOT.deleteWebhook()
@@ -201,3 +201,6 @@ def report_master(message):
             send_message(bot_telegram_MASTER, m, markdown=False)    
     else:
         send_message(bot_telegram_MASTER, message, markdown=False)
+
+if __name__ == "__main__":
+    set_webhook()

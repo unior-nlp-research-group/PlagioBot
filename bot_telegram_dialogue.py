@@ -271,8 +271,7 @@ def state_SELECT_GAME_REWARD_MODE(user, message_obj):
                         game.set_game_reward_mode("CREATIVITY")
                     else:
                         assert text_input == ux.BUTTON_REWARD_MODE_EXACTNESS[lang]
-                        game.set_game_reward_mode("EXACTNESS")
-                    game.set.sub_state("INITIAL:WAITING_FOR_PLAYERS")                    
+                        game.set_game_reward_mode("EXACTNESS")                    
                     redirect_to_state(user, state_WAITING_FOR_OTHER_PLAYERS)
             elif ux.text_is_button_or_digit(text_input):
                 send_message(user, ux.MSG_WRONG_BUTTON_INPUT[lang], kb)                
@@ -327,7 +326,8 @@ def state_WAITING_FOR_OTHER_PLAYERS(user, message_obj):
                 [ux.BUTTON_STOP_WAITING_START_GAME[lang]]
             ]
             msg_invite = ux.MSG_INVITE_PEOPLE_ANNOUNCE_OR_START[lang].format(game.get_name())
-            send_message(user, msg_invite, kb)            
+            send_message(user, msg_invite, kb)
+            game.set_sub_state("INITIAL:WAITING_FOR_PLAYERS")
         else:
             msg_other_players = ux.MSG_PLAYER_X_JOINED_GAME[lang].format(user.get_name())
             send_message_multi(players, msg_other_players)
@@ -715,7 +715,7 @@ def deal_with_universal_commands(user, text_input):
             else:
                 send_message(user, ux.MSG_NAME_NO_LONGER_AVAILBLE[lang])
         else:
-            send_message(user, ux.MSG_WRONG_COMMAND[lang])
+            send_message(user, ux.MSG_CANT_JOIN_GAME[lang])
         return True
     if user.is_master():
         if text_input == '/debug':
