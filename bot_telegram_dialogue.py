@@ -776,6 +776,12 @@ def deal_with_universal_commands(user, text_input):
             img_data = render_leaderboard.test()
             send_photo_from_data(user, 'test.png', img_data, caption='test')
             return True
+        if text_input.startswith('/translate '):
+            import translate
+            text_input = text_input.split(' ',1)[1]
+            t = translate.get_google_translation(text_input)
+            send_message(user, t)
+            return True
         if text_input.startswith('/test '):
             repetitions = int(text_input.split()[1])
             for i in range(repetitions):
