@@ -313,7 +313,7 @@ MSG_PLAYERS_BEGINNING_INTRO = {
 }
 MSG_PLAYERS_SENTENCE_WITH_GAP_INTRO = {
     'en': "📖 This is the sentence with a missing gap inserted by {}:",
-    'it': "📖 Questo è la frase con la parte mancante inserita da {}:"
+    'it': "📖 Questa è la frase con la parte mancante inserita da {}:"
 }
 MSG_READER_WRITE_CORRECT_CONTINUATION = {
     'en': "✍️ Please, write down the correct continuation of the sentence.",
@@ -329,7 +329,7 @@ MSG_READER_WRITE_CORRECT_MISSING_PART = {
 }
 MSG_WRITERS_WRITE_MISSING_PART = {
     'en': "✍️ Please, write down a possible completion for the missing part of the sentence.",
-    'it': "✍️ Scrivi una possibile completamento della parte mancante della frase."
+    'it': "✍️ Scrivi un possibile completamento della parte mancante della frase."
 }
 MSG_ALREADY_SENT_CONTINUATION = {
     'en': "🤐 You have already sent a continuation!\n😴 Let's wait for the other players to write the continuations.",
