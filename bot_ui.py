@@ -252,8 +252,8 @@ MSG_INVITE_PEOPLE_ANNOUNCE_OR_START = {
     'it': "📮 Invita altri/e giocatori/trici ad unirsi al gioco *{3}* o premere il pulsante {0} per annunciarlo pubblicamente. Se ci sono almento {1} giocatori nel gioco puoi iniziare comunque premendo {2}.".format(BUTTON_ANNOUNCE_GAME_PUBLICLY['en'],parameters.MIN_NUM_OF_PLAYERS, BUTTON_STOP_WAITING_START_GAME['en'],"{}"),
 }
 MSG_ANNOUNCE_GAME_PUBLICLY = {
-    'en': "📮 New game created by {} with {} people and {} seats remaining. Join th egame clicking on {}.",
-    'it': "📮 Nuovo gioco creato da {} con {} persone e {} posti rimanenti. Unisciti premendo su {}."
+    'en': "📮 New game created by {}. Join th egame clicking on {}.",
+    'it': "📮 Nuovo gioco creato da {}. Unisciti premendo su {}."
 }
 MSG_SENT_ANNOUNCEMENT = {
     'en': "📮 Announcement sent! Let's wait for new players to join.",
@@ -263,13 +263,9 @@ MSG_PLAYER_X_JOINED_GAME = {
     'en': "👤 Player *{}* joined the game.",
     'it': "👤 Il/a giocatore/ice *{}* si è unito/a al gioco."
 }
-MSG_WAITING_FOR_X_PLAYERS_PL = {
-    'en': "😴 Waiting for {} more players...\n📮 Please invite other players to the game *{}*.",
-    'it': "😴 Stiamo aspettando {} altri/e giocatori/trici...\n📮 Invita altri/e giocatori/trici ad unirsi al gioco *{}*."
-}
-MSG_WAITING_FOR_X_PLAYERS_SG = {
-    'en': "😴 Waiting for {} more player...\n📮 Please invite another player to the game *{}*.",
-    'it': "😴 Stiamo aspettando {} altro/a giocatore/ice...\n📮 Invita un altro/a giocatore/ice ad unirsi al gioco *{}*."
+MSG_WAITING_FOR_START_GAME = {
+    'en': "😴 Waiting to start the game *{}*.\n📮 You can still invite other players to the game.",
+    'it': "😴 Stiamo aspettando che inizi il gioco *{}*.\n📮 Puoi ancora invitare altri/e giocatori/trici ad unirsi."
 }
 MSG_READY_TO_START = {
     'en': "👟 All seats have been occupied, let's start the game!",

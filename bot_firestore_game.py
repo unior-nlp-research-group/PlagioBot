@@ -33,7 +33,6 @@ class Game(Model):
     game_reward_mode: str = 'CREATIVITY' # 'CREATIVITY' 'EXACTNESS'
     num_hands: int = -1
     players_names: List = None                
-    max_num_players: int = -1
     num_players: int = -1
     variables: Dict = field(default_factory=dict)
 
@@ -78,11 +77,6 @@ class Game(Model):
     def get_name(self):
         return escape_markdown(self.name)
 
-    def set_max_number_of_players(self, max_num_players):
-        self.sub_state = "INITIAL:WAITING_FOR_PLAYERS"
-        self.max_num_players = max_num_players
-        self.save()
-
     def get_player_at_index(self,i):  
         from bot_firestore_user import User      
         p_id = self.players_id[i]
@@ -92,9 +86,6 @@ class Game(Model):
         from bot_firestore_user import User
         players = [User.get(p_id) for p_id in self.players_id]
         return players
-
-    def get_available_seats(self):
-        return self.max_num_players - len(self.players_id)
 
     def set_state(self, state, sub_state=None, save=True):
         self.state = state
@@ -126,8 +117,6 @@ class Game(Model):
             logging.debug('{} Entering transactional add_player'.format(user.get_name()))                      
             self.refresh_from_transaction(transaction)
             if self.sub_state != "INITIAL:WAITING_FOR_PLAYERS":
-                return False
-            if self.get_available_seats==0:
                 return False
             self.players_id.append(user.id)
             self.save_transactional(transaction)            
