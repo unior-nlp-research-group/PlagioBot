@@ -7,6 +7,8 @@ import utility
 # ================================
 # 🤗📝✏️
 CHECK_SYMBOL = '✅'
+CANCEL_SYMBOL = '❌'
+BLACK_CHECK_SYMBOL = '✔️'
 BULLET_SYMBOL = '∙'
 RIGHT_ARROW_SYMBOL = '→'
 IT_FLAG_SYMBOL = '🇮🇹'
@@ -22,12 +24,12 @@ LANGUAGES = ['it','en']
 # ================================
 
 BUTTON_YES = {
-    'en': '✅ YES',
-    'it': '✅ SI'
+    'en': '👌 YES',
+    'it': '👌 SI'
 }
 BUTTON_NO = {
-    'en': '❌ NO',
-    'it': '❌ NO'
+    'en': '🙅‍♀️ NO',
+    'it': '🙅‍♀️ NO'
 }
 BUTTON_BACK = {
     'en': "🔙 BACK",
@@ -48,6 +50,10 @@ BUTTON_ABORT = {
 BUTTON_SKIP = {
     'en': "➡️ SKIP",
     'it': "➡️ SALTA"
+}
+BUTTON_REMOVE = {
+    'en': "🗑️ DELETE",
+    'it': "🗑️ CANCELLA",
 }
 BUTTON_NEW_GAME = {
     'en': '🆕🎯 NEW GAME',
@@ -73,7 +79,11 @@ BUTTON_ANNOUNCE_GAME_PUBLICLY = {
     'en': "🔔 Announce Game",
     'it': "🔔 Annuncia Gioco"
 }
-BUTTON_STOP_WAITING_START_GAME= {
+BUTTON_GAME_SETTINGS= {
+    'en': "⚙️ Game Settings",
+    'it': "⚙️ Impostazioni di Gioco"
+}
+BUTTON_START_GAME= {
     'en': "🏁 Start",
     'it': "🏁 Inizia"
 }
@@ -85,25 +95,41 @@ BUTTON_CHANGE_LANGUAGE = {
     'en': '🇬🇧 → 🇮🇹',
     'it': '🇮🇹 → 🇬🇧'
 }
-BUTTON_MODE_DEFAULT = {
-    'en': "⚛️ DEFAULT",
-    'it': "⚛️ TRADIZIONALE"
+BUTTON_GAME_TYPE = {
+    'en': "👣🕳 EXERCISE TYPE",
+    'it': "👣🕳 TIPO ESERCIZIO"
 }
-BUTTON_MODE_TEACHER = {
-    'en': "👩‍🏫 TEACHER",
-    'it': "👩‍🏫 INSEGNANTE"
-}
-BUTTON_MODE_DEMO = {
-    'en': "🤖 DEMO",
-    'it': "🤖 DEMO"
-}
-BUTTON_TYPE_COMPLETION = {
+BUTTON_GAME_TYPE_COMPLETION = {
     'en': "👣 COMPLETION",
     'it': "👣 CONTINUA"
 }
-BUTTON_TYPE_FILL = {
+BUTTON_GAME_TYPE_FILL = {
     'en': "🕳 FILL",
     'it': "🕳 RIEMPI"
+}
+BUTTON_GAME_TRANSLATE_HELP = {
+    'en': "👁️‍🗨️ AUTOMATIC TRANSLATE",
+    'it': "👁️‍🗨️ TRADUZIONE AUTOMATICA"
+}
+BUTTON_GAME_CONTROL = {
+    'en': "⚛️👩‍🏫 CONTROL",
+    'it': "⚛️👩‍🏫 CONTROLLO"
+}
+BUTTON_GAME_CONTROL_DEFAULT = {
+    'en': "⚛️ DEFAULT",
+    'it': "⚛️ TRADIZIONALE"
+}
+BUTTON_GAME_CONTROL_TEACHER = {
+    'en': "👩‍🏫 TEACHER",
+    'it': "👩‍🏫 INSEGNANTE"
+}
+BUTTON_GAME_CONTROL_DEMO = {
+    'en': "🤖 DEMO",
+    'it': "🤖 DEMO"
+}
+BUTTON_REWARD_MODE = {
+    'en': "🎭🎯 REWARD MODE",
+    'it': "🎭🎯 RICOMPENSA"
 }
 BUTTON_REWARD_MODE_CREATIVITY = {
     'en': "🎭 CREATIVITY",
@@ -112,6 +138,18 @@ BUTTON_REWARD_MODE_CREATIVITY = {
 BUTTON_REWARD_MODE_EXACTNESS = {
     'en': "🎯 EXACTNESS",
     'it': "🎯 ESATTEZZA"
+}
+BUTTON_SPECIAL_RULES = {
+    'en': "✍️ SPECIAL RULES",
+    'it': "✍️ REGOLE PARTICOLARI"
+}
+BUTTON_HANDS_NUMBER = {
+    'en': "🔢🖐️ HANDS NUMBER",
+    'it': "🔢🖐️ NUMERO MANI"
+}
+BUTTON_ASK_EXTRA_INFO = {
+    'en': "ℹ️ ASK EXTRA IFNO",
+    'it': "ℹ️ CHIEDI INFO AGGIUNTIVE"
 }
 
 ####################
@@ -166,34 +204,73 @@ MSG_CHOOSE_NEW_GAME_NAME = {
     'en': "✍️ Choose a new game name.",
     'it': "✍️ Scegli il nome di un nuovo gioco."
 }
-
-# MSG_WRITE_GAME_SPECIAL_RULES = {
-#     'en': "✍️ If you want you can write down any special rule you want to set for the game (e.g., rymes, length of sentences, etc...), or press {}".format(BUTTON_SKIP['en']),
-#     'it': "✍️ Inserisci se vuoi delle regole particolari da adottare nel gioco (ad esempio rime, lunghezza frasi, ecc...), o premi {}".format(BUTTON_SKIP['it']),
-# }
-MSG_SELECT_GAME_MODE = {
-    'en': "✔️ Please select the game mode:\n  • {}: every players choose a sentence to be completed\n  • {}: you will choose all the sentences".format(BUTTON_MODE_DEFAULT['en'],BUTTON_MODE_TEACHER['en']),
-    'it': "✔️ Seleziona la modalità di gioco:\n  • {}: ogni giocatore sceglie una frase da completare\n  • {}: tu sceglierai tutte le frasi".format(BUTTON_MODE_DEFAULT['it'],BUTTON_MODE_TEACHER['it'])
+MSG_SETTINGS_RECAP = {
+    'en': "⚙️ Settings:",
+    'it': "⚙️ Impostazioni:"
+}
+MSG_NUM_PLAYERS = {
+    'en': "👤 One hand per player",
+    'it': "👤 Una mano per giocatore"
+}
+MSG_WRITE_GAME_SPECIAL_RULES = {
+    'en': "✍️ If you want you can write down any special rule you want to set for the game (e.g., rymes, length of sentences, etc...).",
+    'it': "✍️ Inserisci se vuoi delle regole particolari da adottare nel gioco (ad esempio rime, lunghezza frasi, ecc...).",
+}
+MSG_CURRENT_GAME_SPECIAL_RULES = {
+    'en': "*Current special rules*: {}",
+    'it': "*Regole particolari attuali*: {}"
 }
 MSG_SELECT_GAME_TYPE = {
-    'en': "✔️ Please select the game type:\n  • {}: continue the sentece\n  • {}: fill the gap".format(BUTTON_TYPE_COMPLETION['en'],BUTTON_TYPE_FILL['en']),
-    'it': "✔️ Seleziona il tipo di gioco:\n  • {}: continua la frase\n  • {}: inserisci la parola mancante".format(BUTTON_TYPE_COMPLETION['it'],BUTTON_TYPE_FILL['it'])
+    'en': "Please select the game type:",
+    'it': "Seleziona il tipo di gioco:"
+}
+MSG_GAME_TYPE_COMPLETION_DESCR = {
+    'en': "continue the sentece",
+    'it': "continuare la frase"
+}
+MSG_GAME_TYPE_FILL_DESCR = {
+    'en': "fill the gap",
+    'it': "inserire la parola mancante"
+}
+MSG_GAME_TRANSLATE = {
+    'en': "Please select if you want to provide the *automatic translation* of the sentence to be completed.",
+    'it': "Indica se vuoi fornire la *traduzione automatica* della frase da completare."
+}
+MSG_SELECT_GAME_CONTROL = {
+    'en': "Please select the game mode:",
+    'it': "Seleziona la modalità di gioco:"
+}
+MSG_GAME_CONTROL_DEFAULT_DESCR = {
+    'en': "every players choose a sentence to be completed",
+    'it': "ogni giocatore sceglie una frase da completare"
+}
+MSG_GAME_CONTROL_TEACHER_DESCR = {
+    'en': "you (the teacher) will choose all the sentences",
+    'it': "tu (l'insegnante) sceglierai tutte le frasi"
 }
 MSG_SELECT_GAME_REWARD_MODE = {
-    'en': "✔️ Please select the game reward mode:\n  • {}: solutions different from the original are possible\n  • {}: only one solution is possible".format(BUTTON_REWARD_MODE_CREATIVITY['en'],BUTTON_REWARD_MODE_EXACTNESS['en']),
-    'it': "✔️ Seleziona il tipo di gioco:\n  • {}: soluzioni diversi dall'originale sono possibili d\n  • {}: solo una soluzione è possibile".format(BUTTON_REWARD_MODE_CREATIVITY['it'],BUTTON_REWARD_MODE_EXACTNESS['it'])
+    'en': "Please select the game reward mode:",
+    'it': "Seleziona il tipo di ricompensa:"
 }
-MSG_INSER_NUMBER_OF_HANDS = {
-    'en': "🔢 Please insert the number of hands to play.",
-    'it': "🔢 Seleziona il numero di mani da giocare."
+MSG_GAME_REWARD_MODE_CREATIVITY_DESCR = {
+    'en': "encourage solutions different from the original",
+    'it': "incoraggia soluzioni diversi dall'originale"
+}
+MSG_GAME_REWARD_MODE_EXACTNESS_DESCR = {
+    'en': "only one solution is possible",
+    'it': "solo una soluzione è possibile"
+}
+MSG_INSERT_NUMBER_OF_HANDS = {
+    'en': "🔢🖐️ Please insert the number of hands to play.\n\n*Current hands*: {}",
+    'it': "🔢🖐️ Seleziona il numero di mani da giocare.\n\n*Mani attuali*: {}"
 }
 MSG_TELL_SPECIAL_RULES = {
     'en': "🧭 {} has chosen the following rules for the game: {}",
     'it': "🧭 {} ha scelto le seguenti regole del gioco: {}"
 }
-MSG_GAME_NOT_YET_READY = {
-    'en': '🤷‍♀️ The game *{}* has been just created, but still needs to be set up. Please try again in a bit.',
-    'it': '🤷‍♀️ Il gioco *{}* è appena stato creato, ma deve essere ancora impostato. Riprova tra qualche istante.'
+MSG_ENABLE_TEXT_INFO = {
+    'en': "ℹ️ Specify whether the reader can specify additional infor in each hand.",
+    'it': "ℹ️ Indica se il lettore può inserire info aggiuntive in ogni mano."
 }
 MSG_GAME_ALREADY_ACTIVE = {
     'en': '🤷‍♀️ A game with this name is already active. Choose another name.',
@@ -202,10 +279,6 @@ MSG_GAME_ALREADY_ACTIVE = {
 MSG_GAME_ALREADY_STARTED = {
     'en': '🤷‍♀️ No more seats availbel on this game.',
     'it': '🤷‍♀️ Non ci sono posti disponibili in questo gioco.'
-}
-MSG_NAME_NO_LONGER_AVAILBLE = {
-    'en': "🤷‍♀️ The game *{}* is no longer available.",
-    'it': "🤷‍♀️ Il gioco *{}* non è più disponibile."
 }
 MSG_NAME_DOES_NOT_EXIST = {
     'en': "🤷‍♀️ The game *{}* does not exist.",
@@ -251,9 +324,21 @@ MSG_NOT_ENOUGH_PLAYERS = {
     'en': "📮 There needs to be at least {} players in the game to start. Please invite other players to the game or press the button below {} to announce it publicly.".format(parameters.MIN_NUM_OF_PLAYERS, BUTTON_ANNOUNCE_GAME_PUBLICLY['en']),
     'it': "📮 Occorrono almeno {} giocatori/ici per iniziare il gioco. Invita altri partecipanti al gioco o premi il pulsante {} per annunciarlo pubblicamente.".format(parameters.MIN_NUM_OF_PLAYERS, BUTTON_ANNOUNCE_GAME_PUBLICLY['en']),
 }
+MSG_CURRENT_PLAYERS = {
+    'en': '👥 {} players: {}',
+    'it': '👥 {} giocatori: {}'
+}
+MSG_CURRENT_PLAYER = {
+    'en': '👤 {} player: {}',
+    'it': '👤 {} giocatore: {}'
+}
 MSG_INVITE_PEOPLE_ANNOUNCE_OR_START = {
-    'en': "📮 Please invite other players to the game *{3}* or press the button {0} to announce it publicly. If there are at least {1} players in the game you can start with {2}.".format(BUTTON_ANNOUNCE_GAME_PUBLICLY['en'],parameters.MIN_NUM_OF_PLAYERS, BUTTON_STOP_WAITING_START_GAME['en'],"{}"),
-    'it': "📮 Invita altri/e giocatori/trici ad unirsi al gioco *{3}* o premere il pulsante {0} per annunciarlo pubblicamente. Se ci sono almento {1} giocatori nel gioco puoi iniziare comunque premendo {2}.".format(BUTTON_ANNOUNCE_GAME_PUBLICLY['en'],parameters.MIN_NUM_OF_PLAYERS, BUTTON_STOP_WAITING_START_GAME['en'],"{}"),
+    'en': "📮 Please invite other players to the game *{3}* or press the button {0} to announce it publicly. If there are at least {1} players in the game you can start with {2}.".format(BUTTON_ANNOUNCE_GAME_PUBLICLY['en'],parameters.MIN_NUM_OF_PLAYERS, BUTTON_START_GAME['en'],"{}"),
+    'it': "📮 Invita altri/e giocatori/trici ad unirsi al gioco *{3}* o premere il pulsante {0} per annunciarlo pubblicamente. Se ci sono almento {1} giocatori nel gioco puoi iniziare comunque premendo {2}.".format(BUTTON_ANNOUNCE_GAME_PUBLICLY['it'],parameters.MIN_NUM_OF_PLAYERS, BUTTON_START_GAME['it'],"{}"),
+}
+MSG_INVITE_PEOPLE_START = {
+    'en': "📮 Please invite other players to the game *{2}*. If there are at least {0} players in the game you can start with {1}.".format(parameters.MIN_NUM_OF_PLAYERS, BUTTON_START_GAME['en'],"{}"),
+    'it': "📮 Invita altri/e giocatori/trici ad unirsi al gioco *{2}*. Se ci sono almento {0} giocatori nel gioco puoi iniziare comunque premendo {1}.".format(parameters.MIN_NUM_OF_PLAYERS, BUTTON_START_GAME['en'],"{}"),
 }
 MSG_ANNOUNCE_GAME_PUBLICLY = {
     'en': "📮 New game created by {}. Join th egame clicking on {}.",
@@ -303,41 +388,37 @@ MSG_WRITERS_WAIT_READER_TEXT_INFO = {
     'en': "😴 Let's wait for {} ⭐️ to write down additional info about the inserted text.",
     'it': "😴 Aspettiamo che {} ⭐️ scriva alcune informazioni sul testo inserito."
 }
+MSG_WRITERS_WAIT_READER_WRITE_CORRECT_COMPLETION = {
+    'en': "😴 Let's wait for {} ⭐️ to write down the correct completion.",
+    'it': "😴 Aspettiamo che {} ⭐️ scriva il completamento corretto del testo inserito."
+}
+MSG_READER_WAIT_WRITERS_WRITE_COMPLETION = {
+    'en': "😴 Please wait that the other players write down the correct completion.",
+    'it': "😴 Aspettiamo che gli altri giocatori scrivano il loro completamento del testo."
+}
 MSG_WRITERS_TEXT_INFO = {
     'en': "💡 extra information: *{}*.",
     'it': "💡 informazioni aggiuntive: *{}*."
 }
-MSG_PLAYERS_BEGINNING_INTRO = {
-    'en': "📖 This is the chosen beginning by {}",
-    'it': "📖 Questo è l'inizio scelto da {}"
+MSG_PLAYERS_INCOMPLETE_SENTENCE = {
+    'en': "📖 This is the sentence that needs to be completed:\n{}",
+    'it': "📖 Questa è la frase che deve essere completata:\n{}"
 }
-MSG_PLAYERS_SENTENCE_WITH_GAP_INTRO = {
-    'en': "📖 This is the sentence with a missing gap inserted by {}:",
-    'it': "📖 Questa è la frase con la parte mancante inserita da {}:"
+MSG_READER_WRITE_CORRECT_COMPLETION = {
+    'en': "✍️ Please, write down the correct completion of the sentence.",
+    'it': "✍️ Scrivi il corretto completamento del testo inserito."
 }
-MSG_READER_WRITE_CORRECT_CONTINUATION = {
-    'en': "✍️ Please, write down the correct continuation of the sentence.",
-    'it': "✍️ Scrivi la corretta continuazione del testo inserito."
+MSG_WRITERS_WRITE_COMPLETION = {
+    'en': "✍️ Please, write down a possible completion of the sentence.",
+    'it': "✍️ Scrivi un possibile completamento del testo."
 }
-MSG_WRITERS_WRITE_CONTINUATION = {
-    'en': "✍️ Please, write down a possible continuation of the sentence.",
-    'it': "✍️ Scrivi una possibile continuazione del testo."
+MSG_ALREADY_SENT_COMPLETION = {
+    'en': "🤐 You have already sent your answer!\n😴 Let's wait for the other players.",
+    'it': "🤐 Hai già mandato una risposta!\n😴 Aspettamo che gli altri/e giocatori/trici rispondano."
 }
-MSG_READER_WRITE_CORRECT_MISSING_PART = {
-    'en': "✍️ Please, write down the correct completion for the missing part of the sentence.",
-    'it': "✍️ Scrivi la corretta parte mancante della frase."
-}
-MSG_WRITERS_WRITE_MISSING_PART = {
-    'en': "✍️ Please, write down a possible completion for the missing part of the sentence.",
-    'it': "✍️ Scrivi un possibile completamento della parte mancante della frase."
-}
-MSG_ALREADY_SENT_CONTINUATION = {
-    'en': "🤐 You have already sent a continuation!\n😴 Let's wait for the other players to write the continuations.",
-    'it': "🤐 Hai già inserito la continuazione!\n😴 Aspetta che gli altri/e giocatori/trici inseriscano la loro coninuazione."
-}
-MSG_X_GAVE_CONTINUATION_WAITING_FOR_PLAYERS_NAME_CONTINUATION = {
-    'en': "📝 Received continuation of *{}*. Let's wait for: {} 😴",
-    'it': "📝 Ricevuta la continuazione di *{}*. Rimaniamo in attesa di: {} 😴"
+MSG_X_GAVE_COMPLETION_WAITING_FOR_PLAYERS_NAMES = {
+    'en': "📝 Received answer by *{}*. Let's wait for: {} 😴",
+    'it': "📝 Ricevuta risposta da *{}*. Rimaniamo in attesa di: {} 😴"
 }
 MSG_INTRO_NUMBERED_TEXT = {
     'en': "📝 These are all the complete texts in random order:",
@@ -348,19 +429,19 @@ MSG_WAIT_FOR_PLAYERS_TO_VOTE_PL = {
     'it': "😴 Rimaniamo in attesa della scelta degli altri/e giocatori/trici."
 }
 MSG_VOTE = {
-    'en': "🗳️ Please select the number of the continuation you think it's the correct one.",
+    'en': "🗳️ Please select the number of the completion you think it's the correct one.",
     'it': "🗳️ Seleziona il numero del testo che ritieni essere quella corretta."
 }
 MSG_GUESSED_NO_VOTE = {
-    'en': "😀 Wow, you entered a continuation which is identical to the oriiginal one! no need to vote!",
+    'en': "😀 Wow, you entered a completion which is identical to the oriiginal one! no need to vote!",
     'it': "😀 Wow, hai inserito la continuazione che è identica all'originale!\nNon hai bisogno di votare!",
 }
-MSG_X_PLAYER_SG_GUESSED_EXACT_CONTINUATIONS = {
-    'en': "🤠 {} has inserted the original continuation and doesn't need to vote!",
+MSG_X_PLAYER_SG_GUESSED_EXACT_COMPLETIONS = {
+    'en': "🤠 {} has inserted the original completion and doesn't need to vote!",
     'it': "🤠 {} ha inserito la continuazione originale e non deve votare!",
 }
-MSG_X_PLAYERS_PL_GUESSED_EXACT_CONTINUATIONS = {
-    'en': "🤠 {} have inserted the original continuation and don't need to vote!",
+MSG_X_PLAYERS_PL_GUESSED_EXACT_COMPLETIONS = {
+    'en': "🤠 {} have inserted the original completion and don't need to vote!",
     'it': "🤠 {} hanno inserito la continuazione originale e non devono votare!",
 }
 MSG_THANKS = {
@@ -461,8 +542,12 @@ MSG_WRONG_INPUT_USE_TEXT_OR_BUTTONS = {
     'it': '⛔️ Input non valido, per favore inserisci del testo o usa i pulsanti 🎛'
 }
 MSG_WRONG_INPUT_INSRT_NUMBER = {
-    'en': '⛔️ Wrong input, please insert a number 🔢',
-    'it': '⛔️ Input non valido, per favore inserisci un numero 🔢'
+    'en': '⛔️🔢 Wrong input, please insert a number.',
+    'it': '⛔️🔢 Input non valido, per favore inserisci un numero.'
+}
+MSG_WRONG_INPUT_INSRT_NUMBER_BETWEEN = {
+    'en': '⛔️🔢 Wrong input, please insert a number between {} and {}.',
+    'it': '⛔️🔢 Input non valido, per favore inserisci un numero da {} a {}.'
 }
 MSG_WRONG_INPUT_USE_BUTTONS = {
     'en': '⛔️ Wrong input, please use buttons below 🎛',
@@ -475,6 +560,10 @@ MSG_WRONG_BUTTON_INPUT = {
 MSG_INPUT_TOO_SHORT = {
     'en': '⛔️ Input too short.',
     'it': '⛔️ Input troppo corto.'
+}
+MSG_INPUT_CONTAINS_SPACE_OR_MARKDOWN = {
+    'en': '⛔️ Input cannot contain spaces or following characters: "{}".'.format(utility.escape_markdown(utility.MARKDOWN_CHARS)),
+    'it': '⛔️ Input non può conotenere spazi o i caratteri: "{}".'.format(utility.escape_markdown(utility.MARKDOWN_CHARS))
 }
 MSG_INPUT_NO_MARKDOWN = {
     'en': '⛔️ Input cannot contains the following characters: {}'.format(utility.escape_markdown(utility.MARKDOWN_CHARS)),
@@ -491,6 +580,84 @@ MSG_COMMAND_NOT_RECOGNIZED = {
 
 ALL_BUTTONS_TEXT_LIST = [v[l] for l in LANGUAGES for k,v in globals().items() if k.startswith('BUTTON_')]
 
+GAME_SETTINGS_BUTTON_VALUE_UX_MAPPING = lambda lang: {
+    BUTTON_GAME_TYPE[lang]: {
+        'CONTINUATION': BUTTON_GAME_TYPE_COMPLETION[lang],
+        'FILL': BUTTON_GAME_TYPE_FILL[lang],
+    },
+    BUTTON_GAME_CONTROL[lang]: {
+        'DEFAULT': BUTTON_GAME_CONTROL_DEFAULT[lang],
+        'TEACHER': BUTTON_GAME_CONTROL_TEACHER[lang]
+    },
+    BUTTON_REWARD_MODE[lang]: {
+        'CREATIVITY': BUTTON_REWARD_MODE_CREATIVITY[lang],
+        'EXACTNESS': BUTTON_REWARD_MODE_EXACTNESS[lang]
+    },
+    BUTTON_ASK_EXTRA_INFO[lang]: {
+        True: BUTTON_YES[lang],
+        False: BUTTON_NO[lang]
+    },
+    BUTTON_GAME_TRANSLATE_HELP[lang]: {
+        True: BUTTON_YES[lang],
+        False: BUTTON_NO[lang]
+    }
+}
+
+def render_complete_text(game, incomplete_text, completion, markdown=True, uppercase=True):
+    if uppercase:
+            completion = completion.upper()
+            incomplete_text = incomplete_text.upper()
+    if game.game_type == 'CONTINUATION':        
+        completed_text = "{} *{}*".format(incomplete_text, completion)
+    else:
+        assert game.game_type == 'FILL'
+        pre_gap, post_gap = game.get_incomplete_text_pre_post_gap()
+        if uppercase:
+            pre_gap, post_gap = pre_gap.upper(), post_gap.upper()
+        completed_text = '{}*{}*{}'.format(pre_gap, completion, post_gap)
+    if not markdown:
+        completed_text = utility.remove_markdown(completed_text)
+    return completed_text
+
 def text_is_button_or_digit(text):
     import utility
     return text in ALL_BUTTONS_TEXT_LIST or utility.represents_int(text)
+
+def check_multi_button(buttons_value_description, selected_value, multi_line=False):
+    buttons = [
+        '{}{}'.format(
+            b,
+            ' ' + CHECK_SYMBOL if v['value']==selected_value else ''            
+        ) 
+        for b,v in sorted(buttons_value_description.items(), key=lambda i: i[1]['order'])
+    ]
+    if multi_line:
+        buttons = [[b] for b in buttons]
+    return buttons
+
+def check_multi_description(buttons_value_description, selected_value):
+    return '\n'.join([
+        '{} {}: {}'.format(
+            CHECK_SYMBOL if v['value']==selected_value else BLACK_CHECK_SYMBOL, 
+            b,
+            v['description']
+        ) 
+        for b,v in sorted(buttons_value_description.items(), key=lambda i: i[1]['order'])
+    ])
+
+def make_keyboard_from_keyboard_action(kb_action):
+    kb_action = {k:v for k,v in kb_action.items() if v['show_button']}
+    rows_indexes = [v['row'] for k,v in kb_action.items()]
+    num_rows = len(set(rows_indexes))
+    if max(rows_indexes)!=num_rows-1:
+        # recompute indexes
+        for i,r in enumerate(rows_indexes):
+            if i!=r:
+                for v in kb_action.values():
+                    if v['row']==r:
+                        v['row'] = i
+    kb_action_items = sorted(kb_action.items(), key=lambda kv:(kv[1]['row'],kv[1]['col']))
+    kb = [[] for r in range(num_rows)]
+    for k,v in kb_action_items:
+        kb[v['row']].append(k)
+    return kb

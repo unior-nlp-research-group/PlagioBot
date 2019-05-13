@@ -34,6 +34,11 @@ def escape_markdown(text):
         text = text.replace(char, '\\'+char)
     return text
 
+def remove_markdown(text):
+    for char in MARKDOWN_CHARS:
+        text = text.replace(char, '')
+    return text
+
 def add_full_stop_if_missing_end_puct(text):
     if text[-1] not in ['.','!','?']:
         text = text + '.'
@@ -44,7 +49,7 @@ def normalize_apostrophe(text):
         text = text.replace(char, "'")
     return text
 
-def normalize_continuation(text):
+def normalize_completion(text):
     text = add_full_stop_if_missing_end_puct(text)
     return text
 
