@@ -42,6 +42,9 @@ def redirect_to_state(user, new_function, message_obj=None):
     if user.state != new_state:
         logging.debug("In redirect_to_state. current_state:{0}, new_state: {1}".format(str(user.state), str(new_state)))
         user.set_state(new_state)
+        current_game = user.get_current_game()
+        if current_game and current_game.sub_state != new_state:
+            current_game.set_sub_state(new_state)
     repeat_state(user, message_obj)
 
 
@@ -887,8 +890,8 @@ def state_GAME_VOTE_COMPLETION(user, message_obj):
             redirect_to_state_multi(players, state_GAME_READER_WRITES_BEGINNING)
 
     if message_obj is None:
-        if user == players[0]:
-            if len(exact_guessers)>0:
+        if user == players[0]:            
+            if len(exact_guessers)>0:                
                 exact_guessers_names_str = ', '.join(exact_guessers_names)
                 if len(exact_guessers)==1:
                     msg = ux.MSG_X_PLAYER_SG_GUESSED_EXACT_COMPLETIONS[lang].format(exact_guessers_names_str)
@@ -896,9 +899,13 @@ def state_GAME_VOTE_COMPLETION(user, message_obj):
                     msg = ux.MSG_X_PLAYERS_PL_GUESSED_EXACT_COMPLETIONS[lang].format(exact_guessers_names_str)
                 send_message_multi(players, msg)
             if all_guessed_correctly:
+                msg = ux.MSG_NO_VOTE_ALL_GUESSED_CORRECTLY[lang]
+                send_message_multi(players, msg)
                 recap_votes()
                 return     
-            elif all_but_one_guessed_correctly:       
+            elif all_but_one_guessed_correctly:  
+                msg = ux.MSG_NO_VOTE_ALL_BUT_ONE_GUESSED_CORRECTLY[lang]
+                send_message_multi(players, msg)
                 recap_votes()
                 return     
             #report_master("player_to_shuffled_cont_index: {}".format(player_to_shuffled_cont_index))

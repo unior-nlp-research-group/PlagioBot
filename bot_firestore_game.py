@@ -26,10 +26,11 @@ class Game(Model):
     name: str
     creator_id: str
     players_id: List    
-    state: str = "INITIAL" # INITIAL, STARTED, ENDED, INTERRUPTED
+    state: str = "INITIAL" # INITIAL, STARTED, ENDED, INTERRUPTED    
+    sub_state: str = None # players states
     game_type: str = 'CONTINUATION' # 'CONTINUATION', 'FILL'
     game_control: str = 'DEFAULT' # 'DEFAULT', 'TEACHER', 'DEMO'
-    game_reward_mode: str = 'CREATIVITY' # 'CREATIVITY' 'EXACTNESS'
+    game_reward_mode: str = 'CREATIVITY' # 'CREATIVITY' 'EXACTNESS'    
     special_rules: str = ''
     num_hands: int = 5
     players_names: List = None                
@@ -108,6 +109,10 @@ class Game(Model):
 
     def set_state(self, state, save=True):
         self.state = state
+        if save: self.save()
+    
+    def set_sub_state(self, sub_state, save=True):
+        self.sub_state = sub_state
         if save: self.save()
     
     def reset_variables(self, save=True):

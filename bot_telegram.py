@@ -62,7 +62,7 @@ def rety_on_network_error(func):
     return retry_on_network_error_wrapper
 
 def set_webhook():
-    s = BOT.setWebhook(key.WEBHOOK_TELEGRAM_BASE)
+    s = BOT.setWebhook(key.WEBHOOK_TELEGRAM_BASE, allowed_updates=['message'])
     if s:
         print("webhook setup ok: {}".format(key.WEBHOOK_TELEGRAM_BASE))
     else:

@@ -10,3 +10,4 @@ gunicorn
 Pillow
 firebase-admin
 # firestore_model
+python-dotenv

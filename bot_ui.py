@@ -341,7 +341,7 @@ MSG_INVITE_PEOPLE_START = {
     'it': "📮 Invita altri/e giocatori/trici ad unirsi al gioco *{2}*. Se ci sono almento {0} giocatori nel gioco puoi iniziare comunque premendo {1}.".format(parameters.MIN_NUM_OF_PLAYERS, BUTTON_START_GAME['en'],"{}"),
 }
 MSG_ANNOUNCE_GAME_PUBLICLY = {
-    'en': "📮 New game created by {}. Join th egame clicking on {}.",
+    'en': "📮 New game created by {}. Join the game by clicking on {}.",
     'it': "📮 Nuovo gioco creato da {}. Unisciti premendo su {}."
 }
 MSG_SENT_ANNOUNCEMENT = {
@@ -430,7 +430,15 @@ MSG_WAIT_FOR_PLAYERS_TO_VOTE_PL = {
 }
 MSG_VOTE = {
     'en': "🗳️ Please select the number of the completion you think it's the correct one.",
-    'it': "🗳️ Seleziona il numero del testo che ritieni essere quella corretta."
+    'it': "🗳️ Seleziona il numero del completamento che ritieni essere quello corretto."
+}
+MSG_NO_VOTE_ALL_BUT_ONE_GUESSED_CORRECTLY = {
+    'en': "❌🗳️ No voting: only one player would have to vote for one possibility.",
+    'it': "❌🗳️ Votazione assente: solo un giocatore dovrebbe votare per una sola possibilità."
+}
+MSG_NO_VOTE_ALL_GUESSED_CORRECTLY = {
+    'en': "❌🗳️ No voting: all player guessed the exact continuation.",
+    'it': "❌🗳️ Votazione assente: tutti i giocatori hanno indovinato la corretta continuazione."
 }
 MSG_GUESSED_NO_VOTE = {
     'en': "😀 Wow, you entered a completion which is identical to the oriiginal one! no need to vote!",
