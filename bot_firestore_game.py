@@ -28,16 +28,17 @@ class Game(Model):
     players_id: List    
     state: str = "INITIAL" # INITIAL, STARTED, ENDED, INTERRUPTED    
     sub_state: str = None # players states
-    game_type: str = 'CONTINUATION' # 'CONTINUATION', 'FILL'
+    game_type: str = 'SUBSTITUTION' # 'CONTINUATION', 'FILL', 'SUBSTITUTION'
     game_control: str = 'DEFAULT' # 'DEFAULT', 'TEACHER', 'DEMO'
     game_reward_mode: str = 'CREATIVITY' # 'CREATIVITY' 'EXACTNESS'    
+    demo_mode: bool = False
     special_rules: str = ''
     num_hands: int = 5
     players_names: List = None                
     num_players: int = -1
     announced: bool = False
     ask_text_info: bool = False
-    translate_help: bool = False
+    translate_help: bool = False    
     variables: Dict = field(default_factory=dict)
 
     @staticmethod
@@ -55,12 +56,16 @@ class Game(Model):
         self.announced = value
         if save: self.save()
     
+    def set_demo_mode(self, value, save=True):
+        self.demo_mode = value
+        if save: self.save()
+
     def set_translate_help(self, value, save=True):
         self.translate_help = value
         if save: self.save()
 
     def set_game_type(self, t, save=True):
-        assert t in ['CONTINUATION', 'FILL']
+        assert t in ['CONTINUATION', 'FILL', 'SUBSTITUTION']
         self.game_type = t
         if save: self.save()
     
@@ -172,7 +177,7 @@ class Game(Model):
                     # COMPLETION (STRING) in key:  (UPPER CASE)
                     # mapping to value:
                     # {
-                    #     'shuffled_index': int,
+                    #     'shuffled_index': int,  --> index that will appear in the voting for this continuation
                     #     'authors': list(int) -> index of players writing that completion
                     #     'correct': bool -> if correct completion
                     #     'voted_by': list(int) -> indexes of players voting that completion
@@ -273,36 +278,56 @@ class Game(Model):
         self.refresh()
         return result
 
-    def prepare_voting(self):        
+    def prepare_voting(self):                
+        substitution_game = self.game_type == 'SUBSTITUTION'
         hand_index = self.variables['HAND']-1
         completions_info = self.variables['COMPLETION_INFO'][hand_index]
-        current_players_completions_upper = [ # upper in order of player index
+        current_players_completions_upper = [ # upper case completions in order of player index
             c.upper() 
             for i,c in sorted(
                 self.variables['PLAYERS_COMPLETIONS'][hand_index].items(), 
                 key=lambda ic: int(ic[0])
             )
         ]
+        reader_index = self.get_reader_index()
+        original_completion_upper = current_players_completions_upper[reader_index]
         players_completions_unique_upper = sorted(set(current_players_completions_upper))
-        shuffled_indexes = list(range(len(players_completions_unique_upper)))
+        number_indexes = len(players_completions_unique_upper)
+        if substitution_game:
+            number_indexes -= 1
+        shuffled_indexes = list(range(number_indexes))
         shuffle(shuffled_indexes)
-        original_completion_upper = current_players_completions_upper[self.get_reader_index()]
-        for i,unique_cont in enumerate(players_completions_unique_upper):
+        iter_shuffled_indexes = iter(shuffled_indexes)
+        
+        for unique_cont in players_completions_unique_upper:
+            is_original = unique_cont == original_completion_upper
+            if substitution_game and is_original:
+                continue
             completions_info[unique_cont] = {
-                'shuffled_index': shuffled_indexes[i],
+                'shuffled_index': next(iter_shuffled_indexes),
                 'authors_indexes': [
                     i for i,c in enumerate(current_players_completions_upper)
                     if c == unique_cont
                 ],
-                'correct': unique_cont == original_completion_upper,
+                'correct': is_original,
+                'voted_by': []
+            }
+        if substitution_game:
+            # # for collecting the NO CORRECT ANSWERS votes (applicabole in SUBSTITUTION)
+            completions_info['_'] = {
+                'shuffled_index': -1,
+                'authors_indexes': [],
+                'correct': False,
                 'voted_by': []
             }
         self.save()
 
-    def get_guessers_indexes(self):        
+    def get_exact_guessers_indexes(self):        
         hand_index = self.variables['HAND']-1
         completions_info = self.variables['COMPLETION_INFO'][hand_index]
-        completion_correct_info = next(info for c,info in completions_info.items() if info['correct'])
+        completion_correct_info = next((info for c,info in completions_info.items() if info['correct']), None)
+        if completion_correct_info is None:
+            return []
         return [i for i in completion_correct_info['authors_indexes'] if i!=self.get_reader_index()]
 
     def get_completion_shuffled_index(self, author_index):            
@@ -327,7 +352,8 @@ class Game(Model):
         names = self.players_names        
         voted_by_list = [info['voted_by'] for info in completions_info.values()] 
         voters_indexes = list(itertools.chain(*voted_by_list))
-        exact_author_list = next(info['authors_indexes'] for info in completions_info.values() if info['correct'])
+        reader_index = self.get_reader_index()
+        exact_author_list = next((info['authors_indexes'] for info in completions_info.values() if info['correct']),[reader_index])
         remaining_names = [n for i,n in enumerate(names) if i not in voters_indexes and i not in exact_author_list] 
         return remaining_names   
 
@@ -335,6 +361,8 @@ class Game(Model):
     # TRANSACTIONAL OPERATION
     #--------------------------
     def set_voted_indexes_and_points_and_get_remaining(self, user, voted_shuffled_index): 
+
+        # voted_shuffled_index can be -1 for no answer correct votes
 
         @firestore.transactional 
         def update_in_transaction(transaction): 
@@ -344,13 +372,14 @@ class Game(Model):
             hand_index = self.variables['HAND']-1
             completions_info = self.variables['COMPLETION_INFO'][hand_index]
             player_index = self.players_id.index(user.id)
-            assert player_index != self.get_reader_index() # reader doesn't receive points        
+            reader_index = self.get_reader_index()
+            assert player_index != reader_index # reader doesn't receive points        
             names = self.players_names        
             voted_cont_info = next(info for c,info in completions_info.items() if info['shuffled_index']==voted_shuffled_index)
             voted_cont_info['voted_by'].append(player_index)   
             voted_by_list = [info['voted_by'] for info in completions_info.values()] 
             voters_indexes = list(itertools.chain(*voted_by_list))        
-            exact_author_list = next(info['authors_indexes'] for info in completions_info.values() if info['correct'])
+            exact_author_list = next((info['authors_indexes'] for info in completions_info.values() if info['correct']),[reader_index])
             remaining_names = [n for i,n in enumerate(names) if i not in voters_indexes and i not in exact_author_list] 
             self.save_transactional(transaction)            
             logging.debug('{} Exiting transactional set_voted_indexes_and_points_and_get_remaining'.format(user.get_name()))
@@ -375,14 +404,22 @@ class Game(Model):
         completions_info = self.variables['COMPLETION_INFO'][hand_index]
         shuf_cont_voters_names = []
         for cont_info in sorted(completions_info.values(), key=lambda i: i['shuffled_index']):
-            voeters_name = [n for i,n in enumerate(players_names) if i in cont_info['voted_by']]
-            shuf_cont_voters_names.append(voeters_name)
+            if self.game_type == 'SUBSTITUTION' and (cont_info['correct'] or cont_info['shuffled_index']==-1):
+                continue
+            voters_name = [n for i,n in enumerate(players_names) if i in cont_info['voted_by']]
+            shuf_cont_voters_names.append(voters_name)
         return shuf_cont_voters_names
 
-    def get_shuffled_completions(self):        
+    def get_shuffled_completions(self):
         hand_index = self.variables['HAND']-1
         completions_info = self.variables['COMPLETION_INFO'][hand_index]
-        shuffled_completions = [k for k,v in sorted(completions_info.items(), key=lambda kv: kv[1]['shuffled_index'])]
+        if self.game_type == 'SUBSTITUTION':
+            shuffled_completions = [
+                k for k,v in sorted(completions_info.items(), key=lambda kv: kv[1]['shuffled_index'])
+                if k != '_' and not v['correct']
+            ]
+        else:
+            shuffled_completions = [k for k,v in sorted(completions_info.items(), key=lambda kv: kv[1]['shuffled_index'])]
         return shuffled_completions
 
     def get_completions_authors_indexes(self, completion):        
@@ -394,17 +431,17 @@ class Game(Model):
     def prepare_hand_poins(self):        
         hand_index = self.variables['HAND']-1
         completions_info = self.variables['COMPLETION_INFO'][hand_index]
-        completion_correct_info = next(info for c,info in completions_info.items() if info['correct'])
+        completion_correct_info = next((info for c,info in completions_info.items() if info['correct']),None)
         current_hand_points = self.variables['HAND_POINTS'][hand_index]
         reader_index = self.get_reader_index()
         for i in range(self.num_players):
             if i==reader_index:
                 continue # reader doesn't give/receive points
-            cont_i_info = next(info for info in completions_info.values() if i in info['authors_indexes'])
+            cont_i_info = next((info for info in completions_info.values() if i in info['authors_indexes']),None)
             cont_voted_info = next((info for info in completions_info.values() if i in info['voted_by']),None)            
-            if cont_i_info['correct']:
+            if cont_i_info and cont_i_info['correct']:
                 current_hand_points[str(i)] += parameters.POINTS[self.game_reward_mode]['EXACT_GUESSING']
-            if i in completion_correct_info['voted_by']:
+            if completion_correct_info and i in completion_correct_info['voted_by']:
                 current_hand_points[str(i)] += parameters.POINTS[self.game_reward_mode]['CORRECT_VOTING']
             if cont_voted_info and not cont_voted_info['correct']: 
                 # give points only if completion is not the exact one (reader)
