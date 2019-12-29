@@ -107,6 +107,9 @@ def send_message(user, text, kb=None, markdown=True, remove_keyboard=False, slee
         else:
             user.set_keyboard(kb)
             reply_markup = telegram.ReplyKeyboardMarkup(kb, resize_keyboard=True)
+    else:
+        reply_markup = None        
+    try:
         BOT.sendMessage(
             chat_id = user.serial_id,
             text = text,
@@ -114,17 +117,9 @@ def send_message(user, text, kb=None, markdown=True, remove_keyboard=False, slee
             reply_markup = reply_markup,
             **kwargs
         )
-    else:
-        try:
-            BOT.sendMessage(
-                chat_id = user.serial_id,
-                text = text,
-                parse_mode = telegram.ParseMode.MARKDOWN if markdown else None,
-                **kwargs
-            )
-        except Unauthorized:
-            logging.debug('User has blocked Bot: {}'.format(user))
-            user.switch_notifications()
+    except Unauthorized:
+        logging.debug('User has blocked Bot: {}'.format(user))
+        user.switch_notifications()
     if sleep:
         time.sleep(0.1)
 

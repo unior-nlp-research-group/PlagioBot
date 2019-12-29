@@ -1070,14 +1070,17 @@ def end_game(game, players):
     game.set_state('ENDED')
     restart_multi(players)
 
-def interrupt_game(game, user):
+def interrupt_game(game, user=None):
     game.set_state('INTERRUPTED')
     players = game.get_players()
     lang = players[0].language
     for p in players:
         p.current_game_id = None
     if len(players) > 0:
-        send_message_multi(players, ux.MSG_EXIT_GAME[lang].format(user.get_name()))
+        if user:
+            send_message_multi(players, ux.MSG_EXIT_GAME[lang].format(user.get_name()))
+        else:
+            send_message_multi(players, ux.MSG_EXIT_GAME_EXPIRED[lang])
     restart_multi(players)
 
 def deal_with_universal_commands(user, text_input):

@@ -21,3 +21,5 @@ POINTS = {
 INSTRUCTION_URL_IT = 'https://telegra.ph/Plagio---Regole-del-gioco-01-06'
 INSTRUCTION_URL_EN = 'https://telegra.ph/Plagio---Game-Rules-01-06'
 
+EXPIRATION_DELTA_HOURS = 24
+EXPIRATION_DELTA_MILLISECONDS = EXPIRATION_DELTA_HOURS * 3600 * 1000

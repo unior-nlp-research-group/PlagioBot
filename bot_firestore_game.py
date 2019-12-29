@@ -521,5 +521,20 @@ class Game(Model):
             count = len(list(Game.query([('state', '==', s)]).get()))
             print("{}:{}".format(s, count))
 
+    @staticmethod
+    def get_expired_games():
+        from utility import get_milliseconds
+        from parameters import EXPIRATION_DELTA_MILLISECONDS
+        now = get_milliseconds()        
+        expiration = now - EXPIRATION_DELTA_MILLISECONDS
+        games_generator = Game.query([
+            ('state', 'in', ['INITIAL', 'STARTED']),
+            ('modified', '<', expiration)
+        ]).get()
+        # for g in games_generator:
+        #     print(g.name)
+        # return len(list(games_generator))
+        return games_generator
+
 if __name__ == "__main__":
     pass

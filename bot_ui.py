@@ -544,6 +544,10 @@ MSG_EXIT_GAME = {
     'en': "🚪 Game has terminated because {} exited.",
     'it': "🚪 Gioco terminato perché {} è uscito/a."
 }
+MSG_EXIT_GAME_EXPIRED = {
+    'en': "🚪 Game has terminated because none made a move for long time.",
+    'it': "🚪 Gioco terminato perché nessuno ha giocato per troppo tempo."
+}
 MSG_NO_GAME_TO_EXIT = {
     'en': "⛔️ You are not in a game",
     'it': "⛔️ Non sei in un gioco"

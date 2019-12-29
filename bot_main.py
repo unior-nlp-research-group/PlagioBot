@@ -21,6 +21,14 @@ def root():
     """Return a friendly HTTP greeting."""
     return ("Plagio Game.", 200)
 
+@app.route('/tasks/interrupt_expired_games')
+def interrupt_expired_games():
+    from bot_firestore_game import Game
+    from bot_telegram_dialogue import interrupt_game
+    expired_games = Game.get_expired_games()
+    for g in expired_games:
+        interrupt_game(g)
+    return ("", 200)
 
 @app.errorhandler(404)
 def page_not_found(e):

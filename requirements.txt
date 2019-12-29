@@ -1,6 +1,7 @@
 pylint
 Flask
-google-cloud
+# google-cloud
+google-cloud-firestore
 google-cloud-logging
 requests
 python-telegram-bot
