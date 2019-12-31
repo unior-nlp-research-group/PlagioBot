@@ -28,7 +28,7 @@ class Game(Model):
     players_id: List    
     state: str = "INITIAL" # INITIAL, STARTED, ENDED, INTERRUPTED    
     sub_state: str = None # players states
-    game_type: str = 'SUBSTITUTION' # 'CONTINUATION', 'FILL', 'SUBSTITUTION'
+    game_type: str = 'CONTINUATION' # 'CONTINUATION', 'FILL', 'SUBSTITUTION'
     game_control: str = 'DEFAULT' # 'DEFAULT', 'TEACHER', 'DEMO'
     game_reward_mode: str = 'CREATIVITY' # 'CREATIVITY' 'EXACTNESS'    
     demo_mode: bool = False

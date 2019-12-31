@@ -109,7 +109,7 @@ BUTTON_GAME_TYPE_FILL = {
 }
 BUTTON_GAME_TYPE_SUBSTITUTION = {
     'en': "🐡 SUBSTITUTION",
-    'it': "🐡 SINONIMI"
+    'it': "🐡 SOSTITUZIONE"
 }
 BUTTON_GAME_DEMO_MODE = {
     'en': "🎮 DEMO MODE",
