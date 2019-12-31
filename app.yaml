@@ -1,5 +1,5 @@
-# PRODUCTION: fireplagio
-# TEST: testfireplagio
+# app: fireplagio
+# versions: production / test
 
 # google project id: fireplagio (was plagio)
 # url: https://fireplagio.appspot.com
