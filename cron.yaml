@@ -1,4 +1,4 @@
 cron:
     - description: "interrupt expired games"
       url: /tasks/interrupt_expired_games
-      schedule: every day 12:00
+      schedule: every 1 hours
