@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import telegram
 import telegram.error
 from telegram.error import TelegramError, Unauthorized, BadRequest, TimedOut, ChatMigrated, NetworkError

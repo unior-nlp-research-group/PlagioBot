@@ -1,16 +1,16 @@
-# -*- coding: utf-8 -*-
 import io
 from PIL import ImageFont
 from PIL import Image
 from PIL import ImageDraw
 
 FONT_SIZE = 20
-FONT = ImageFont.truetype("fonts/Symbola.ttf",FONT_SIZE)
+EMOJI_FONT = ImageFont.truetype("fonts/Symbola.ttf", FONT_SIZE, encoding="utf-8")
+TEXT_FONT = ImageFont.truetype("fonts/Roboto-Regular.ttf", FONT_SIZE, encoding="utf-8")
 
 MARGIN = 25
 #COLUMN_WIDTH = 100
 ROW_HEIGHT = 30
-TEXT_HEIGHT = FONT.getsize('M')[1]
+TEXT_HEIGHT = max(EMOJI_FONT.getsize('M')[1], TEXT_FONT.getsize('M')[1])
 
 def get_image_data_from_points(names, points, show=False):
     ranks_players_point = {p: [n for i,n in enumerate(names) if points[i]==p] for p in set(points)}        
@@ -25,7 +25,7 @@ def get_image_data_from_points(names, points, show=False):
 def get_image_data_from_table(result_table, alignment, show=False):
     NUMBER_ROWS = len(result_table)
     #NUMBER_COLUMNS = len(result_table[0])    
-    COLUMNS_WIDTH = [ 2*MARGIN+max(FONT.getsize(row[j])[0] for row in result_table) for j in range(len(result_table[0]))]
+    COLUMNS_WIDTH = [ 2*MARGIN+max(TEXT_FONT.getsize(row[j])[0] for row in result_table) for j in range(len(result_table[0]))]
     WIDTH = MARGIN * 2 + sum(COLUMNS_WIDTH)
     HEIGHT = MARGIN * 2 + TEXT_HEIGHT + NUMBER_ROWS * ROW_HEIGHT
     img = Image.new("RGBA", (WIDTH, HEIGHT), (255, 255, 255))
@@ -33,6 +33,7 @@ def get_image_data_from_table(result_table, alignment, show=False):
     for i, row in enumerate(result_table):
         for j, text in enumerate(row):
             text = text
+            FONT = EMOJI_FONT if j==0 else TEXT_FONT
             TEXT_WIDTH = FONT.getsize(text)[0]
             aligne = alignment[j]
             if aligne=='l':                
@@ -63,7 +64,7 @@ def test(show=False):
 
 def test1(show=False):
     # return get_image_data_from_points(names=['BOB','PETER','ALEX'], points=[5,3,1], show=show)
-    return get_image_data_from_points(names=['A','B','C','D','E','F','G','H'], points=[1, 2, 1, 2, 1, 4, 0, 3], show=show)
+    return get_image_data_from_points(names=['Gülşen Eryiğit','B','C','D','E','F','G','H'], points=[1, 2, 1, 2, 1, 4, 0, 3], show=show)
 
 
 if __name__ == "__main__": 
