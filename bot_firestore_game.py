@@ -43,14 +43,14 @@ class Game(Model):
     variables: Dict = field(default_factory=dict)
 
     @staticmethod
-    def create_game(name, creator_id):
+    def create_game(name, user):
         game = Game.make(
             name = name,
-            creator_id = creator_id,
-            players_id = [creator_id],            
+            creator_id = user.id,
+            players_id = [user.id],   
+            language = user.language
         )
-        game.id = '{}_{}'.format(game.name, game.created)
-        game.language = game.get_player_at_index(0).language
+        game.id = '{}_{}'.format(game.name, game.created)        
         game.save()
         return game
 
@@ -144,7 +144,7 @@ class Game(Model):
             self.refresh_from_transaction(transaction)
             if self.state != "INITIAL":
                 return False
-            self.players_id.append(user.id)
+            self.players_id.append(user.id)            
             self.save_transactional(transaction)            
             user.set_current_game(self)  
             logging.debug('{} Exiting transactional add_player'.format(user.get_name()))                      
