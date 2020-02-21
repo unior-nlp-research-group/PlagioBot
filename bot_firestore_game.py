@@ -25,6 +25,7 @@ db = firestore.Client()
 class Game(Model):
     name: str
     creator_id: str
+    language: str
     players_id: List    
     state: str = "INITIAL" # INITIAL, STARTED, ENDED, INTERRUPTED    
     sub_state: str = None # players states
@@ -49,6 +50,7 @@ class Game(Model):
             players_id = [creator_id],            
         )
         game.id = '{}_{}'.format(game.name, game.created)
+        game.language = game.get_player_at_index(0).language
         game.save()
         return game
 

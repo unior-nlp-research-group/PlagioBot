@@ -555,6 +555,10 @@ MSG_ONLY_CREATOR_CAN_TERMINATE_GAME = {
     'en': "⛔️ Only the person who has created the game can terminate it.",
     'it': "⛔️ Solo la persona che ha creato il gioco può terminarlo."
 }
+MSG_CHAT_INFO = {
+    'en': "⛔️ To send a message to the other players, please type /chat followed by the message.",
+    'it': "⛔️ Per mandare un messaggio agli altri giocatore, scrivi /chat seguito dal messaggio."
+}
 MSG_NO_GAME_NO_CHAT = {
     'en': "⛔️ You are not in a game. You can send a chat message only inside a game.",
     'it': "⛔️ Non sei in un gioco. Puoi mandare messaggi di testo solo in un gioco."

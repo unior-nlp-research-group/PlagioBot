@@ -1102,18 +1102,25 @@ def deal_with_universal_commands(user, text_input):
         return True
     if text_input == '/exit_game':
         game = user.get_current_game()
+        lang = game.language
         if game:
             players = game.get_players()
-            if user == players[0]:
-                # only game creator can terminate it
+            if parameters.ONLY_GAME_CREATOR_CAN_TERMINATE_GAME:
+                if user == players[0]:
+                    # only game creator can terminate it
+                    interrupt_game(game, user)
+                else:
+                    send_message(user, ux.MSG_ONLY_CREATOR_CAN_TERMINATE_GAME[lang])
+            elif user in players:
                 interrupt_game(game, user)
-            else:
-                send_message(user, ux.MSG_ONLY_CREATOR_CAN_TERMINATE_GAME[lang])
         else:
             send_message(user, ux.MSG_NO_GAME_TO_EXIT[lang])
         return True
+    if text_input == ('/chat'):
+        send_message(user, ux.MSG_CHAT_INFO[lang])
     if text_input.startswith('/chat '):
         game = user.get_current_game()
+        lang = game.language
         chat_msg = ' '.join(text_input.split()[1:])
         if game:
             if len(text_input)>200:
@@ -1135,6 +1142,7 @@ def deal_with_universal_commands(user, text_input):
             return True
         game_id = text_input.split('/game_')[1]
         game = Game.get(game_id)
+        lang = game.language
         if game:
             if game.add_player(user):
                 redirect_to_state(user, state_WAITING_FOR_START)
