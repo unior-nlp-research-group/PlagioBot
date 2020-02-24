@@ -49,7 +49,7 @@ def normalize_apostrophe(text):
         text = text.replace(char, "'")
     return text
 
-def normalize_completion(text):
+def normalize_answer(text):
     text = add_full_stop_if_missing_end_puct(text)
     return text
 

@@ -342,10 +342,10 @@ def state_SETTINGS_GAME_TYPE(user, message_obj):
     game = user.get_current_game()
     game_type = game.game_type
     buttons_value_description = {
-        ux.BUTTON_GAME_TYPE_COMPLETION[lang]: {
+        ux.BUTTON_GAME_TYPE_CONTINUATION[lang]: {
             'order': 1,
             'value': 'CONTINUATION',
-            'description': ux.MSG_GAME_TYPE_COMPLETION_DESCR[lang]
+            'description': ux.MSG_GAME_TYPE_CONTINUATION_DESCR[lang]
         },
         ux.BUTTON_GAME_TYPE_FILL[lang]: {
             'order': 2,
@@ -749,7 +749,7 @@ def state_GAME_READER_WRITES_BEGINNING(user, message_obj):
                     if game.ask_text_info:                        
                         redirect_to_state_multi(players, state_GAME_READER_WRITES_TEXT_INFO)
                     else:
-                        redirect_to_state_multi(players, state_GAME_READER_WRITES_COMPLETION)                        
+                        redirect_to_state_multi(players, state_GAME_READER_WRITES_ANSWER)                        
             else:
                 send_message(user, ux.MSG_WRONG_INPUT_USE_TEXT[lang])
         else:
@@ -778,7 +778,7 @@ def state_GAME_READER_WRITES_TEXT_INFO(user, message_obj):
                 if text_input in utility.flatten(kb):
                     if text_input == ux.BUTTON_SKIP[lang]:
                         game.set_incomplete_text_info('')
-                        redirect_to_state_multi(players, state_GAME_READER_WRITES_COMPLETION)
+                        redirect_to_state_multi(players, state_GAME_READER_WRITES_ANSWER)
                     else:
                         assert(False)                
                 elif utility.contains_markdown(text_input):
@@ -789,7 +789,7 @@ def state_GAME_READER_WRITES_TEXT_INFO(user, message_obj):
                     send_message(user, ux.MSG_INPUT_TOO_SHORT[lang])
                 else:
                     game.set_incomplete_text_info(text_input)
-                    redirect_to_state_multi(players, state_GAME_READER_WRITES_COMPLETION)
+                    redirect_to_state_multi(players, state_GAME_READER_WRITES_ANSWER)
             else:
                 send_message(user, ux.MSG_WRONG_INPUT_USE_TEXT[lang])
         else:
@@ -798,18 +798,18 @@ def state_GAME_READER_WRITES_TEXT_INFO(user, message_obj):
 
 
 # ================================
-# GAME_READER_WRITES_COMPLETION
+# GAME_READER_WRITES_ANSWER
 # ================================
-def state_GAME_READER_WRITES_COMPLETION(user, message_obj):
+def state_GAME_READER_WRITES_ANSWER(user, message_obj):
     game = user.get_current_game()
     players, reader, writers = game.get_current_hand_players_reader_writers()
     lang = game.language
     if message_obj is None:
         if user == players[0]:
             if game.game_type in ['CONTINUATION', 'FILL']:
-                msg_reader = ux.MSG_READER_WRITE_CORRECT_COMPLETION[lang]
+                msg_reader = ux.MSG_READER_WRITE_CORRECT_ANSWER[lang]
                 send_message(reader, msg_reader, remove_keyboard=True)    
-                msg_writers = ux.MSG_WRITERS_WAIT_READER_WRITE_CORRECT_COMPLETION[lang].format(reader.get_name())
+                msg_writers = ux.MSG_WRITERS_WAIT_READER_WRITE_CORRECT_ANSWER[lang].format(reader.get_name())
                 send_message_multi(writers, msg_writers)            
             elif game.game_type == 'SUBSTITUTION':
                 msg_reader = ux.MSG_READER_WRITE_SUBSTITUTION_PART[lang]
@@ -825,16 +825,16 @@ def state_GAME_READER_WRITES_COMPLETION(user, message_obj):
                 elif ux.text_is_button_or_digit(text_input):
                     send_message(user, ux.MSG_WRONG_BUTTON_INPUT[lang])
                 else:
-                    completion = text_input
+                    answer = text_input
                     if game.game_type == 'CONTINUATION':
-                        completion = utility.normalize_completion(completion)                
+                        answer = utility.normalize_answer(answer)                
                     elif game.game_type == 'SUBSTITUTION':
                         inserted_sentence = game.get_current_incomplete_text()
                         if not utility.validate_substring_presence(inserted_sentence, text_input):                            
                             send_message(user, ux.MSG_INPUT_SUBSTITUION_NOT_IN_SENTENCE[lang])
                             return
-                    game.set_player_text_completion_and_get_remaining(user, completion)
-                    redirect_to_state_multi(players, state_GAME_PLAYERS_WRITE_COMPLETIONS)                    
+                    game.set_player_text_answer_and_get_remaining(user, answer)
+                    redirect_to_state_multi(players, state_GAME_PLAYERS_WRITE_ANSWERS)                    
             else:
                 send_message(user, ux.MSG_WRONG_INPUT_USE_TEXT[lang])
         else:
@@ -842,9 +842,9 @@ def state_GAME_READER_WRITES_COMPLETION(user, message_obj):
             send_message(user, msg)
 
 # ================================
-# GAME_PLAYERS_WRITE_COMPLETIONS
+# GAME_PLAYERS_WRITE_ANSWERS
 # ================================
-def state_GAME_PLAYERS_WRITE_COMPLETIONS(user, message_obj):
+def state_GAME_PLAYERS_WRITE_ANSWERS(user, message_obj):
     game = user.get_current_game()
     players, reader, writers = game.get_current_hand_players_reader_writers()
     lang = game.language
@@ -861,12 +861,12 @@ def state_GAME_PLAYERS_WRITE_COMPLETIONS(user, message_obj):
             else:
                 assert game.game_type == 'SUBSTITUTION'
                 incomplete_text = game.get_current_incomplete_text()
-                substitution = game.get_reader_completion()
+                substitution = game.get_reader_answer()
                 incomplete_text = incomplete_text.replace(substitution, '*{}*'.format(substitution))
                 msg_incomplete_sentence = ux.MSG_PLAYERS_SENTENCE_WITH_HIGHLITED_SUBSTITUTION[lang].format(incomplete_text.upper())
             if game.translate_help:
                 correct_completed_text = ux.render_complete_text(game, 
-                    game.get_current_incomplete_text(), game.get_reader_completion(),
+                    game.get_current_incomplete_text(), game.get_reader_answer(),
                     markdown=False, uppercase=False)
                 translated_text = translate.get_google_translation(correct_completed_text).upper()
                 msg_incomplete_sentence += '\n(*{}*)'.format(translated_text)
@@ -876,8 +876,8 @@ def state_GAME_PLAYERS_WRITE_COMPLETIONS(user, message_obj):
                 msg_players = ux.MSG_WRITERS_TEXT_INFO[lang].format(text_info)
                 send_message_multi(players, msg_players, remove_keyboard=True)
             if game.game_type in ['CONTINUATION','FILL']:
-                msg_reader = ux.MSG_READER_WAIT_WRITERS_WRITE_COMPLETION[lang]
-                msg_writers = ux.MSG_WRITERS_WRITE_COMPLETION[lang]
+                msg_reader = ux.MSG_READER_WAIT_WRITERS_WRITE_ANSWER[lang]
+                msg_writers = ux.MSG_WRITERS_WRITE_ANSWER[lang]
             else:
                 assert game.game_type == 'SUBSTITUTION'
                 msg_reader = ux.MSG_READER_WAIT_WRITERS_WRITE_SUBSTITUTION[lang]
@@ -886,41 +886,41 @@ def state_GAME_PLAYERS_WRITE_COMPLETIONS(user, message_obj):
             send_message_multi(writers, msg_writers, remove_keyboard=True)
     else:
         text_input = message_obj.text
-        if game.has_player_already_written_completion(user):
-            send_message(user, ux.MSG_ALREADY_SENT_COMPLETION[lang])
+        if game.has_player_already_written_answer(user):
+            send_message(user, ux.MSG_ALREADY_SENT_ANSWER[lang])
             return
         if text_input:
             if ux.text_is_button_or_digit(text_input):
                 send_message(user, ux.MSG_WRONG_BUTTON_INPUT[lang])            
             else:
-                completion = text_input                
-                if utility.contains_markdown(completion):
+                answer = text_input                
+                if utility.contains_markdown(answer):
                     send_message(user, ux.MSG_INPUT_NO_MARKDOWN[lang])
                 else:
                     if game.game_type == 'CONTINUATION':
-                        completion = utility.normalize_completion(completion) 
+                        answer = utility.normalize_answer(answer) 
                     elif game.game_type == 'SUBSTITUTION':
-                        if text_input == game.get_reader_completion():
+                        if text_input == game.get_reader_answer():
                             send_message(user, ux.MSG_INPUT_NO_VALID_SUBSTITUTION[lang])
                             return
-                    remaining_names = game.set_player_text_completion_and_get_remaining(user, completion)
+                    remaining_names = game.set_player_text_answer_and_get_remaining(user, answer)
                     if len(remaining_names)>0:
                         all_but_users = [p for p in players if p!=user]
                         remaining_names_str = ', '.join(remaining_names)
                         send_message(user, ux.MSG_THANKS[lang], remove_keyboard=True)
                         send_message(user, ux.MSG_WAIT_FOR[lang].format(remaining_names_str), remove_keyboard=True)
                         logging.debug("Remainig names ({}): {}".format(len(remaining_names), remaining_names_str))
-                        send_message_multi(all_but_users, ux.MSG_X_GAVE_COMPLETION_WAITING_FOR_PLAYERS_NAMES[lang].format(user.get_name(), remaining_names_str))                
+                        send_message_multi(all_but_users, ux.MSG_X_GAVE_ANSWER_WAITING_FOR_PLAYERS_NAMES[lang].format(user.get_name(), remaining_names_str))                
                     else:
                         game.prepare_voting()
-                        redirect_to_state_multi(players, state_GAME_VOTE_COMPLETION)
+                        redirect_to_state_multi(players, state_GAME_VOTE_ANSWER)
         else:
             send_message(user, ux.MSG_WRONG_INPUT_USE_TEXT[lang])
 
 # ================================
-# GAME_PLAYERS_VOTE_COMPLETIONS 
+# GAME_PLAYERS_VOTE_ANSWERS 
 # ================================
-def state_GAME_VOTE_COMPLETION(user, message_obj):
+def state_GAME_VOTE_ANSWER(user, message_obj):
     game = user.get_current_game()
     players, reader, writers = game.get_current_hand_players_reader_writers()
     lang = game.language
@@ -929,7 +929,7 @@ def state_GAME_VOTE_COMPLETION(user, message_obj):
     exact_guessers_names = [p.get_name() for p in exact_guessers]
     all_guessed_correctly = len(exact_guessers_indexes) == len(players) - 1
     all_but_one_guessed_correctly = len(exact_guessers_indexes) == len(players) - 2
-    shuffled_completions = game.get_shuffled_completions()
+    shuffled_answers = game.get_shuffled_answers()
 
     remaining_names = game.get_names_remaining_voters()
     remaining_names_str = ', '.join(remaining_names)
@@ -939,9 +939,9 @@ def state_GAME_VOTE_COMPLETION(user, message_obj):
             if len(exact_guessers)>0:                
                 exact_guessers_names_str = ', '.join(exact_guessers_names)
                 if len(exact_guessers)==1:
-                    msg = ux.MSG_X_PLAYER_SG_GUESSED_EXACT_COMPLETIONS[lang].format(exact_guessers_names_str)
+                    msg = ux.MSG_X_PLAYER_SG_GUESSED_EXACT_ANSWERS[lang].format(exact_guessers_names_str)
                 else:
-                    msg = ux.MSG_X_PLAYERS_PL_GUESSED_EXACT_COMPLETIONS[lang].format(exact_guessers_names_str)
+                    msg = ux.MSG_X_PLAYERS_PL_GUESSED_EXACT_ANSWERS[lang].format(exact_guessers_names_str)
                 send_message_multi(players, msg)
             if all_guessed_correctly:
                 msg = ux.MSG_NO_VOTE_ALL_GUESSED_CORRECTLY[lang]
@@ -953,12 +953,12 @@ def state_GAME_VOTE_COMPLETION(user, message_obj):
                 send_message_multi(players, msg)
                 recap_votes(user, game)
                 return     
-            number_completions = len(shuffled_completions)
+            number_answers = len(shuffled_answers)
             intro_msg = ux.MSG_INTRO_NUMBERED_TEXT[lang]
             send_message_multi(players, intro_msg)
             incomplete_text = game.get_current_incomplete_text()
             all_num_completed_answers = []
-            for num, cont in enumerate(shuffled_completions,1):
+            for num, cont in enumerate(shuffled_answers,1):
                 # if game.game_type == 'SUBSTITUTION' and num==r_shuffled_number:
                 #     continue
                 num_completed_answers = '{}: '.format(num) + ux.render_complete_text(game, incomplete_text, cont)                
@@ -967,12 +967,12 @@ def state_GAME_VOTE_COMPLETION(user, message_obj):
             send_message_multi(players, all_num_completed_answers_str)
             game.set_var('ALL_NUM_COMPLETED_ANSWERS', all_num_completed_answers_str)            
             send_message(reader, ux.MSG_WAIT_FOR_PLAYERS_TO_VOTE_PL[lang])
-            numbers_list = list(range(1,number_completions+1))            
+            numbers_list = list(range(1,number_answers+1))            
             
             for w in writers:
                 w_index = players.index(w)
 
-                w_shuffled_number = game.get_completion_shuffled_index(w_index) + 1
+                w_shuffled_number = game.get_answer_shuffled_index(w_index) + 1
                 if game.game_control != 'TEACHER' and w_index in exact_guessers_indexes:    
                     send_message(w, ux.MSG_GUESSED_NO_VOTE[lang], remove_keyboard=True)
                     send_message(w, ux.MSG_WAIT_FOR[lang].format(remaining_names_str), remove_keyboard=True)
@@ -1018,13 +1018,13 @@ def state_GAME_TEACHER_VALIDATION(user, message_obj):
     game = user.get_current_game()
     players, reader, writers = game.get_current_hand_players_reader_writers()
     lang = game.language
-    shuffled_completions = game.get_shuffled_completions()
-    number_completions = len(shuffled_completions)
+    shuffled_answers = game.get_shuffled_answers()
+    number_answers = len(shuffled_answers)
 
     if message_obj is None:
         if user == reader:
             # teacher            
-            numbers_list = list(range(1,number_completions+1))
+            numbers_list = list(range(1,number_answers+1))
             kb = [[str(i) for i in numbers_list]] #should exclude the original one
             if game.game_type == 'SUBSTITUTION':
                 kb.append([ux.BUTTON_NO_CORRECT_ANSWER_NO_EMOJI[lang]])
@@ -1059,7 +1059,7 @@ def state_GAME_TEACHER_VALIDATION(user, message_obj):
                             TEACHER_CORRECT_ANSWERS.append(int(text_input))
                             if -1 in TEACHER_CORRECT_ANSWERS:
                                 TEACHER_CORRECT_ANSWERS.remove(-1)                            
-                    numbers_list = list(range(1,number_completions+1))
+                    numbers_list = list(range(1,number_answers+1))
                     starred_number_list = [
                         '⭐{}'.format(n) if n in TEACHER_CORRECT_ANSWERS else '{}'.format(n) 
                         for n in numbers_list
@@ -1087,20 +1087,20 @@ def state_GAME_TEACHER_VALIDATION(user, message_obj):
 def recap_votes(user, game):
     lang = game.language
     players, reader, _ = game.get_current_hand_players_reader_writers()
-    shuffled_completions = game.get_shuffled_completions()
+    shuffled_answers = game.get_shuffled_answers()
     incomplete_text = game.get_current_incomplete_text()
     msg_summary = ux.MSG_VOTE_RECAP[lang]
     send_message_multi(players, msg_summary, remove_keyboard=True)
-    shuf_cont_voters_names = game.get_shuffled_completions_voters()
+    shuf_cont_voters_names = game.get_shuffled_answers_voters()
     exact_guessers_indexes = game.get_exact_guessers_indexes()             
     exact_guessers = [players[i] for i in exact_guessers_indexes]
     exact_guessers_names = [p.get_name() for p in exact_guessers]
-    for i, cont in enumerate(shuffled_completions):       
+    for i, cont in enumerate(shuffled_answers):       
         num = i+1     
         # if game.game_type == 'SUBSTITUTION' and num==r_shuffled_number:
         #     continue
         completed_text = ux.render_complete_text(game, incomplete_text, cont)
-        authors_indexes = game.get_completions_authors_indexes(cont)
+        authors_indexes = game.get_answers_authors_indexes(cont)
         authors = [players[i] for i in authors_indexes]            
         voters_names = shuf_cont_voters_names[i]
         voters_summay = str(len(voters_names))

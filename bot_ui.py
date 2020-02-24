@@ -98,9 +98,9 @@ BUTTON_GAME_TYPE = {
     'en': "👣🕳🐡 EXERCISE TYPE",
     'it': "👣🕳🐡 TIPO ESERCIZIO"
 }
-BUTTON_GAME_TYPE_COMPLETION = {
-    'en': "👣 COMPLETION",
-    'it': "👣 CONTINUA"
+BUTTON_GAME_TYPE_CONTINUATION = {
+    'en': "👣 CONTINUATION",
+    'it': "👣 CONTINUAZIONE"
 }
 BUTTON_GAME_TYPE_FILL = {
     'en': "🕳 FILL",
@@ -243,7 +243,7 @@ MSG_SELECT_GAME_TYPE = {
     'en': "Please select the game type:",
     'it': "Seleziona il tipo di gioco:"
 }
-MSG_GAME_TYPE_COMPLETION_DESCR = {
+MSG_GAME_TYPE_CONTINUATION_DESCR = {
     'en': "continue the sentece",
     'it': "continuare la frase"
 }
@@ -423,9 +423,9 @@ MSG_WRITERS_WAIT_READER_TEXT_INFO = {
     'en': "😴 Let's wait for {} ⭐️ to write down additional info about the inserted text.",
     'it': "😴 Aspettiamo che {} ⭐️ scriva alcune informazioni sul testo inserito."
 }
-MSG_WRITERS_WAIT_READER_WRITE_CORRECT_COMPLETION = {
-    'en': "😴 Let's wait for {} ⭐️ to write down the correct completion.",
-    'it': "😴 Aspettiamo che {} ⭐️ scriva il completamento corretto del testo inserito."
+MSG_WRITERS_WAIT_READER_WRITE_CORRECT_ANSWER = {
+    'en': "😴 Let's wait for {} ⭐️ to write down the correct answer.",
+    'it': "😴 Aspettiamo che {} ⭐️ scriva la risposta corretta."
 }
 MSG_WRITERS_WAIT_READER_WRITE_SUBSTITUTION_PART = {
     'en': "😴 Let's wait for {} ⭐️ to write the part of the sentence to be substituted.",
@@ -435,8 +435,8 @@ MSG_READER_WAIT_WRITERS_WRITE_SUBSTITUTION = {
     'en': "😴 Please wait that the other players write down their substituion proposal.",
     'it': "😴 Aspettiamo che gli altri giocatori scrivano la loro proposta di sostituzione."
 }
-MSG_READER_WAIT_WRITERS_WRITE_COMPLETION = {
-    'en': "😴 Please wait that the other players write down the correct completion.",
+MSG_READER_WAIT_WRITERS_WRITE_ANSWER = {
+    'en': "😴 Please wait that the other players write down the correct answer.",
     'it': "😴 Aspettiamo che gli altri giocatori scrivano il loro completamento del testo."
 }
 MSG_WRITERS_TEXT_INFO = {
@@ -451,27 +451,27 @@ MSG_PLAYERS_SENTENCE_WITH_HIGHLITED_SUBSTITUTION = {
     'en': "📖 This is the sentence with the highlited part to be substituted:\n{}",
     'it': "📖 Questa è la frase con la parte evidenziata da sostituire:\n{}"
 }
-MSG_READER_WRITE_CORRECT_COMPLETION = {
-    'en': "✍️ Please, write down the correct completion of the sentence.",
+MSG_READER_WRITE_CORRECT_ANSWER = {
+    'en': "✍️ Please, write down the correct answer of the sentence.",
     'it': "✍️ Scrivi il corretto completamento del testo inserito."
 }
 MSG_READER_WRITE_SUBSTITUTION_PART = {
     'en': "✍️ Please, write down the part of the sentence to substitute.",
     'it': "✍️ Scrivi la parte della frase da sostituire."
 }
-MSG_WRITERS_WRITE_COMPLETION = {
-    'en': "✍️ Please, write down a possible completion of the sentence.",
+MSG_WRITERS_WRITE_ANSWER = {
+    'en': "✍️ Please, write down a possible answer of the sentence.",
     'it': "✍️ Scrivi un possibile completamento del testo."
 }
 MSG_WRITERS_WRITE_SUBSTITUTION = {
     'en': "✍️ Please, write down a possible substitution of the highlited part.",
     'it': "✍️ Scrivi un possibile sostituzione della parte evidenziata."
 }
-MSG_ALREADY_SENT_COMPLETION = {
+MSG_ALREADY_SENT_ANSWER = {
     'en': "🤐 You have already sent your answer!\n😴 Let's wait for the other players.",
     'it': "🤐 Hai già mandato una risposta!\n😴 Aspettamo che gli altri/e giocatori/trici rispondano."
 }
-MSG_X_GAVE_COMPLETION_WAITING_FOR_PLAYERS_NAMES = {
+MSG_X_GAVE_ANSWER_WAITING_FOR_PLAYERS_NAMES = {
     'en': "📝 Received answer by *{}*. Let's wait for: {} 😴",
     'it': "📝 Ricevuta risposta da *{}*. Rimaniamo in attesa di: {} 😴"
 }
@@ -484,7 +484,7 @@ MSG_WAIT_FOR_PLAYERS_TO_VOTE_PL = {
     'it': "😴 Rimaniamo in attesa della scelta degli altri/e giocatori/trici."
 }
 MSG_VOTE = {
-    'en': "🗳️ Please select the number of the completion you think is the correct one.",
+    'en': "🗳️ Please select the number of the answer you think is the correct one.",
     'it': "🗳️ Seleziona il numero del completamento che ritieni essere quello corretto."
 }
 MSG_TEACHER_VOTE = {
@@ -504,20 +504,20 @@ MSG_NO_VOTE_ALL_BUT_ONE_GUESSED_CORRECTLY = {
     'it': "❌🗳️ Votazione assente: solo un giocatore dovrebbe votare per una sola possibilità."
 }
 MSG_NO_VOTE_ALL_GUESSED_CORRECTLY = {
-    'en': "❌🗳️ No voting: all player guessed the exact continuation.",
-    'it': "❌🗳️ Votazione assente: tutti i giocatori hanno indovinato la corretta continuazione."
+    'en': "❌🗳️ No voting: all player inserted the correct answer.",
+    'it': "❌🗳️ Votazione assente: tutti i giocatori hanno inserito la soluzione corretta."
 }
 MSG_GUESSED_NO_VOTE = {
-    'en': "😀 Wow, you entered a completion which is identical to the oriiginal one! no need to vote!",
-    'it': "😀 Wow, hai inserito la continuazione che è identica all'originale!\nNon hai bisogno di votare!",
+    'en': "😀 Wow, you entered the correct answer!",
+    'it': "😀 Wow, hai inserito la risposta coretta!",
 }
-MSG_X_PLAYER_SG_GUESSED_EXACT_COMPLETIONS = {
-    'en': "🤠 {} has inserted the original completion and doesn't need to vote!",
-    'it': "🤠 {} ha inserito la continuazione originale e non deve votare!",
+MSG_X_PLAYER_SG_GUESSED_EXACT_ANSWERS = {
+    'en': "🤠 {} has inserted the correct answer.",
+    'it': "🤠 {} ha inserito la risposta corretta.",
 }
-MSG_X_PLAYERS_PL_GUESSED_EXACT_COMPLETIONS = {
-    'en': "🤠 {} have inserted the original completion and don't need to vote!",
-    'it': "🤠 {} hanno inserito la continuazione originale e non devono votare!",
+MSG_X_PLAYERS_PL_GUESSED_EXACT_ANSWERS = {
+    'en': "🤠 {} have inserted the correct answer.",
+    'it': "🤠 {} hanno inserito la risopsta corretta.",
 }
 MSG_THANKS = {
     'en': "😀 Thanks!",
@@ -685,7 +685,7 @@ ALL_BUTTONS_TEXT_LIST = [v[l] for l in LANGUAGES for k,v in globals().items() if
 
 GAME_SETTINGS_BUTTON_VALUE_UX_MAPPING = lambda lang: {
     BUTTON_GAME_TYPE[lang]: {
-        'CONTINUATION': BUTTON_GAME_TYPE_COMPLETION[lang],
+        'CONTINUATION': BUTTON_GAME_TYPE_CONTINUATION[lang],
         'FILL': BUTTON_GAME_TYPE_FILL[lang],
         'SUBSTITUTION': BUTTON_GAME_TYPE_SUBSTITUTION[lang],
     },
@@ -711,21 +711,21 @@ GAME_SETTINGS_BUTTON_VALUE_UX_MAPPING = lambda lang: {
     }
 }
 
-def render_complete_text(game, incomplete_text, completion, markdown=True, uppercase=True):
+def render_complete_text(game, incomplete_text, answer, markdown=True, uppercase=True):
     if uppercase:
-            completion = completion.upper()
+            answer = answer.upper()
             incomplete_text = incomplete_text.upper()
     if game.game_type == 'CONTINUATION':        
-        completed_text = "{} *{}*".format(incomplete_text, completion)
+        completed_text = "{} *{}*".format(incomplete_text, answer)
     elif game.game_type == 'FILL':        
         pre_gap, post_gap = game.get_incomplete_text_pre_post_gap()
         if uppercase:
             pre_gap, post_gap = pre_gap.upper(), post_gap.upper()
-        completed_text = '{}*{}*{}'.format(pre_gap, completion, post_gap)
+        completed_text = '{}*{}*{}'.format(pre_gap, answer, post_gap)
     else:
         assert game.game_type == 'SUBSTITUTION'
-        original_completion = game.get_reader_completion().upper()
-        completed_text = incomplete_text.replace(original_completion, '*{}*'.format(completion))
+        original_answer = game.get_reader_answer().upper()
+        completed_text = incomplete_text.replace(original_answer, '*{}*'.format(answer))
 
 
     if not markdown:
