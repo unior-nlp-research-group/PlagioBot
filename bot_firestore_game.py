@@ -136,6 +136,9 @@ class Game(Model):
         self.variables[var_name] = init_value
         return init_value
 
+    def is_voting_no_answer_allowed(self):
+        return self.game_type == 'SUBSTITUTION'
+
     # --------------------------
     # TRANSACTIONAL OPERATION
     # --------------------------
@@ -178,9 +181,9 @@ class Game(Model):
                 'INCOMPLETE_TEXTS': [],
                 'INCOMPLETE_TEXT_INFO':[],
                 'PLAYERS_ANSWERS': [{} for i in range(self.num_hands)], # for each hand, one per player in order of players
-                'ANSWER_INFO': [{} for i in range(self.num_hands)], 
+                'ANSWERS_INFO': [{} for i in range(self.num_hands)], 
                     # ANSWER (STRING) in key:  (UPPER CASE)
-                    # mapping to value:
+                    # mapping to dictionary:
                     # {
                     #     'shuffled_index': int,  --> index that will appear in the voting for this answer
                     #     'authors': list(int) -> index of players writing that answer
@@ -230,11 +233,15 @@ class Game(Model):
     def get_current_incomplete_text(self):        
         return self.variables['INCOMPLETE_TEXTS'][-1]
 
-    def get_reader_answer(self):        
-        reader_index = self.get_reader_index()
+    def get_current_hand_answers_info(self):        
         hand_index = self.variables['HAND']-1
-        current_players_answers = self.variables['PLAYERS_ANSWERS'][hand_index]
-        return current_players_answers[str(reader_index)]
+        return self.variables['ANSWERS_INFO'][hand_index]
+
+    def get_correct_answers(self):        
+        # hand_index = self.variables['HAND']-1
+        # return self.variables['PLAYERS_ANSWERS'][hand_index]        
+        answers_info = self.get_current_hand_answers_info()
+        return [k for k,v in answers_info.items() if v['correct']]
         
 
     def get_incomplete_text_pre_post_gap(self):        
@@ -260,6 +267,13 @@ class Game(Model):
         current_players_answers = self.variables['PLAYERS_ANSWERS'][hand_index]
         return str(player_index) in current_players_answers
 
+    def set_correct_answers(self, shuffled_indexes_list, save=True):
+        answers_info = self.get_current_hand_answers_info()
+        for d in answers_info.values():
+            if d['shuffled_index'] in shuffled_indexes_list:
+                d['correct'] = True
+        if save: self.save()
+
     #--------------------------
     # TRANSACTIONAL OPERATION
     #--------------------------
@@ -284,9 +298,9 @@ class Game(Model):
         return result
 
     def prepare_voting(self):                
-        substitution_game = self.game_type == 'SUBSTITUTION'
+        voting_no_answer_allowed = self.is_voting_no_answer_allowed()
         hand_index = self.variables['HAND']-1
-        answers_info = self.variables['ANSWER_INFO'][hand_index]
+        answers_info = self.variables['ANSWERS_INFO'][hand_index]
         current_players_answers_upper = [ # upper case answers in order of player index
             c.upper() 
             for i,c in sorted(
@@ -298,7 +312,7 @@ class Game(Model):
         original_answer_upper = current_players_answers_upper[reader_index]
         players_answers_unique_upper = sorted(set(current_players_answers_upper))
         number_indexes = len(players_answers_unique_upper)
-        if substitution_game:
+        if voting_no_answer_allowed:
             number_indexes -= 1
         shuffled_indexes = list(range(number_indexes))
         shuffle(shuffled_indexes)
@@ -306,7 +320,7 @@ class Game(Model):
         
         for unique_cont in players_answers_unique_upper:
             is_original = unique_cont == original_answer_upper
-            if substitution_game and is_original:
+            if voting_no_answer_allowed and is_original:
                 continue
             answers_info[unique_cont] = {
                 'shuffled_index': next(iter_shuffled_indexes),
@@ -317,9 +331,10 @@ class Game(Model):
                 'correct': is_original,
                 'voted_by': []
             }
-        if substitution_game:
-            # # for collecting the NO CORRECT ANSWERS votes (applicabole in SUBSTITUTION)
-            answers_info['_'] = {
+        if voting_no_answer_allowed:
+            # for collecting the NO CORRECT ANSWERS votes (applicabole e.g., in SUBSTITUTION)
+            # -1 is used for shuffled_index
+            answers_info[''] = {
                 'shuffled_index': -1,
                 'authors_indexes': [],
                 'correct': False,
@@ -328,16 +343,14 @@ class Game(Model):
         self.save()
 
     def get_exact_guessers_indexes(self):        
-        hand_index = self.variables['HAND']-1
-        answers_info = self.variables['ANSWER_INFO'][hand_index]
+        answers_info = self.get_current_hand_answers_info()
         answer_correct_info = next((info for c,info in answers_info.items() if info['correct']), None)
         if answer_correct_info is None:
             return []
         return [i for i in answer_correct_info['authors_indexes'] if i!=self.get_reader_index()]
 
     def get_answer_shuffled_index(self, author_index):            
-        hand_index = self.variables['HAND']-1
-        answers_info = self.variables['ANSWER_INFO'][hand_index]
+        answers_info = self.get_current_hand_answers_info()
         author_shuffled_index = next(
             info['shuffled_index'] 
             for info in answers_info.values() 
@@ -347,13 +360,11 @@ class Game(Model):
 
     def has_user_already_voted(self, user):
         player_index = self.players_id.index(user.id)        
-        hand_index = self.variables['HAND']-1
-        answers_info = self.variables['ANSWER_INFO'][hand_index]
+        answers_info = self.get_current_hand_answers_info()
         return any(player_index in info['voted_by'] for info in answers_info.values())
 
     def get_names_remaining_voters(self):        
-        hand_index = self.variables['HAND']-1
-        answers_info = self.variables['ANSWER_INFO'][hand_index]
+        answers_info = self.get_current_hand_answers_info()
         names = self.players_names        
         voted_by_list = [info['voted_by'] for info in answers_info.values()] 
         voters_indexes = list(itertools.chain(*voted_by_list))
@@ -374,14 +385,13 @@ class Game(Model):
             logging.debug('{} Entering transactional set_voted_indexes_and_points_and_get_remaining'.format(user.get_name()))
             self.refresh_from_transaction(transaction)
             names = self.players_names
-            hand_index = self.variables['HAND']-1
-            answers_info = self.variables['ANSWER_INFO'][hand_index]
+            answers_info = self.get_current_hand_answers_info()
             player_index = self.players_id.index(user.id)
             reader_index = self.get_reader_index()
             assert player_index != reader_index # reader doesn't receive points        
             names = self.players_names        
-            voted_cont_info = next(info for c,info in answers_info.items() if info['shuffled_index']==voted_shuffled_index)
-            voted_cont_info['voted_by'].append(player_index)   
+            voted_answer_info = next(info for c,info in answers_info.items() if info['shuffled_index']==voted_shuffled_index)
+            voted_answer_info['voted_by'].append(player_index)   
             voted_by_list = [info['voted_by'] for info in answers_info.values()] 
             voters_indexes = list(itertools.chain(*voted_by_list))        
             exact_author_list = next((info['authors_indexes'] for info in answers_info.values() if info['correct']),[reader_index])
@@ -394,48 +404,42 @@ class Game(Model):
         self.refresh()
         return result
 
-    def get_hand_answers_info(self):        
-        hand_index = self.variables['HAND']-1
-        answers_info = self.variables['ANSWER_INFO'][hand_index]        
-        return answers_info
-
     '''
     For each answers (in shuffled order), 
     return the list of player names voting that answer
     '''
     def get_shuffled_answers_voters(self):        
-        hand_index = self.variables['HAND']-1
         players_names = self.players_names
-        answers_info = self.variables['ANSWER_INFO'][hand_index]
-        shuf_cont_voters_names = []
-        for cont_info in sorted(answers_info.values(), key=lambda i: i['shuffled_index']):
-            if self.game_type == 'SUBSTITUTION' and (cont_info['correct'] or cont_info['shuffled_index']==-1):
+        answers_info = self.get_current_hand_answers_info()
+        shuffled_answer_voters_names = []
+        for answer_info in sorted(answers_info.values(), key=lambda i: i['shuffled_index']):
+            if self.game_type == 'SUBSTITUTION' and (answer_info['correct'] or answer_info['shuffled_index']==-1):
                 continue
-            voters_name = [n for i,n in enumerate(players_names) if i in cont_info['voted_by']]
-            shuf_cont_voters_names.append(voters_name)
-        return shuf_cont_voters_names
+            voters_name = [n for i,n in enumerate(players_names) if i in answer_info['voted_by']]
+            shuffled_answer_voters_names.append(voters_name)
+        return shuffled_answer_voters_names
 
     def get_shuffled_answers(self):
-        hand_index = self.variables['HAND']-1
-        answers_info = self.variables['ANSWER_INFO'][hand_index]
+        answers_info = self.get_current_hand_answers_info()
         if self.game_type == 'SUBSTITUTION':
             shuffled_answers = [
                 k for k,v in sorted(answers_info.items(), key=lambda kv: kv[1]['shuffled_index'])
-                if k != '_' and not v['correct']
+                if k != '' and not v['correct']
             ]
         else:
-            shuffled_answers = [k for k,v in sorted(answers_info.items(), key=lambda kv: kv[1]['shuffled_index'])]
+            shuffled_answers = [
+                k for k,v in sorted(answers_info.items(), key=lambda kv: kv[1]['shuffled_index'])
+            ]
         return shuffled_answers
 
     def get_answers_authors_indexes(self, answer):        
-        hand_index = self.variables['HAND']-1
-        answers_info = self.variables['ANSWER_INFO'][hand_index]
+        answers_info = self.get_current_hand_answers_info()
         authors_indexes = answers_info[answer]['authors_indexes']
         return authors_indexes
 
     def prepare_hand_poins(self):        
         hand_index = self.variables['HAND']-1
-        answers_info = self.variables['ANSWER_INFO'][hand_index]
+        answers_info = self.variables['ANSWERS_INFO'][hand_index]
         answer_correct_info = next((info for c,info in answers_info.items() if info['correct']),None)
         current_hand_points = self.variables['HAND_POINTS'][hand_index]
         reader_index = self.get_reader_index()

@@ -547,9 +547,9 @@ MSG_VOTED_BY = {
     'en': "Voted by: {}",
     'it': "Votato da: {}"
 }
-MSG_GUESSED_BY_AND_VOTED_BY = {
-    'en': "Guessed by: {}. Voted by: {}.",
-    'it': "Indovinato da: {}. Votato da: {}."
+MSG_GUESSED_BY_AND_CORRECTLY_VOTED_BY = {
+    'en': "Guessed by: {}. Correctly voted by: {}.",
+    'it': "Indovinato da: {}. Votato correttamente da: {}."
 }
 MSG_POINT_HAND_SUMMARY = {
     'en': "🖐 LAST HAND POINTS",
@@ -711,7 +711,8 @@ GAME_SETTINGS_BUTTON_VALUE_UX_MAPPING = lambda lang: {
     }
 }
 
-def render_complete_text(game, incomplete_text, answer, markdown=True, uppercase=True):
+def render_complete_text(game, markdown=True, uppercase=True):
+    incomplete_text = game.get_current_incomplete_text()    
     if uppercase:
             answer = answer.upper()
             incomplete_text = incomplete_text.upper()
@@ -724,7 +725,7 @@ def render_complete_text(game, incomplete_text, answer, markdown=True, uppercase
         completed_text = '{}*{}*{}'.format(pre_gap, answer, post_gap)
     else:
         assert game.game_type == 'SUBSTITUTION'
-        original_answer = game.get_reader_answer().upper()
+        original_answer = game.get_correct_answers().upper()
         completed_text = incomplete_text.replace(original_answer, '*{}*'.format(answer))
 
 
