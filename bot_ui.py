@@ -23,12 +23,12 @@ LANGUAGES = ['it','en']
 # ================================
 
 BUTTON_YES = {
-    'en': '👌 YES',
-    'it': '👌 SI'
+    'en': '✅ YES',
+    'it': '✅ SI'
 }
 BUTTON_NO = {
-    'en': '🙅‍♀️ NO',
-    'it': '🙅‍♀️ NO'
+    'en': '❌ NO',
+    'it': '❌ NO'
 }
 BUTTON_BACK = {
     'en': "🔙 BACK",
@@ -119,16 +119,16 @@ BUTTON_GAME_TRANSLATE_HELP = {
     'it': "👁️‍🗨️ TRADUZIONE AUTOMATICA"
 }
 BUTTON_GAME_CONTROL = {
-    'en': "⚛️👩‍🏫 CONTROL",
-    'it': "⚛️👩‍🏫 CONTROLLO"
+    'en': "⚛️🧑‍🏫 CONTROL",
+    'it': "⚛️🧑‍🏫 CONTROLLO"
 }
 BUTTON_GAME_CONTROL_DEFAULT = {
     'en': "⚛️ DEFAULT",
     'it': "⚛️ TRADIZIONALE"
 }
 BUTTON_GAME_CONTROL_TEACHER = {
-    'en': "👩‍🏫 TEACHER",
-    'it': "👩‍🏫 INSEGNANTE"
+    'en': "🧑‍🏫 TEACHER",
+    'it': "🧑‍🏫 INSEGNANTE"
 }
 BUTTON_GAME_CONTROL_DEMO = {
     'en': "🤖 DEMO",
@@ -162,6 +162,14 @@ BUTTON_NO_CORRECT_ANSWER = {
     'en': "❌ NONE",
     'it': "❌ NESSUNA"
 }
+BUTTON_NO_CORRECT_ANSWER_NO_EMOJI = {
+    'en': "NONE",
+    'it': "NESSUNA"
+}
+BUTTON_SUBMIT = {
+    'en': "✅ SUBMIT",
+    'it': "✅ INVIA"
+}
 
 ####################
 # CONVERSATIONS
@@ -184,8 +192,8 @@ MSG_NOTIFICATIONS_OFF = {
     'it': "🔕 Hai le notifiche disabilitate."
 }
 MSG_NO_START_COMMAND_AVAILABLE_DURING_GAME = {
-    'en': "⛔ No /start command availale during the game. Type /exit\\_game if you want to abandon the game.",
-    'it': "⛔ Il comando /start non è disponibile durante il gioco. Scrivi /exit\\_game se vuoi terminare il gioco."
+    'en': "⛔ No /start command availale during the game. Type /exit if you want to abandon the game.",
+    'it': "⛔ Il comando /start non è disponibile durante il gioco. Scrivi /exit se vuoi terminare il gioco."
 }
 MSG_INFO = {
     'en': "{}".format(parameters.INSTRUCTION_URL_EN),
@@ -479,6 +487,18 @@ MSG_VOTE = {
     'en': "🗳️ Please select the number of the completion you think is the correct one.",
     'it': "🗳️ Seleziona il numero del completamento che ritieni essere quello corretto."
 }
+MSG_TEACHER_VOTE = {
+    'en': "🧑‍🏫 Please *select the correct response(s)* (none, one, or more).",
+    'it': "🧑‍🏫 Seleziona *la/e risposta/e corretta/e* (nessuna, una, o più di una)."
+}
+MSG_TEACHER_VOTE = {
+    'en': "🧑‍🏫 Please *select the correct response(s)* (none, one, or more). Press on /recap\\_answers if you want to see the students' answers again.",
+    'it': "🧑‍🏫 Seleziona *la/e risposta/e corretta/e* (nessuna, una, o più di una). Premi /recap\\_answers se vuoi vedere nuovamente le risposte degli studenti."
+}
+MSG_TEACHER_VOTE_AND_SUBMIT = {
+    'en': "🧑‍🏫 Please select the correct responses (none, one, or more) and press SUBMIT to confirm. Press on /recap\\_answers if you want to see the students' answers again.",
+    'it': "🧑‍🏫 Seleziona le risposste corrette (nessuna, una, o più di una) e premi INVIA per confermare. Premi /recap\\_answers se vuoi vedere nuovamente le risposte degli studenti."
+}
 MSG_NO_VOTE_ALL_BUT_ONE_GUESSED_CORRECTLY = {
     'en': "❌🗳️ No voting: only one player would have to vote for one possibility.",
     'it': "❌🗳️ Votazione assente: solo un giocatore dovrebbe votare per una sola possibilità."
@@ -502,6 +522,10 @@ MSG_X_PLAYERS_PL_GUESSED_EXACT_COMPLETIONS = {
 MSG_THANKS = {
     'en': "😀 Thanks!",
     'it': "😀 Grazie!"
+}
+MSG_WAIT_FOR_TEACHER_EVALUATION = {
+    'en': "🧑‍🏫 Let's wait for the teacher's evaluation!",
+    'it': "🧑‍🏫 Aspettiamo la valutazione dell'insegnante!"
 }
 MSG_ALREADY_VOTED_WAITING_FOR = {
     'en': "🤐 You already voted!\n😴 Let's wait for: {}",
@@ -591,6 +615,10 @@ MSG_WRONG_INPUT_ONLY_TEXT_ACCEPTED = {
 MSG_WRONG_INPUT_WAIT_FOR_PLAYERS_TO_VOTE = {
     'en': "⛔️ Let's wait for the other players to vote.",
     'it': "⛔️ Attendiamo che le altre persone completino il voto."
+}
+MSG_WRONG_INPUT_WAIT_FOR_TEACHER_TO_VOTE = {
+    'en': "⛔️ Let's wait for the teacher's evaluation.",
+    'it': "⛔️ Attendiamo la valutazione dell'insegnante."
 }
 MSG_WRONG_INPUT_WAIT_FOR_READER = {
     'en': '⛔️ Please wait for {} to insert the text.',

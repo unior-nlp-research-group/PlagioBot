@@ -29,12 +29,12 @@ class Game(Model):
     players_id: List    
     state: str = "INITIAL" # INITIAL, STARTED, ENDED, INTERRUPTED    
     sub_state: str = None # players states
-    game_type: str = 'CONTINUATION' # 'CONTINUATION', 'FILL', 'SUBSTITUTION'
-    game_control: str = 'DEFAULT' # 'DEFAULT', 'TEACHER', 'DEMO'
+    game_type: str = 'SUBSTITUTION' # 'CONTINUATION', 'FILL', 'SUBSTITUTION'
+    game_control: str = 'TEACHER' # 'DEFAULT', 'TEACHER', 'DEMO'
     game_reward_mode: str = 'CREATIVITY' # 'CREATIVITY' 'EXACTNESS'    
     demo_mode: bool = False
     special_rules: str = ''
-    num_hands: int = 5
+    num_hands: int = parameters.NUM_HANDS_IN_TEACHER_MODE
     players_names: List = None                
     num_players: int = -1
     announced: bool = False
@@ -130,8 +130,11 @@ class Game(Model):
         self.variables[var_name] = var_value
         if save: self.save()
 
-    def get_var(self, var_name):
-        return self.variables.get(var_name,None)
+    def get_var(self, var_name, init_value=None):
+        if var_name in self.variables:
+            return self.variables[var_name]
+        self.variables[var_name] = init_value
+        return init_value
 
     # --------------------------
     # TRANSACTIONAL OPERATION
@@ -168,7 +171,7 @@ class Game(Model):
             self.num_players = len(self.players_id)
             if self.game_control == 'DEFAULT':
                 self.num_hands = self.num_players
-                # otherwise set manually            
+                # otherwise set it manually
             self.players_names = [p.get_name() for p in players]
             self.variables = {
                 'HAND': 1,

@@ -120,8 +120,11 @@ class User(Model):
         self.variables[var_name] = var_value
         if save: self.save()
 
-    def get_var(self, var_name):
-        return self.variables.get(var_name,None)
+    def get_var(self, var_name, init_value=None):
+        if var_name in self.variables:
+            return self.variables[var_name]
+        self.variables[var_name] = init_value
+        return init_value
 
     def is_master(self):
         return self.serial_id == key.TELEGRAM_BOT_MASTER_ID

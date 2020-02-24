@@ -32,17 +32,19 @@ def exception_reporter(func):
     def exception_wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except Exception:
+        except (TimedOut, NetworkError):
+            rety_on_network_error(func)
+        except Exception: #(Unauthorized, BadRequest, ChatMigrated, TelegramError)
             report_string = '❗️ Exception {}'.format(traceback.format_exc()) #.splitlines()
             logging.error(report_string)
             try:
                 report_master(report_string)
             except Exception:
                 report_string = '❗️ Exception {}'.format(traceback.format_exc())
-                logging.error(report_string)
+                logging.error(report_string)        
     return exception_wrapper
 
-@exception_reporter
+
 def rety_on_network_error(func):
     def retry_on_network_error_wrapper(*args, **kwargs):
         for retry_num in range(1, 5):
@@ -94,7 +96,7 @@ def send_message_multi(users, text, kb=None, markdown=True, remove_keyboard=Fals
 '''
 If kb==None keep last keyboard
 '''
-@rety_on_network_error
+@exception_reporter
 def send_message(user, text, kb=None, markdown=True, remove_keyboard=False, sleep=False, **kwargs):
     #sendMessage(chat_id, text, parse_mode=None, disable_web_page_preview=None, disable_notification=False,
     # reply_to_message_id=None, reply_markup=None, timeout=None, **kwargs)
