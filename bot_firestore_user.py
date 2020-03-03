@@ -46,7 +46,7 @@ class User(Model):
             serial_id = str(serial_id),
             name = name,
             username = username,
-            language = language if language in ['en','it'] else 'it',
+            language = language if language in ['en','it'] else 'en',
             bot = bot
         )
         user.id = User.make_id(application, serial_id)
@@ -63,8 +63,10 @@ class User(Model):
         self.username = username
         self.save()
 
-    def get_name(self):
-        return escape_markdown(self.name)
+    def get_name(self, escape_md=True):
+        if escape_md:
+            return escape_markdown(self.name)
+        return self.name
 
     def get_name_at_username(self, escape_markdown=False):
         if self.username:
@@ -135,6 +137,7 @@ class User(Model):
     @staticmethod
     def get_user_lang_state_notification_on(lang, state):
         users_generator = User.query([
+            ('language', '==', lang),
             ('notifications', '==', True), 
             ('state', '==', state)
         ]).get()

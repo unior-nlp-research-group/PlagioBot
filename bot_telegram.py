@@ -62,6 +62,7 @@ def rety_on_network_error(func):
     return retry_on_network_error_wrapper
 
 def set_webhook():
+    print("Attempting to set webhook to\n{}".format(key.WEBHOOK_TELEGRAM_BASE))
     s = BOT.setWebhook(key.WEBHOOK_TELEGRAM_BASE, allowed_updates=['message'])
     if s:
         print("webhook setup ok: {}".format(key.WEBHOOK_TELEGRAM_BASE))
@@ -100,8 +101,8 @@ If kb==None keep last keyboard
 def send_message(user, text, kb=None, markdown=True, remove_keyboard=False, sleep=False, **kwargs):
     #sendMessage(chat_id, text, parse_mode=None, disable_web_page_preview=None, disable_notification=False,
     # reply_to_message_id=None, reply_markup=None, timeout=None, **kwargs)
-    if kb or remove_keyboard:
-        if remove_keyboard:
+    if kb!=None or remove_keyboard:
+        if kb==[] or remove_keyboard:
             user.set_empy_keyboard()            
             reply_markup = telegram.ReplyKeyboardRemove()
         else:

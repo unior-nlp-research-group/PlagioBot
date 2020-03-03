@@ -58,9 +58,19 @@ def has_parenthesis_in_correct_format(text):
     close_index = text.find(')')
     return open_index!=-1 and close_index!=-1 and open_index < close_index
 
-def validate_substring_presence(text, s):
-    return text.count(s)==1
-
+def distribute_elements(seq, max_size=5):
+    if len(seq)==0:
+        return []
+    lines = len(seq) // max_size
+    if len(seq) % max_size > 0:
+        lines += 1
+    avg = len(seq) / float(lines)
+    result = []
+    last = 0.0
+    while last < len(seq):
+        result.append(seq[int(last):int(last + avg)])
+        last += avg
+    return result
 
 def get_milliseconds():
   """
