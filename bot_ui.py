@@ -249,15 +249,15 @@ MSG_INSERT_NUMBER_OF_ROUNDS = {
 }
 MSG_INSTRUCTIONS = {
     'CONTINUATION': {
-        'en': "ℹ️ *Instructions*: The game is set to *CONTINUATION* mode. Participants will be presented with an incomplete sentence (previously written by the reader), and need to provide a plausible continuation. Next, all completion (including the original) are collected and displayed in random order. Participants will then have to vote the continuation they believe to be the original one. Each player will make a point if she votes for the original completion, otherwise she will give the point to the player who wrote that completion.",
-        'it': "ℹ️ *Instructions*: Il gioco è impostato in modalità *COMPLETAMENTO*. I partecipanti riceveranno una frase incompleta (scritta dal lettore in precedenza), e gli verrà chiesto di scrivere di completare la frase in maniera plausibile. Successivamente, verranno mostrate tutte le frase complete in ordine casuale (inclusa quella originale). I partecipanti dovranno quindi votare la frase che ritengono essere quella originale. Ogni giocatore riceverà un punto se indovinerà correttamente la frase originale; altrimenti, darà il punto al giocatore che ha scritto la frase votata."
+        'en': "ℹ️ *Instructions*: The game is set to *CONTINUATION* mode. Participants will be presented with an incomplete sentence (previously written by the reader), and need to provide a plausible continuation. Next, all completion (including the original) are collected and displayed in random order. Participants will then have to try guess which one is the original continuation. Each player will gain a point if she correctly guess the original completion, otherwise she will give the point to the player who wrote that completion.",
+        'it': "ℹ️ *Instructions*: Il gioco è impostato in modalità *COMPLETAMENTO*. I partecipanti riceveranno una frase incompleta (scritta dal lettore in precedenza), e gli verrà chiesto di scrivere di completare la frase in maniera plausibile. Successivamente, verranno mostrate tutte le frase complete in ordine casuale (inclusa quella originale). I partecipanti dovranno quindi cercare di indovinare quale frase è quella originale. Ogni giocatore riceverà un punto se indovinerà correttamente, altrimenti darà il punto al giocatore che ha scritto la frase selezionata."
     },
     'FILL': {
         'en': "ℹ️ *Instructions*: The game is set to *FILL* mode.",
         'it': "ℹ️ *Instructions*: Il gioco è impostato in modalità *RIEMPIMENTO*."
     },
     'SYNONYM': {
-        'en': "ℹ️ *Instructions*: The game is set to *SYNONYM* mode. In this game, you are presented with a sentence containing a part (one or more words) *highlighted in boldface*. Firstly you have to come up with a synonym of the highleted part. It can be a *single word* or *multiple words* that will retain the meaning of the sentence, once substituted to the boldfaced part. In the next phase, all answers are listed in random order; you will be asked to vote for one answer (from another player) that you think is also correct. If no other answer is correct, you can vote for *NONE*. Finally, the *teacher will validate all answers*: you will get 2 points if you answered correctly, 1 point if you voted correctly and -1 point if you voted incorrectly.",
+        'en': "ℹ️ *Instructions*: The game is set to *SYNONYM* mode. In this game, you are presented with a sentence containing a part (one or more words) *highlighted in boldface*. Firstly you have to come up with a synonym of the highleted part. It can be a *single word* or *multiple words* that will retain the meaning of the sentence, once substituted to the boldfaced part. In the next phase, all answers are listed in random order; you will be asked to choose for one answer (from another player) that you think is also correct. If no other answer is correct, you can select *NONE*. Finally, the *teacher will validate all answers*: you will get 2 points if you answered correctly, 1 point if you chose correctly and -1 point if you chose incorrectly.",
         'it': "ℹ️ *Instructions*: Il gioco è impostato in modalità *SINONIMI*."
     }
 }
@@ -466,13 +466,25 @@ MSG_INTRO_NUMBERED_TEXT = {
     'it': "📝 Queste sono tutte le risposte in ordine casuale:"
 }
 MSG_WAIT_FOR_PLAYERS_TO_VOTE_PL = {
-    'en': "😴 Let's wait for the other players to vote.",
-    'it': "😴 Rimaniamo in attesa del voto degli altri/e giocatori/trici."
+    'en': "😴 Let's wait for the other players to make their choice.",
+    'it': "😴 Rimaniamo in attesa che gli altri/e giocatori/trici facciano la loro scelta."
 }
 MSG_VOTE = {
-    'en': "🗳️ *Voting*: please select the number associated to one of the other answers you think is the correct one.",
-    'it': "🗳️ *Votazione*: seleziona il numero associato a una delle altre risposte che ritieni essere quella corretta."
+    'CONTINUATION': {
+        'en': "🔢 Select the number of the continuation you think is the original one.",
+        'it': "🔢 Seleziona il numero associato alla continuazione che ritieni essere quella originale."
+    },
+    'FILL': {
+        'en': "🔢 Select the number of the completion you think is the original one.",
+        'it': "🔢 Seleziona il numero associato al completamento che ritieni essere quello originale."
+    },
+    'SYNONYM': {
+        'en': "🔢 *Choice selection*: please select the number associated to one of the other answers you think is correct, or select NONE if there is no correct answer.",
+        'it': "🔢 *Selezione*: seleziona il numero associato a una delle altre risposte che ritieni essere corretta, o scegli NESSUNA se non ce n'è nessuna di corretta."
+    }    
 }
+
+
 MSG_TEACHER_VOTE = {
     'en': "🧑‍🏫 Please *select the correct response(s)* (none, one, or more).",
     'it': "🧑‍🏫 Seleziona *la/e risposta/e corretta/e* (nessuna, una, o più di una)."
@@ -513,29 +525,29 @@ MSG_WRONG_ANSWER= {
     'it': '❌✍ Non hai dato la risposta corretta (0 punti).',
 }
 MSG_CORRECT_VOTING= {
-    'en': '🌟📌 You have voted correctly! ({})',
-    'it': '🌟📌 Hai votato correttamete! ({})'
+    'en': '🌟📌 You have chosen correctly! ({})',
+    'it': '🌟📌 Hai scelto correttamete! ({})'
 }
 MSG_WRONG_VOTING= {
-    'en': "❌📌 You didn't vote correctly.",
-    'it': '❌📌 Non hai votato correttamente.'
+    'en': "❌📌 You didn't choose correctly.",
+    'it': '❌📌 Non hai scelto correttamente.'
 }
 MSG_WRONG_VOTING_PENALTY= {
-    'en': "❌📌 You didn't vote correctly ({}).",
-    'it': '❌📌 Non hai votato correttamente ({}).'
+    'en': "❌📌 You didn't choose correctly ({}).",
+    'it': '❌📌 Non hai scelto correttamente ({}).'
 }
 MSG_RECEIVED_VOTED = {
-    'en': "🗳️ {} players voted for your answer ({}).",
-    'it': "🗳️ {} giocatori hanno votato per la tua risposta ({})."
+    'en': "🔘 {} players chosen your answer ({}).",
+    'it': "🔘 {} giocatori hanno scelto la tua risposta ({})."
 }
 
 MSG_NO_VOTE_ONLY_ONE_OPTION = {
-    'en': "❌🗳️ No voting: all players would only have one option to choose from.",
-    'it': "❌🗳️ Votazione assente: tutti i giocatori avrebbero una sola opzione da scegliere."
+    'en': "❌🔘 No selection: all players would only have one option to choose from.",
+    'it': "❌🔘 Nessuna selezione: tutti i giocatori avrebbero una sola opzione da scegliere."
 }
 MSG_NO_VOTE_ALL_GUESSED_CORRECTLY = {
-    'en': "❌🗳️ No voting: all player inserted the correct answer.",
-    'it': "❌🗳️ Votazione assente: tutti i giocatori hanno inserito la soluzione corretta."
+    'en': "❌🔘 No selection: all player inserted the correct answer.",
+    'it': "❌🔘 Nessuna selezione: tutti i giocatori hanno inserito la soluzione corretta."
 }
 MSG_GUESSED_NO_VOTE = {
     'en': "😀 Wow, you entered the correct answer!",
@@ -558,32 +570,32 @@ MSG_WAIT_FOR_TEACHER_EVALUATION = {
     'it': "🧑‍🏫 Aspettiamo la valutazione dell'insegnante!"
 }
 MSG_ALREADY_VOTED_WAITING_FOR = {
-    'en': "🤐 You already voted!\n😴 Let's wait for: {}",
-    'it': "🤐 Hai già votato!\n😴 Rimani in attesa di: {}"
+    'en': "🤐 You already made your choice!\n😴 Let's wait for: {}",
+    'it': "🤐 Hai già fatto la tua scelta!\n😴 Rimani in attesa di: {}"
 }
 MSG_X_VOTED = {
-    'en': "✔️ {} has voted.",
-    'it': "✔️ {} ha votato."
+    'en': "✔️ {} has chosen.",
+    'it': "✔️ {} ha fatto la sua scelta."
 }
 MSG_WAIT_FOR = {
     'en': "😴 Let's wait for: {}",
     'it': "😴 Rimaniamo in attesa di: {}"
 }
 MSG_ANSWERS_RECAP_SG = {
-    'en': "🗳️ Answers recap with votes and correct answer (marked with a ⭐️)",
-    'it': "🗳 Sintesi delle risposte con i voti e risposta corretta (segnata con una ⭐️)"
+    'en': "📜 Answers recap: correct answer is marked with a ⭐️",
+    'it': "📜 Sintesi risposte: la risposta corretta è segnata con una ⭐️"
 }
 MSG_ANSWERS_RECAP_PL = {
-    'en': "🗳️ Answers recap with votes and correct answers (marked with a ⭐️)",
-    'it': "🗳 Sintesi delle risposte con i voti e risposte corrette (segnate con una ⭐️)"
+    'en': "📜 Answers recap: correct answers are marked with a ⭐️",
+    'it': "📜 Sintesi risposte: le risposte corrette sono segnate con una ⭐️"
 }
 MSG_YOUR_POINTS = {
     'en': "💰 Your points:",
     'it': "💰 I tuoi punti:"
 }
 MSG_VOTED_BY = {
-    'en': "Voted by {}",
-    'it': "Votato da {}"
+    'en': "Chosen by {}",
+    'it': "Scelto da {}"
 }
 MSG_NO_ANSWER = {
     'en': "NONE",
@@ -659,8 +671,8 @@ MSG_WRONG_INPUT_WAIT_FOR_PLAYERS_TO_ANSWER = {
     'it': "⛔️ Attendiamo che le altre persone scrivano la loro risposta."
 }
 MSG_WRONG_INPUT_WAIT_FOR_PLAYERS_TO_VOTE = {
-    'en': "⛔️ Let's wait for the other players to vote.",
-    'it': "⛔️ Attendiamo che le altre persone completino il voto."
+    'en': "⛔️ Let's wait for the other players to make their choice.",
+    'it': "⛔️ Attendiamo che le altre persone facciano la loro scelta."
 }
 MSG_WRONG_INPUT_WAIT_FOR_TEACHER_TO_VOTE = {
     'en': "⛔️ Let's wait for the teacher's evaluation.",

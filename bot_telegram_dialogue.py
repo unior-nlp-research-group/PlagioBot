@@ -759,7 +759,7 @@ def state_GAME_VOTE_ANSWER(user, message_obj):
                     kb = utility.distribute_elements(player_voting_optinos)
                     if game.is_voting_no_or_multiple_answers_allowed():
                         kb.append([ux.BUTTON_NO_CORRECT_ANSWER[lang]])
-                    send_message(w, ux.MSG_VOTE[lang], kb, sleep=True)
+                    send_message(w, ux.MSG_VOTE[game.game_type][lang], kb, sleep=True)
     else:
         if user == reader:
             send_message(user, ux.MSG_WRONG_INPUT_WAIT_FOR_PLAYERS_TO_VOTE[lang])
