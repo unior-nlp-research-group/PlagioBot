@@ -442,12 +442,12 @@ MSG_WRITERS_WRITE_ANSWER = {
     }
 }
 MSG_PLAYERS_INCOMPLETE_SENTENCE = {
-    'en': "📖 This is the sentence that needs to be completed:\n{}",
-    'it': "📖 Questa è la frase che deve essere completata:\n{}"
+    'en': "📖 This is the sentence that needs to be completed:\n\n{}",
+    'it': "📖 Questa è la frase che deve essere completata:\n\n{}"
 }
 MSG_PLAYERS_SENTENCE_WITH_HIGHLITED_SYNONYM = {
-    'en': "📖 This is the sentence with the boldfaced part to be substituted by a synonym:\n{}",
-    'it': "📖 Questa è la frase con la parte in grassetto da sostituire con un sinonimo:\n{}"
+    'en': "📖 This is the sentence with the boldfaced part to be substituted by a synonym:\n\n{}",
+    'it': "📖 Questa è la frase con la parte in grassetto da sostituire con un sinonimo:\n\n{}"
 }
 MSG_ALREADY_SENT_ANSWER = {
     'en': "🤐 You have already sent your answer!\n😴 Let's wait for the other players.",
@@ -761,26 +761,17 @@ GAME_SETTINGS_BUTTON_VALUE_UX_MAPPING = lambda lang: {
     }
 }
 
-def render_complete_text(game, answer, markdown=True, uppercase=True):
+def render_complete_text(game, answer):
     incomplete_text = game.get_current_incomplete_text()    
-    if uppercase:
-            answer = answer.upper()
-            incomplete_text = incomplete_text.upper()
     if game.game_type == 'CONTINUATION':        
         completed_text = "{} *{}*".format(incomplete_text, answer)
     elif game.game_type == 'FILL':        
         pre_gap, post_gap = game.get_incomplete_text_pre_post_gap()
-        if uppercase:
-            pre_gap, post_gap = pre_gap.upper(), post_gap.upper()
         completed_text = '{}*{}*{}'.format(pre_gap, answer, post_gap)
     else:
         assert game.game_type == 'SYNONYM'
         original_answer = game.get_current_completion_text()
         completed_text = incomplete_text.replace(original_answer, '*{}*'.format(answer))
-
-
-    if not markdown:
-        completed_text = utility.remove_markdown(completed_text)
     return completed_text
 
 def text_is_button_or_digit(text):

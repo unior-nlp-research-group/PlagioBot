@@ -77,3 +77,26 @@ def get_milliseconds():
     @return Milliseconds since the epoch
   """
   return int(round(time() * 1000))
+
+def clean_new_lines(s):
+    return s.replace('\\n', '\n').strip()
+
+def import_url_csv_to_dict_list(url_csv, remove_new_line_escape=True): #escapeMarkdown=True
+    import csv
+    import requests
+    r = requests.get(url_csv)
+    r.encoding = "utf-8"
+    spreadsheet_csv = r.text.split('\n')
+    reader = csv.DictReader(spreadsheet_csv)
+    if remove_new_line_escape:
+        return [
+            {
+                clean_new_lines(k): clean_new_lines(v)
+                for k,v in dict.items()
+            } for dict in reader
+        ]
+    return [dict for dict in reader]
+
+def get_google_spreadsheet_dict_list(spreadsheed_id, gid):
+    url = 'https://docs.google.com/spreadsheets/d/{}/export?gid={}&format=csv'.format(spreadsheed_id, gid)
+    return import_url_csv_to_dict_list(url)

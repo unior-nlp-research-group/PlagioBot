@@ -184,6 +184,18 @@ class Game(Model):
 
         return update_in_transaction(db.transaction())
 
+    def auto_exercise_mode(self):
+        return self.game_type=='SYNONYM' and self.language == 'en' and self.game_control == 'TEACHER'
+
+    def fill_exercises_automatically(self, save=True):
+        import extract_sentences
+        exercises = extract_sentences.extract_random_exercises(self.num_hands)
+        # list of dict {"SENTENCE": <str>, "MWE": <str>}
+        for e in exercises:
+            self.variables['INCOMPLETE_TEXTS'].append(e['SENTENCE'].upper())
+            self.variables['ORIGINAL_COMPLETION'].append(e['MWE'].upper())
+        if save: self.save()
+
     def get_creator_name(self):
         creator_name = self.players_names[0]
         return escape_markdown(creator_name)
@@ -214,14 +226,16 @@ class Game(Model):
         if save: self.save()
 
     def get_current_incomplete_text(self):        
-        return self.variables['INCOMPLETE_TEXTS'][-1]
+        hand_index = self.variables['HAND']-1
+        return self.variables['INCOMPLETE_TEXTS'][hand_index]
 
     def set_current_completion_text(self, text, save=True):        
         self.variables['ORIGINAL_COMPLETION'].append(text)
         if save: self.save()
 
     def get_current_completion_text(self):        
-        return self.variables['ORIGINAL_COMPLETION'][-1]
+        hand_index = self.variables['HAND']-1
+        return self.variables['ORIGINAL_COMPLETION'][hand_index]
 
     def get_current_hand_answers_info(self):        
         hand_index = self.variables['HAND']-1
