@@ -146,6 +146,10 @@ BUTTON_SUBMIT = {
     'en': "✅ SUBMIT",
     'it': "✅ INVIA"
 }
+BUTTON_NEXT_ROUND = {
+    'en': "⭕️ NEXT ROUND",
+    'it': "⭕️ PROSSIMA MANO"
+}
 
 ####################
 # CONVERSATIONS
@@ -306,8 +310,12 @@ MSG_GAME_HAS_STARTED_WITH_PLAYERS = {
     'it': "🏁Il gioco è iniziato con i giocoatori: {}"
 }
 MSG_GAME_NAME = {
-    'en': '🕹️ Game *{}* ({})',
-    'it': '🕹️ Gioco: *{}* ({})'
+    'en': '🕹️ Game name: *{}*',
+    'it': '🕹️ Nome gioco: *{}*'
+}
+MSG_GAME_SETTINGS_INFO = {
+    'en': '⚙️ Mode: *{}* Control: *{}*',
+    'it': '⚙️ Modalità: *{}* Controllo: *{}*'
 }
 MSG_CURRENT_PLAYERS = {
     'en': '👥 *{} players*: {}',
@@ -320,6 +328,10 @@ MSG_CURRENT_PLAYER = {
 MSG_WAIT_FOR_MORE_PEOPLE_TO_START = {
     'en': "⌛ There needs to be at least {} players in the game to start it.".format(parameters.MIN_NUM_OF_PLAYERS),
     'it': "⌛ Ci devono essere almeno {} giocatori per iniziare.".format(parameters.MIN_NUM_OF_PLAYERS)
+}
+MSG_WAIT_FOR_X_TO_START_NEXT_ROUND = {
+    'en': "⌛ Let's wait for {} to proceed to next round.",
+    'it': "⌛ Attendiamo che {} avvii la prossima mano."
 }
 MSG_ANNOUNCE_GAME_PUBLICLY = {
     'en': "📮 New game created by {}. Join the game by clicking here: {}",
@@ -423,7 +435,7 @@ MSG_WAIT_WRITERS_WRITE_ANSWERS = {
         'it': "😴 Aspettiamo che gli altri giocatori completino la frase."
     },
     'SYNONYM': {
-        'en': "😴 Please wait for the other players to write down their substituion proposals.",
+        'en': "😴 Please wait for the other players to write down their substitution proposals.",
         'it': "😴 Aspettiamo che gli altri giocatori scrivano le loro proposte di sostituzione."
     }    
 }
@@ -441,6 +453,15 @@ MSG_WRITERS_WRITE_ANSWER = {
         'it': "✍️ Scrivi un sinonimo della parte del testo in grassetto (*{}*). Può essere una o più parole."
     }
 }
+
+MSG_JUMP_TO_NEXT_PHASE = {
+    'en': "🦘 You can decide to jump to the next phase with the command /jump",
+    'it': "🦘 Puoi saltare alla fase successiva con il comando /jump"
+}
+MSG_TEACHER_HAS_JUMPED_TO_NEXT_PHASE = {
+    'en': "🦘 The teacher has decided to jump to the next phase without waiting for all the answers.",
+    'it': "🦘 L'insegnante ha deciso di saltare alla fase successiva senza aspettare tutte le risposte."
+}
 MSG_PLAYERS_INCOMPLETE_SENTENCE = {
     'en': "📖 This is the sentence that needs to be completed:\n\n{}",
     'it': "📖 Questa è la frase che deve essere completata:\n\n{}"
@@ -450,26 +471,30 @@ MSG_PLAYERS_SENTENCE_WITH_HIGHLITED_SYNONYM = {
     'it': "📖 Questa è la frase con la parte in grassetto da sostituire con un sinonimo:\n\n{}"
 }
 MSG_ALREADY_SENT_ANSWER = {
-    'en': "🤐 You have already sent your answer!\n😴 Let's wait for the other players.",
-    'it': "🤐 Hai già mandato una risposta!\n😴 Aspettamo che gli altri/e giocatori/trici rispondano."
+    'en': "🤐 You have already sent your answer!\n😴 Let's wait for the other players.\n👀Use /status to know who is missing.",
+    'it': "🤐 Hai già mandato una risposta!\n😴 Aspettamo che gli altri/e giocatori/trici rispondano.\n👀Usa /status per sapere chi manca."
 }
 RECEIVED_ANSWER_BY = {
     'en': "📝 Received answer by {}.",
     'it': "📝 Ricevuta risposta da {}."
 }
-MSG_LETS_WAIT_FOR = {
-    'en': "😴 Let's wait for: {}",
-    'it': "😴 Rimaniamo in attesa di: {}"
+MSG_WAITING_FOR = {
+    'en': "😴 We are waiting for: {}",
+    'it': "😴 Siamo in attesa di: {}"
+}
+MSG_ALL_ANSWERS_RECEIVED = {
+    'en': "📚 All answers have been received.",
+    'it': "📚 Ricevute tutte le risposte."
 }
 MSG_INTRO_NUMBERED_TEXT = {
-    'en': "📝 These are all the possibile answer in random order:",
+    'en': "📝 These are all the possibile answers in random order:",
     'it': "📝 Queste sono tutte le risposte in ordine casuale:"
 }
-MSG_WAIT_FOR_PLAYERS_TO_VOTE_PL = {
+MSG_WAIT_FOR_PLAYERS_TO_SELECT_PL = {
     'en': "😴 Let's wait for the other players to make their choice.",
     'it': "😴 Rimaniamo in attesa che gli altri/e giocatori/trici facciano la loro scelta."
 }
-MSG_VOTE = {
+MSG_SELECTION = {
     'CONTINUATION': {
         'en': "🔢 Select the number of the continuation you think is the original one.",
         'it': "🔢 Seleziona il numero associato alla continuazione che ritieni essere quella originale."
@@ -479,31 +504,42 @@ MSG_VOTE = {
         'it': "🔢 Seleziona il numero associato al completamento che ritieni essere quello originale."
     },
     'SYNONYM': {
-        'en': "🔢 *Choice selection*: please select the number associated to one of the other answers you think is correct, or select NONE if there is no correct answer.",
-        'it': "🔢 *Selezione*: seleziona il numero associato a una delle altre risposte che ritieni essere corretta, o scegli NESSUNA se non ce n'è nessuna di corretta."
+        'en': "🔢 *Choice selection*: please select the number associated to one of the other answers you think is correct, or select NONE if there is no correct answer. You cannot vote for your own answer.",
+        'it': "🔢 *Selezione*: seleziona il numero associato a una delle altre risposte che ritieni essere corretta, o scegli NESSUNA se non ce n'è nessuna di corretta. Non puoi votare per la tua risposta."
     }    
 }
 
-
-MSG_TEACHER_VOTE = {
-    'en': "🧑‍🏫 Please *select the correct response(s)* (none, one, or more).",
-    'it': "🧑‍🏫 Seleziona *la/e risposta/e corretta/e* (nessuna, una, o più di una)."
+MSG_NEXT_ROUND = {
+    'en': "⭕️ Please press the button below when you are ready for the next round.",
+    'it': "⭕️ Premi il pulsante qua sotto quando sei pronto/a alla prossima mano."
 }
-MSG_TEACHER_VOTING_OPTIONS = {
-    'en': 'one, or more',
-    'it': 'una, o più di una'
+MSG_TEACHER_ORIGINAL_TEXT = {
+    'en': "🧑‍🏫 This is the original sentence:\n{}",
+    'it': "🧑‍🏫 Queta è la frase originale:\n{}"
 }
-MSG_TEACHER_VOTING_OPTIONS_NONE_ALLOWED = {
-    'en': 'none, one, or more',
-    'it': 'nessuna, una, o più di una'
+MSG_OR_NONE = {
+    'en': ' (or NONE)',
+    'it': ' (o NESSUNA)'
 }
-MSG_TEACHER_VOTE = {
-    'en': "🧑‍🏫 Please *select the correct response(s)* ({}). Press on /recap\\_answers if you want to see the students' answers again.",
-    'it': "🧑‍🏫 Seleziona *la/e risposta/e corretta/e* ({}). Premi /recap\\_answers se vuoi vedere nuovamente le risposte degli studenti."
+MSG_TEACHER_SELECT = {
+    'en': "🧑‍🏫 Please *select a correct response*{}.",
+    'it': "🧑‍🏫 Seleziona una risposta corretta*{}."
 }
-MSG_TEACHER_VOTE_AND_SUBMIT = {
-    'en': "🧑‍🏫 Please select the correct responses ({}) and press *{}* to confirm. Press on /recap\\_answers if you want to see the students' answers again.".format('{}',BUTTON_SUBMIT['en']),
-    'it': "🧑‍🏫 Seleziona le risposste corrette ({}) e premi *{}* per confermare. Premi /recap\\_answers se vuoi vedere nuovamente le risposte degli studenti.".format('{}',BUTTON_SUBMIT['it'])
+MSG_RECAP_STUDENTS_ANSWERS = {
+    'en': "🧑‍🏫 These are the student's answers:",
+    'it': "🧑‍🏫 Queste sono le risposte degli studenti:"
+}
+MSG_TEACHER_YOU_SELECTED = {
+    'en': "⭐ You have selected {}.",
+    'it': "⭐ Hai selezionato {}."
+}
+MSG_TEACHER_SELECT_OR_SUBMIT = {
+    'en': "🧑‍🏫 Please select another correct response{} or press *{}* to confirm.".format('{}',BUTTON_SUBMIT['en']),
+    'it': "🧑‍🏫 Seleziona un'altra risposta corretta{} o premi *{}* per confermare.".format('{}',BUTTON_SUBMIT['it'])
+}
+MSG_RECAP_INSTRUCTION = {
+    'en': "📜 Use the command /recap\\_answers if you want to see the students' answers again.",
+    'it': "📜 Usa il comando /recap\\_answers se vuoi vedere nuovamente le risposte degli studenti."
 }
 MSG_POINT_SG_PL = lambda x: \
     {
@@ -520,36 +556,48 @@ MSG_CORRECT_ANSWER= {
     'en': '🌟✍ You have answered correctly! ({})',
     'it': '🌟✍ Hai risposto correttamente! ({})'
 }
-MSG_WRONG_ANSWER= {
-    'en': "❌✍ You didn't give the correct answer (0 point).",
-    'it': '❌✍ Non hai dato la risposta corretta (0 punti).',
+MSG_NO_GIVEN_ANSWER= {
+    'en': "🤷‍♀️✍ You didn't provide an answer ({}).",
+    'it': '🤷‍♀️✍ Non hai dato una risposta ({}).',
 }
-MSG_CORRECT_VOTING= {
+MSG_WRONG_ANSWER= {
+    'en': "❌✍ You didn't give the correct answer ({}).",
+    'it': '❌✍ Non hai dato la risposta corretta ({}).',
+}
+MSG_CORRECT_SELECTION= {
     'en': '🌟📌 You have chosen correctly! ({})',
     'it': '🌟📌 Hai scelto correttamete! ({})'
 }
-MSG_WRONG_VOTING= {
+MSG_WRONG_SELECTION_NO_PENALTY= {
     'en': "❌📌 You didn't choose correctly.",
     'it': '❌📌 Non hai scelto correttamente.'
 }
-MSG_WRONG_VOTING_PENALTY= {
+MSG_NO_GIVEN_SELECTION= {
+    'en': "🤷‍♀️📌 You didn't make a selection. ({})",
+    'it': '🤷‍♀️📌 Non hai fatto una scelta. ({})'
+}
+MSG_WRONG_SELECTION_PENALTY= {
     'en': "❌📌 You didn't choose correctly ({}).",
     'it': '❌📌 Non hai scelto correttamente ({}).'
 }
-MSG_RECEIVED_VOTED = {
+MSG_RECEIVED_VOTES = {
     'en': "🔘 {} players chosen your answer ({}).",
     'it': "🔘 {} giocatori hanno scelto la tua risposta ({})."
 }
 
-MSG_NO_VOTE_ONLY_ONE_OPTION = {
-    'en': "❌🔘 No selection: all players would only have one option to choose from.",
-    'it': "❌🔘 Nessuna selezione: tutti i giocatori avrebbero una sola opzione da scegliere."
+MSG_NO_SELECTION_ONLY_ONE_OPTION = {
+    'en': "❌🔘 No selection: some player would only have one option to choose from.",
+    'it': "❌🔘 Nessuna selezione: alcuni giocatori avrebbero solo una sola opzione da scegliere."
 }
-MSG_NO_VOTE_ALL_GUESSED_CORRECTLY = {
+MSG_NO_SELECTION_ALL_GUESSED_CORRECTLY = {
     'en': "❌🔘 No selection: all player inserted the correct answer.",
     'it': "❌🔘 Nessuna selezione: tutti i giocatori hanno inserito la soluzione corretta."
 }
-MSG_GUESSED_NO_VOTE = {
+MSG_NO_ANSWER_GOING_TO_NEXT_ROUND = {
+    'en': "🦘 No answer received, we go to next round.",
+    'it': "🦘 Nessuna risposta ricevuta, si passa alla prossima mano."
+}
+MSG_CORRECT_ANSWER_NO_SELECTION = {
     'en': "😀 Wow, you entered the correct answer!",
     'it': "😀 Wow, hai inserito la risposta coretta!",
 }
@@ -565,15 +613,31 @@ MSG_THANKS = {
     'en': "😀 Thanks!",
     'it': "😀 Grazie!"
 }
+MSG_THANKS_YOU_ENTERED_X = {
+    'en': "😀 Thanks, you entered *{}*.",
+    'it': "😀 Grazie, hai inserito *{}*."
+}
+MSG_THANKS_YOU_SELECTED_X = {
+    'en': "😀 Thanks, you selected *{}*.",
+    'it': "😀 Grazie, hai selezionato *{}*."
+}
+MSG_WAIT_TILL_YOUR_TURN = {
+    'en': "💤 We will get back as soon as it is your turn again.",
+    'it': "💤 Verrai informato quando sarà nuovamente il tuo turno."
+}
+MSG_STATUS_INSTRUCTIONS = {
+    'en': "👀 If you want to see who we are still waiting for use the command /status",
+    'it': "👀 Se vuoi sapre chi stiamo aspettando, usa il comando /status!"
+}
 MSG_WAIT_FOR_TEACHER_EVALUATION = {
     'en': "🧑‍🏫 Let's wait for the teacher's evaluation!",
     'it': "🧑‍🏫 Aspettiamo la valutazione dell'insegnante!"
 }
-MSG_ALREADY_VOTED_WAITING_FOR = {
+MSG_ALREADY_SELECTED_WAITING_FOR = {
     'en': "🤐 You already made your choice!\n😴 Let's wait for: {}",
     'it': "🤐 Hai già fatto la tua scelta!\n😴 Rimani in attesa di: {}"
 }
-MSG_X_VOTED = {
+MSG_X_SELECTED = {
     'en': "✔️ {} has chosen.",
     'it': "✔️ {} ha fatto la sua scelta."
 }
@@ -593,7 +657,7 @@ MSG_YOUR_POINTS = {
     'en': "💰 Your points:",
     'it': "💰 I tuoi punti:"
 }
-MSG_VOTED_BY = {
+MSG_SELECTED_BY = {
     'en': "Chosen by {}",
     'it': "Scelto da {}"
 }
@@ -670,11 +734,15 @@ MSG_WRONG_INPUT_WAIT_FOR_PLAYERS_TO_ANSWER = {
     'en': "⛔️ Let's wait for the other players to provide their answers.",
     'it': "⛔️ Attendiamo che le altre persone scrivano la loro risposta."
 }
-MSG_WRONG_INPUT_WAIT_FOR_PLAYERS_TO_VOTE = {
+MSG_WRONG_INPUT_WAIT_FOR_PLAYERS_TO_SELECT = {
     'en': "⛔️ Let's wait for the other players to make their choice.",
     'it': "⛔️ Attendiamo che le altre persone facciano la loro scelta."
 }
-MSG_WRONG_INPUT_WAIT_FOR_TEACHER_TO_VOTE = {
+MSG_WRONG_INPUT_WAIT_FOR_X_TO_START_NEXT_ROUND = {
+    'en': "⛔️ Let's wait for {} to proceed to next round.",
+    'it': "⛔️ Attendiamo che {} avvii la prossima mano."
+}
+MSG_WRONG_INPUT_WAIT_FOR_TEACHER_TO_SELECT = {
     'en': "⛔️ Let's wait for the teacher's evaluation.",
     'it': "⛔️ Attendiamo la valutazione dell'insegnante."
 }
@@ -717,6 +785,10 @@ MSG_INPUT_CONTAINS_SPACE_OR_MARKDOWN = {
 MSG_INPUT_NO_MARKDOWN = {
     'en': '⛔️ Input cannot contain the following characters: {}'.format(utility.escape_markdown(utility.MARKDOWN_CHARS)),
     'it': '⛔️ Il testo non può contenere i caratteri: {}'.format(utility.escape_markdown(utility.MARKDOWN_CHARS))
+}
+MSG_CHAT_MSG_NO_MARKDOWN = {
+    'en': '⛔️ The chat message cannot contain the following characters: {}'.format(utility.escape_markdown(utility.MARKDOWN_CHARS)),
+    'it': '⛔️ Il testo del messaggio non può contenere i caratteri: {}'.format(utility.escape_markdown(utility.MARKDOWN_CHARS))
 }
 MSG_INPUT_NO_GAP = {
     'en': '⛔️ The text you have inserted does not contain the sequence of 3 question marks (\'???\') to indicate the missing part to be completed.',

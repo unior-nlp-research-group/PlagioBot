@@ -229,6 +229,12 @@ class Game(Model):
         hand_index = self.variables['HAND']-1
         return self.variables['INCOMPLETE_TEXTS'][hand_index]
 
+    def get_current_incomplete_text_and_original_completion(self):        
+        hand_index = self.variables['HAND']-1
+        incomplete_text = self.variables['INCOMPLETE_TEXTS'][hand_index]
+        original_completion = self.variables['ORIGINAL_COMPLETION'][hand_index]
+        return incomplete_text, original_completion
+
     def set_current_completion_text(self, text, save=True):        
         self.variables['ORIGINAL_COMPLETION'].append(text)
         if save: self.save()
@@ -275,16 +281,23 @@ class Game(Model):
             hand_index = self.variables['HAND']-1
             current_players_answers = self.variables['PLAYERS_ANSWERS'][hand_index]
             current_players_answers[str(player_index)] = text
+            self.save_transactional(transaction)            
+            logging.debug('{} Exiting transactional set_player_text_answer_and_get_remaining'.format(user.get_name()))                      
             remaining_players_indexes = [i for i in range(self.num_players) if str(i) not in current_players_answers]
             remaining_players_indexes.remove(self.get_reader_index())
-            remaining_names = [self.players_names[i] for i in remaining_players_indexes]            
-            self.save_transactional(transaction)            
-            logging.debug('{} Exiting transactional set_player_text_answer_and_get_remaining'.format(user.get_name()))          
-            return remaining_names
+            return len(remaining_players_indexes)
         
-        result = update_in_transaction(db.transaction())
+        remaining_players_num = update_in_transaction(db.transaction())        
         self.refresh()
-        return result
+        return remaining_players_num
+
+    def get_remaining_answers_names(self):
+        hand_index = self.variables['HAND']-1
+        current_players_answers = self.variables['PLAYERS_ANSWERS'][hand_index]
+        remaining_players_indexes = [i for i in range(self.num_players) if str(i) not in current_players_answers]
+        remaining_players_indexes.remove(self.get_reader_index())
+        remaining_names = [self.players_names[i] for i in remaining_players_indexes]            
+        return remaining_names
 
     def prepare_voting(self):                
         hand_index = self.variables['HAND']-1
@@ -344,6 +357,37 @@ class Game(Model):
         answers_info = self.get_current_hand_answers_info()
         return any(player_index in info['voted_by'] for info in answers_info.values())
 
+    #--------------------------
+    # TRANSACTIONAL OPERATION
+    #--------------------------
+    def set_voted_indexes_and_get_remaining(self, user, voted_shuffled_number): 
+
+        # voted_shuffled_number can be -1 for no answer correct votes
+
+        @firestore.transactional 
+        def update_in_transaction(transaction): 
+            logging.debug('{} Entering transactional set_voted_indexes_and_get_remaining'.format(user.get_name()))
+            self.refresh_from_transaction(transaction)
+            answers_info = self.get_current_hand_answers_info()
+            player_index = self.players_id.index(user.id)
+            reader_index = self.get_reader_index()
+            assert player_index != reader_index # reader doesn't vote                    
+            voted_answer_info = next(info for c,info in answers_info.items() if info['shuffled_number']==voted_shuffled_number)
+            voted_answer_info['voted_by'].append(player_index)   
+            voted_by_list = [info['voted_by'] for info in answers_info.values()] 
+            voters_indexes = list(itertools.chain(*voted_by_list))        
+            exact_author_list = next((info['authors'] for info in answers_info.values() if info['correct']),[reader_index])
+            remaining_players_indexes = [i for i in range(self.num_players) if i not in voters_indexes and i not in exact_author_list]
+            # names = self.players_names
+            # remaining_names = [n for i,n in enumerate(names) if i not in voters_indexes and i not in exact_author_list] 
+            self.save_transactional(transaction)            
+            logging.debug('{} Exiting transactional set_voted_indexes_and_get_remaining'.format(user.get_name()))
+            return len(remaining_players_indexes)
+        
+        remaining_players_num = update_in_transaction(db.transaction())
+        self.refresh()
+        return remaining_players_num
+
     def get_names_remaining_voters(self):        
         answers_info = self.get_current_hand_answers_info()
         names = self.players_names        
@@ -353,37 +397,6 @@ class Game(Model):
         exact_author_list = next((info['authors'] for info in answers_info.values() if info['correct']),[reader_index])
         remaining_names = [n for i,n in enumerate(names) if i not in voters_indexes and i not in exact_author_list] 
         return remaining_names   
-
-    #--------------------------
-    # TRANSACTIONAL OPERATION
-    #--------------------------
-    def set_voted_indexes_and_points_and_get_remaining(self, user, voted_shuffled_number): 
-
-        # voted_shuffled_number can be -1 for no answer correct votes
-
-        @firestore.transactional 
-        def update_in_transaction(transaction): 
-            logging.debug('{} Entering transactional set_voted_indexes_and_points_and_get_remaining'.format(user.get_name()))
-            self.refresh_from_transaction(transaction)
-            names = self.players_names
-            answers_info = self.get_current_hand_answers_info()
-            player_index = self.players_id.index(user.id)
-            reader_index = self.get_reader_index()
-            assert player_index != reader_index # reader doesn't receive points        
-            names = self.players_names        
-            voted_answer_info = next(info for c,info in answers_info.items() if info['shuffled_number']==voted_shuffled_number)
-            voted_answer_info['voted_by'].append(player_index)   
-            voted_by_list = [info['voted_by'] for info in answers_info.values()] 
-            voters_indexes = list(itertools.chain(*voted_by_list))        
-            exact_author_list = next((info['authors'] for info in answers_info.values() if info['correct']),[reader_index])
-            remaining_names = [n for i,n in enumerate(names) if i not in voters_indexes and i not in exact_author_list] 
-            self.save_transactional(transaction)            
-            logging.debug('{} Exiting transactional set_voted_indexes_and_points_and_get_remaining'.format(user.get_name()))
-            return remaining_names
-        
-        result = update_in_transaction(db.transaction())
-        self.refresh()
-        return result
 
     '''
     Return answers (in shuffled order), possibly including the empty answer (for no vote)
@@ -410,7 +423,9 @@ class Game(Model):
             # one dict per player
             # feedbacks[i] = {
             #     'ANSWERED_CORRECTLY': <bool>,
-            #     'VOTED_CORRECTLY': <bool>,
+            #     'NO_ANSWER': <bool>,
+            #     'SELECTED_CORRECTLY': <bool>,
+            #     'NO_SELECTION': <bool>,
             #     'NUM_VOTES_RECEIVED': <int> # not applicable in teacher mode
             # }
         
@@ -424,9 +439,11 @@ class Game(Model):
             player_answer_info = next((info for info in answers_info.values() if i in info['authors']),None)
             player_voted_answer_info = next((info for info in answers_info.values() if i in info['voted_by']),None)            
             player_answered_correctly = player_answer_info and player_answer_info['correct']
+            points_feedbacks[i]['NO_ANSWER'] = player_answer_info is None
+            points_feedbacks[i]['NO_SELECTION'] = player_voted_answer_info is None
             points_feedbacks[i]['ANSWERED_CORRECTLY'] = player_answered_correctly
             if player_answered_correctly:
-                current_hand_points[str(i)] += parameters.POINTS['CORRECT_ANSWER']                
+                current_hand_points[str(i)] += parameters.POINTS['CORRECT_ANSWER']                            
             if player_voted_answer_info:
                 if player_voted_answer_info['shuffled_number'] == -1:
                     # player voted NONE ANSWER 
@@ -435,15 +452,15 @@ class Game(Model):
                         info['correct'] for info in answers_info.values() 
                         if info['shuffled_number']!=-1 and i not in info['authors']
                     )
-                    player_voted_correctly = all_available_answers_are_wrong
+                    player_selected_correctly = all_available_answers_are_wrong
                 else:
-                    player_voted_correctly = player_voted_answer_info['correct']
-                points_feedbacks[i]['VOTED_CORRECTLY'] = player_voted_correctly
-                if player_voted_correctly:
-                    current_hand_points[str(i)] += parameters.POINTS['CORRECT_VOTING']                    
+                    player_selected_correctly = player_voted_answer_info['correct']
+                points_feedbacks[i]['SELECTED_CORRECTLY'] = player_selected_correctly
+                if player_selected_correctly:
+                    current_hand_points[str(i)] += parameters.POINTS['CORRECT_SELECTION']                    
                 elif teacher_mode:
                     # wrong answer (we penalize wrong answers only in teacher mode)
-                    current_hand_points[str(i)] += parameters.POINTS['INCORRECT_VOTING']                
+                    current_hand_points[str(i)] += parameters.POINTS['INCORRECT_SELECTION']                
             if not teacher_mode:    
                 # in teacher mode we don't reward students being voted by others (if not correct)
                 if player_voted_answer_info and not player_voted_answer_info['correct']: 
@@ -451,6 +468,9 @@ class Game(Model):
                     for j in player_voted_answer_info['authors']:
                         current_hand_points[str(j)] += parameters.POINTS['RECEIVED_VOTE']
                         points_feedbacks[j]['NUM_VOTES_RECEIVED'] += 1
+            if 'SELECTED_CORRECTLY' not in points_feedbacks[i]:
+                # either i) she previous answered correctly or ii) she didn't provide a selection (jump)
+                points_feedbacks[i]['SELECTED_CORRECTLY'] = False
         self.save()
         return points_feedbacks
 

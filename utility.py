@@ -72,6 +72,11 @@ def distribute_elements(seq, max_size=5):
         last += avg
     return result
 
+def split_list(iterable, group_size):
+    from itertools import zip_longest
+    args = [iter(iterable)] * group_size
+    return list(([e for e in t if e != None] for t in zip_longest(*args)))
+
 def get_milliseconds():
   """
     @return Milliseconds since the epoch

@@ -4,8 +4,7 @@ import key
 import logging
 import google.cloud.logging
 client = google.cloud.logging.Client()
-# logging.debug #format='%(asctime)s  [%(levelname)s]: %(message)s'
-client.setup_logging(log_level=logging.DEBUG)
+client.setup_logging(log_level=logging.WARNING) # INFO
 
 
 # If `entrypoint` is not defined in app.yaml, App Engine will look for an app

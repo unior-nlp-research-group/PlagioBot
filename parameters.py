@@ -7,8 +7,11 @@ MAX_NUM_HANDS = 100
 
 POINTS = {
     'CORRECT_ANSWER': 2,
-    'CORRECT_VOTING': 1,
-    'INCORRECT_VOTING': -1, # applicable only in teacher mode
+    'INCORRECT_ANSWER': 0,
+    'NO_ANSWER': -1,
+    'CORRECT_SELECTION': 1,
+    'INCORRECT_SELECTION': -1, # applicable only in teacher mode
+    'NO_SELECTION': -1, # applicable only in teacher mode
     'RECEIVED_VOTE': 1, # not applicable in teacher mode    
 }
 
@@ -17,7 +20,7 @@ INSTRUCTION_URL_EN = 'https://telegra.ph/Plagio---Game-Rules-01-06'
 
 NO_ANSWER_KEY = "___"
 
-EXPIRATION_DELTA_HOURS = 2
+EXPIRATION_DELTA_HOURS = 240
 EXPIRATION_DELTA_MILLISECONDS = EXPIRATION_DELTA_HOURS * 3600 * 1000
 ONLY_GAME_CREATOR_CAN_TERMINATE_GAME = False
 NUM_HANDS_IN_TEACHER_MODE = 5
