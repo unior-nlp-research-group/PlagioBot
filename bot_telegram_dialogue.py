@@ -775,7 +775,7 @@ def state_WRITERS_SELECT_BEST_ANSWER(user, message_obj):
 
         for w in writers:
             p_index = players.index(w)
-            player_answer_info = next(a for a in shuffled_answers_info if p_index in a['authors'])
+            player_answer_info = next((a for a in shuffled_answers_info if p_index in a['authors']), None)
             if game.game_control != 'TEACHER' and p_index in correct_author_indexes:
                 w.set_var('NO_VOTE', True, save=False)                
                 msg_list = [
@@ -784,10 +784,10 @@ def state_WRITERS_SELECT_BEST_ANSWER(user, message_obj):
                     ux.MSG_STATUS_INSTRUCTIONS[lang]
                 ]
                 send_message(w, '\n'.join(msg_list), remove_keyboard=True)
-            else:                
+            else:                                
                 player_voting_optinos = [
                     str(i) for i in numbers_list
-                    if i != player_answer_info['shuffled_number']
+                    if player_answer_info and i != player_answer_info['shuffled_number']
                 ]
                 assert len(player_voting_optinos)>0
                 w.set_var('NO_VOTE', False, save=False)
