@@ -626,7 +626,7 @@ def state_READER_WRITES_ANSWER(user, message_obj):
 def state_WRITERS_WRITE_ANSWERS(user, message_obj):
     game = user.get_current_game()
     players, reader, writers = game.get_current_hand_players_reader_writers()
-    current_completion = game.get_current_completion_text()
+    incomplete_text, original_completion = game.get_current_incomplete_text_and_original_completion()
     lang = game.language
     if message_obj is None:
         if user == reader:
@@ -645,11 +645,11 @@ def state_WRITERS_WRITE_ANSWERS(user, message_obj):
             else:
                 assert game.game_type == 'SYNONYM'
                 incomplete_text = game.get_current_incomplete_text()
-                incomplete_text = incomplete_text.replace(current_completion, '*{}*'.format(current_completion))
+                incomplete_text = incomplete_text.replace(original_completion, '*{}*'.format(original_completion))
                 msg_incomplete_sentence = ux.MSG_PLAYERS_SENTENCE_WITH_HIGHLITED_SYNONYM[lang].format(incomplete_text)
-                msg_writers = msg_writers.format(current_completion)
+                msg_writers = msg_writers.format(original_completion)
             if game.translate_help:
-                correct_completed_text = ux.render_complete_text(game, current_completion)
+                correct_completed_text = ux.render_complete_text(game, original_completion)
                 translated_text = translate.get_google_translation(correct_completed_text).upper()
                 msg_incomplete_sentence += '\n(*{}*)'.format(translated_text)
             send_message(players, msg_incomplete_sentence)                            
@@ -689,9 +689,12 @@ def state_WRITERS_WRITE_ANSWERS(user, message_obj):
                     if game.game_type == 'CONTINUATION':
                         answer = utility.normalize_answer(answer)
                     elif game.game_type == 'SYNONYM':
-                        if answer == current_completion:
-                            send_message(user, ux.MSG_INPUT_NO_VALID_SYNONYM[lang])
+                        if answer == original_completion:
+                            send_message(user, ux.MSG_INPUT_SYNONYM_IDENTICAL_TO_ORIGINAL[lang])
                             return
+                        elif utility.check_if_substitue_suggestion_matches_prefix_suffix(incomplete_text, original_completion, answer):
+                            send_message(user, ux.MSG_INPUT_SYNONYM_MATCHED_PREFIX_SUFFIX[lang])
+                            pass
                     remaining_players_num = game.set_player_text_answer_and_get_remaining(user, answer)
                     tx_msg = ux.MSG_THANKS_YOU_ENTERED_X[lang].format(answer)
                     if remaining_players_num==0:                        

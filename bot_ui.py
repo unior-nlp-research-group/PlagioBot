@@ -810,9 +810,13 @@ MSG_INPUT_SUBSTITUION_PRESENT_TWICE_OR_MORE_IN_SENTENCE = {
     'en': '⛔️ The string you have inserted is present more than once in the sentence, please try again.',
     'it': '⛔️ Il testo inserito è presente nella frase più di una volta, prova di nuovo.'
 }
-MSG_INPUT_NO_VALID_SYNONYM = {
+MSG_INPUT_SYNONYM_IDENTICAL_TO_ORIGINAL = {
     'en': '⛔️ The text you have inserted is identical to the one boldfaced, try again.',
     'it': '⛔️ Il testo inserito è identico a quello in grassetto, riprova di nuovo.'
+}
+MSG_INPUT_SYNONYM_MATCHED_PREFIX_SUFFIX = {
+    'en': '⛔️ You have entered the whole sentence. Please insert ONLY the synonym of the text in boldface in the original sentence.',
+    'it': '⛔️ Hai inserito tutta la frase. Inserisci SOLO il sinonimo del testo in grassetto nella frase.'
 }
 MSG_COMMAND_NOT_RECOGNIZED = {
     'en': '⛔️ The command has not been recognised.',

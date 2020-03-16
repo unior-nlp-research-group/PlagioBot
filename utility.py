@@ -44,6 +44,12 @@ def add_full_stop_if_missing_end_puct(text):
         text = text + '.'
     return text
 
+def remove_trailing_punctuation(text):
+    if text[-1] in ['.','!','?']:
+        return remove_trailing_punctuation(text[:-1])
+    else:
+        return text
+
 def normalize_apostrophe(text):    
     for char in '’`':
         text = text.replace(char, "'")
@@ -52,6 +58,15 @@ def normalize_apostrophe(text):
 def normalize_answer(text):
     text = add_full_stop_if_missing_end_puct(text)
     return text
+
+def check_if_substitue_suggestion_matches_prefix_suffix(text, replacement_in_text, answer):
+    text = remove_trailing_punctuation(text)
+    answer = remove_trailing_punctuation(answer)
+    prefix_end = text.index(replacement_in_text)
+    suffix_start = prefix_end + len(replacement_in_text)
+    prefix = text[:prefix_end]
+    suffix = text[suffix_start:]
+    return answer.startswith(prefix) and answer.endswith(suffix)
 
 def has_parenthesis_in_correct_format(text):
     open_index = text.find('(')
