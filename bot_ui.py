@@ -148,7 +148,7 @@ BUTTON_SUBMIT = {
 }
 BUTTON_NEXT_ROUND = {
     'en': "⭕️ NEXT ROUND",
-    'it': "⭕️ PROSSIMA MANO"
+    'it': "🖐 PROSSIMA MANO"
 }
 
 ####################
@@ -454,6 +454,10 @@ MSG_WRITERS_WRITE_ANSWER = {
     }
 }
 
+MSG_ROUND_NUM = {
+    'en': "⭕️ Round {}",
+    'it': "🖐 Mano {}"
+}
 MSG_JUMP_TO_NEXT_PHASE = {
     'en': "🦘 You can decide to jump to the next phase with the command /jump",
     'it': "🦘 Puoi saltare alla fase successiva con il comando /jump"
@@ -670,8 +674,8 @@ MSG_WRITTEN_BY = {
     'it': "Scritto da: {}"
 }
 MSG_POINT_ROUND_SUMMARY = {
-    'en': "⭕️ ROUND POINTS",
-    'it': "🖐 PUNTI ULTIMA MANO"
+    'en': "⭕️ ROUND {} POINTS",
+    'it': "🖐 PUNTI MANO {}"
 }
 MSG_POINT_GAME_SUMMARY = {
     'en': "🎲 GAME POINTS",

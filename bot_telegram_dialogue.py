@@ -630,6 +630,8 @@ def state_WRITERS_WRITE_ANSWERS(user, message_obj):
     lang = game.language
     if message_obj is None:
         if user == reader:
+            msg_round_num = ux.MSG_ROUND_NUM[lang].format(game.get_hand_number())
+            send_message(players, msg_round_num, remove_keyboard=True)
             msg_reader_list = [ux.MSG_WAIT_WRITERS_WRITE_ANSWERS[game.game_type][lang]]
             msg_writers = ux.MSG_WRITERS_WRITE_ANSWER[game.game_type][lang]
             if game.game_type in ['CONTINUATION','FILL']:
@@ -650,13 +652,12 @@ def state_WRITERS_WRITE_ANSWERS(user, message_obj):
                 correct_completed_text = ux.render_complete_text(game, current_completion)
                 translated_text = translate.get_google_translation(correct_completed_text).upper()
                 msg_incomplete_sentence += '\n(*{}*)'.format(translated_text)
-            send_message(players, msg_incomplete_sentence, remove_keyboard=True)
-                            
+            send_message(players, msg_incomplete_sentence)                            
             msg_reader_list.append(ux.MSG_STATUS_INSTRUCTIONS[lang])
             if game.game_control == 'TEACHER':
                 msg_reader_list.append(ux.MSG_JUMP_TO_NEXT_PHASE[lang])            
-            send_message(reader, '\n'.join(msg_reader_list), remove_keyboard=True)
-            send_message(writers, msg_writers, remove_keyboard=True)
+            send_message(reader, '\n'.join(msg_reader_list))
+            send_message(writers, msg_writers)
     else:
         text_input = message_obj.text
         if text_input == '/status':
@@ -771,11 +772,14 @@ def state_WRITERS_SELECT_BEST_ANSWER(user, message_obj):
         if game.game_control == 'TEACHER':
             msg_reader_list.append(ux.MSG_JUMP_TO_NEXT_PHASE[lang])
         send_message(reader, '\n'.join(msg_reader_list))
-        numbers_list = list(range(1,number_answers+1))
+        numbers_list = list(range(1,number_answers+1)) # 1, 2, 3, 4, 5 (if there were 5 answers, including original if it applies)
 
         for w in writers:
             p_index = players.index(w)
-            player_answer_info = next((a for a in shuffled_answers_info if p_index in a['authors']), None)
+            player_answer_info = next(
+                (a for a in shuffled_answers_info if p_index in a['authors']), 
+                None # None if w didn't answer
+            )
             if game.game_control != 'TEACHER' and p_index in correct_author_indexes:
                 w.set_var('NO_VOTE', True, save=False)                
                 msg_list = [
@@ -785,13 +789,13 @@ def state_WRITERS_SELECT_BEST_ANSWER(user, message_obj):
                 ]
                 send_message(w, '\n'.join(msg_list), remove_keyboard=True)
             else:                                
-                player_voting_optinos = [
+                player_voting_options = [
                     str(i) for i in numbers_list
-                    if player_answer_info and i != player_answer_info['shuffled_number']
+                    if player_answer_info==None or i != player_answer_info['shuffled_number']
                 ]
-                assert len(player_voting_optinos)>0
+                assert len(player_voting_options)>0
                 w.set_var('NO_VOTE', False, save=False)
-                kb = utility.distribute_elements(player_voting_optinos)
+                kb = utility.distribute_elements(player_voting_options)
                 if game.is_voting_no_or_multiple_answers_allowed():
                     kb.append([ux.BUTTON_NO_CORRECT_ANSWER[lang]])
                 send_message(w, ux.MSG_SELECTION[game.game_type][lang], kb, sleep=True)
@@ -1016,7 +1020,7 @@ def recap_votes(game):
         
         send_message(w, '\n'.join(msg_list))
 
-    send_message(players, ux.MSG_POINT_ROUND_SUMMARY[lang])            
+    send_message(players, ux.MSG_POINT_ROUND_SUMMARY[lang].format(game.get_hand_number()))            
     game.send_hand_point_img_data(players)
     if game.is_last_hand():
         send_message(players, ux.MSG_POINT_GAME_SUMMARY[lang])
