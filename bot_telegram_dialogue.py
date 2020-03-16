@@ -805,9 +805,9 @@ def state_WRITERS_SELECT_BEST_ANSWER(user, message_obj):
     else:
         # tx_msg = ux.MSG_THANKS_YOU_ENTERED_X[lang].format(text_input)        
         text_input = message_obj.text
-        if text_input == '/status':
-            remaining_names = game.get_names_remaining_voters()
-            remaining_names_str = ', '.join(remaining_names)
+        remaining_names = game.get_names_remaining_voters()
+        remaining_names_str = ', '.join(remaining_names)
+        if text_input == '/status':            
             msg_list = [ux.MSG_WAITING_FOR[lang].format(remaining_names_str)]
             if user == reader and game.game_control == 'TEACHER':
                 msg_list.append(ux.MSG_JUMP_TO_NEXT_PHASE[lang])

@@ -491,7 +491,7 @@ MSG_ALL_ANSWERS_RECEIVED = {
     'it': "📚 Ricevute tutte le risposte."
 }
 MSG_INTRO_NUMBERED_TEXT = {
-    'en': "📝 These are all the possibile answers in random order:",
+    'en': "📝 These are all the answers provided by the group in random order:",
     'it': "📝 Queste sono tutte le risposte in ordine casuale:"
 }
 MSG_WAIT_FOR_PLAYERS_TO_SELECT_PL = {
