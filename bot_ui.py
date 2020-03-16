@@ -449,8 +449,8 @@ MSG_WRITERS_WRITE_ANSWER = {
         'it': "✍️ Scrivi una possibile riempimento dello spazio della frase."
     },
     'SYNONYM': {
-        'en': "✍️ Please, write down a synonym of the boldfaced part of the sentence (*{}*). It can be one or more words.",
-        'it': "✍️ Scrivi un sinonimo della parte del testo in grassetto (*{}*). Può essere una o più parole."
+        'en': "✍️ Please, write down a synonym of the boldfaced part of the sentence (*{}*). It can be one or more words. Please do not type the whole sentence but only the part to substitute!",
+        'it': "✍️ Scrivi un sinonimo della parte del testo in grassetto (*{}*). Può essere una o più parole. Non inserire la frase intera ma solo la parte da sostituire."
     }
 }
 
@@ -510,8 +510,8 @@ MSG_SELECTION = {
 }
 
 MSG_NEXT_ROUND = {
-    'en': "⭕️ Please press the button below when you are ready for the next round.",
-    'it': "⭕️ Premi il pulsante qua sotto quando sei pronto/a alla prossima mano."
+    'en': "⭕️🚦 Please press the button below when you are ready for the next round.",
+    'it': "⭕️🚦 Premi il pulsante qua sotto quando sei pronto/a alla prossima mano."
 }
 MSG_TEACHER_ORIGINAL_TEXT = {
     'en': "🧑‍🏫 This is the original sentence:\n{}",

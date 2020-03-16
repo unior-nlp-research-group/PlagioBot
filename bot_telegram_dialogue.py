@@ -1145,8 +1145,7 @@ def deal_with_universal_commands(user, text_input):
             send_message(user, ux.MSG_CANT_JOIN_ALREADY_IN_GAME[lang])
             return True
         game_id = text_input.split('/game_')[1]
-        game = Game.get(game_id)
-        lang = game.language
+        game = Game.get(game_id)                
         if game:
             if game.add_player(user):
                 redirect_to_state(user, state_WAITING_FOR_START)
