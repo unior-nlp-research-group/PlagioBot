@@ -845,7 +845,7 @@ def state_WRITERS_SELECT_BEST_ANSWER(user, message_obj):
                     recap_votes(game)
             else:
                 msg_list = [tx_msg, ux.MSG_WAIT_TILL_YOUR_TURN[lang], ux.MSG_STATUS_INSTRUCTIONS[lang]]
-                send_message(user, '\n'.join(msg_list))                       
+                send_message(user, '\n'.join(msg_list), remove_keyboard=True)
         else:
             send_message(user, ux.MSG_WRONG_INPUT_USE_TEXT_OR_BUTTONS[lang], kb)
 
