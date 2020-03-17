@@ -455,8 +455,8 @@ MSG_WRITERS_WRITE_ANSWER = {
 }
 
 MSG_ROUND_NUM = {
-    'en': "⭕️ Round {}",
-    'it': "🖐 Mano {}"
+    'en': "⭕️ Round {}/{}",
+    'it': "🖐 Mano {}/{}"
 }
 MSG_JUMP_TO_NEXT_PHASE = {
     'en': "🦘 You can decide to jump to the next phase with the command /jump",

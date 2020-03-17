@@ -631,7 +631,7 @@ def state_WRITERS_WRITE_ANSWERS(user, message_obj):
     lang = game.language
     if message_obj is None:
         if user == reader:
-            msg_round_num = ux.MSG_ROUND_NUM[lang].format(game.get_hand_number())
+            msg_round_num = ux.MSG_ROUND_NUM[lang].format(game.get_hand_number(), game.num_hands)
             send_message(players, msg_round_num, remove_keyboard=True)
             msg_reader_list = [ux.MSG_WAIT_WRITERS_WRITE_ANSWERS[game.game_type][lang]]
             msg_writers = ux.MSG_WRITERS_WRITE_ANSWER[game.game_type][lang]
