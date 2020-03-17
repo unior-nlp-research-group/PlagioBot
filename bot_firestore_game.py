@@ -174,7 +174,7 @@ class Game(Model):
                     #     'voted_by': list(int) -> indexes of players' indexes voting that answer
                     # }
                 'HAND_POINTS': [{str(i):0 for i in range(self.num_players)} for i in range(self.num_hands)], 
-                'GAME_POINTS': [],
+                'GAME_POINTS': [], # list of points (int) for each player
                 'WINNERS_NAMES': []
             }
             self.set_state('STARTED',save=False)
@@ -422,6 +422,7 @@ class Game(Model):
         points_feedbacks = [{} for i in range(self.num_players)]         
             # one dict per player
             # feedbacks[i] = {
+            #     'POINTS': <int>,
             #     'ANSWERED_CORRECTLY': <bool>,
             #     'NO_ANSWER': <bool>,
             #     'SELECTED_CORRECTLY': <bool>,
@@ -438,12 +439,19 @@ class Game(Model):
                 continue # reader doesn't give/receive points
             player_answer_info = next((info for info in answers_info.values() if i in info['authors']),None)
             player_voted_answer_info = next((info for info in answers_info.values() if i in info['voted_by']),None)            
-            player_answered_correctly = player_answer_info and player_answer_info['correct']
+
+            if player_answer_info is None:
+                # player didn't answer
+                current_hand_points[str(i)] += parameters.POINTS['NO_ANSWER']
+            elif player_answer_info['correct']:        
+                current_hand_points[str(i)] += parameters.POINTS['CORRECT_ANSWER']
+            else: # incorrect answer (0)
+                current_hand_points[str(i)] += parameters.POINTS['INCORRECT_ANSWER']
+
+            points_feedbacks[i]['ANSWERED_CORRECTLY'] = player_answer_info and player_answer_info['correct']
             points_feedbacks[i]['NO_ANSWER'] = player_answer_info is None
             points_feedbacks[i]['NO_SELECTION'] = player_voted_answer_info is None
-            points_feedbacks[i]['ANSWERED_CORRECTLY'] = player_answered_correctly
-            if player_answered_correctly:
-                current_hand_points[str(i)] += parameters.POINTS['CORRECT_ANSWER']                            
+
             if player_voted_answer_info:
                 if player_voted_answer_info['shuffled_number'] == -1:
                     # player voted NONE ANSWER 
@@ -461,6 +469,10 @@ class Game(Model):
                 elif teacher_mode:
                     # wrong answer (we penalize wrong answers only in teacher mode)
                     current_hand_points[str(i)] += parameters.POINTS['INCORRECT_SELECTION']                
+            else:
+                # no selection, penalty only if not answered correctly
+                if not points_feedbacks[i]['ANSWERED_CORRECTLY']:                    
+                    current_hand_points[str(i)] += parameters.POINTS['NO_SELECTION']                
             if not teacher_mode:    
                 # in teacher mode we don't reward students being voted by others (if not correct)
                 if player_voted_answer_info and not player_voted_answer_info['correct']: 
@@ -468,43 +480,44 @@ class Game(Model):
                     for j in player_voted_answer_info['authors']:
                         current_hand_points[str(j)] += parameters.POINTS['RECEIVED_VOTE']
                         points_feedbacks[j]['NUM_VOTES_RECEIVED'] += 1
-            if 'SELECTED_CORRECTLY' not in points_feedbacks[i]:
-                # either i) she previous answered correctly or ii) she didn't provide a selection (jump)
-                points_feedbacks[i]['SELECTED_CORRECTLY'] = False
+            # if 'SELECTED_CORRECTLY' not in points_feedbacks[i]:
+            #     # either i) she previous answered correctly or ii) she didn't provide a selection (jump)
+            #     points_feedbacks[i]['SELECTED_CORRECTLY'] = False
+            points_feedbacks[i]['POINTS'] = current_hand_points[str(i)]
+        
+        # recalculate game points
+        self.variables['GAME_POINTS'] = game_points = [
+            sum(
+                current_hand_points[str(i)] 
+                for current_hand_points in self.variables['HAND_POINTS']
+            ) 
+            for i in range(self.num_players)
+        ]
         self.save()
         return points_feedbacks
 
 
-    def send_hand_point_img_data(self, players):
-        from render_leaderboard import get_image_data_from_points
+    def send_points_img_data(self, players, save=False):
+        from render_leaderboard import get_image_data_from_hands_points
         from bot_telegram import send_photo_from_data_multi
         
-        hand_index = self.variables['HAND']-1
-        current_hand_points = self.variables['HAND_POINTS'][hand_index]
+        hand_number = self.variables['HAND']
+        hands_points = self.variables['HAND_POINTS']
+        game_points = self.variables['GAME_POINTS']
         players_names = [p.get_name(escape_md=False) for p in players]
-        current_hand_points_list = [current_hand_points[str(i)] for i in range(self.num_players)]
-        if self.game_control == 'TEACHER':
-            del(players_names[0])
-            del(current_hand_points_list[0])
-        img_data = get_image_data_from_points(players_names, current_hand_points_list)
-        send_photo_from_data_multi(players, 'leaderboard_hand.png', img_data, sleep=True)
+        hands_points_list = [
+            [hp[str(i)] for i in range(self.num_players)]
+            for hp in hands_points[:hand_number]
+        ]          
 
-    def send_game_point_img_data(self, players, save=False):
-        from render_leaderboard import get_image_data_from_points
-        from bot_telegram import send_photo_from_data_multi
-        
-        points = self.variables['HAND_POINTS']
-        players_names = [p.get_name(escape_md=False) for p in players]
-        self.variables['GAME_POINTS'] = game_points = [
-            sum(current_hand_points[str(i)] for current_hand_points in points) 
-            for i in range(self.num_players)
-        ]
         if self.game_control == 'TEACHER':
-            del(players_names[0])
-            del(game_points[0])
-        if save:            
-            self.save()
-        img_data = get_image_data_from_points(players_names, self.variables['GAME_POINTS'])
+            del(players_names[0])            
+            del(game_points[0])  
+            for hp in hands_points_list:
+                del(hp[0])
+        
+              
+        img_data = get_image_data_from_hands_points(players_names, hands_points_list, game_points)
         send_photo_from_data_multi(players, 'leaderboard_hand.png', img_data, sleep=True)
 
     def get_winner_names(self):        

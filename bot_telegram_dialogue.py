@@ -32,12 +32,12 @@ def restart_user(user):
 # ================================
 # REDIRECT TO STATE
 # ================================
-def redirect_to_state_multi(users, new_function, message_obj=None):
+def redirect_to_state_multi(users, new_function, message_obj=None, **kwargs):
     reversed_users = list(reversed(users)) # so that game creator is last
     for u in reversed_users:
-        redirect_to_state(u, new_function, message_obj)
+        redirect_to_state(u, new_function, message_obj, **kwargs)
 
-def redirect_to_state(user, new_function, message_obj=None):
+def redirect_to_state(user, new_function, message_obj=None, **kwargs):
     new_state = new_function.__name__
     if user.state != new_state:
         logging.debug("In redirect_to_state. current_state:{0}, new_state: {1}".format(str(user.state), str(new_state)))
@@ -45,13 +45,13 @@ def redirect_to_state(user, new_function, message_obj=None):
         current_game = user.get_current_game()
         if current_game and current_game.sub_state != new_state:
             current_game.set_sub_state(new_state)
-    repeat_state(user, message_obj)
+    repeat_state(user, message_obj, **kwargs)
 
 
 # ================================
 # REPEAT STATE
 # ================================
-def repeat_state(user, message_obj=None):
+def repeat_state(user, message_obj=None, **kwargs):
     state = user.state
     if state is None:
         restart_user(user)
@@ -61,7 +61,7 @@ def repeat_state(user, message_obj=None):
         msg = "⚠️ User {} sent to unknown method state: {}".format(user.serial_id, state)
         report_master(msg)
     else:
-        method(user, message_obj)
+        method(user, message_obj, **kwargs)
 
 # ================================
 # Initial State
@@ -177,7 +177,7 @@ def state_JOIN_ROOM_NAME(user, message_obj):
 # ================================
 # Waiting for game start
 # ================================
-def state_WAITING_FOR_START(user, message_obj):
+def state_WAITING_FOR_START(user, message_obj, updated_settings=False):
     game = user.get_current_game()
     players = game.get_players()
     creator, writers = players[0], players[1:]
@@ -222,7 +222,8 @@ def state_WAITING_FOR_START(user, message_obj):
                 kb.append([ux.BUTTON_ANNOUNCE_GAME_PUBLICLY[lang]])
                 msg_list.append(ux.MSG_INVITE_OTHER_PLAYERS_ANNOUNCE[lang])
             send_message(creator, '\n'.join(msg_list), kb)
-            send_message_to_writers()
+            if updated_settings:
+                send_message_to_writers()
         else:
             others_players = [p for p in players if p!=user]
             msg_others = ux.MSG_PLAYER_X_JOINED_GAME[lang].format(user.get_name())
@@ -307,7 +308,7 @@ def state_GAME_SETTINGS(user, message_obj):
         ux.BUTTON_BACK[lang]: {
             'row': 5, 'col': 0,
             'info': '',
-            'action': 'redirect_to_state(user, state_WAITING_FOR_START)',
+            'action': 'redirect_to_state(user, state_WAITING_FOR_START, updated_settings=True)',
             'show_button': True,
             'show_description': False,
         }
@@ -707,6 +708,15 @@ def state_WRITERS_WRITE_ANSWERS(user, message_obj):
         else:
             send_message(user, ux.MSG_WRONG_INPUT_USE_TEXT[lang])
 
+def get_all_num_completed_answers_str(game, shuffled_answers_info):
+    all_num_completed_answers = []
+    for num, answer_info in enumerate(shuffled_answers_info,1):
+        answer = answer_info['answer']
+        num_completed_answers = '{}: '.format(num) + ux.render_complete_text(game, answer)
+        all_num_completed_answers.append(num_completed_answers)
+    all_num_completed_answers_str = '\n\n'.join(all_num_completed_answers)
+    return all_num_completed_answers_str
+
 # ================================
 # GAME_PLAYERS_SELECT_BEST_ANSWERS
 # ================================
@@ -731,10 +741,9 @@ def state_WRITERS_SELECT_BEST_ANSWER(user, message_obj):
             players_min_num_votes += 1
         
         if received_unique_answers_num == 0:
-            msg = ux.MSG_NO_ANSWER_GOING_TO_NEXT_ROUND[lang]
+            msg = ux.MSG_NO_ANSWER_RECEIVED[lang]
             send_message(players, msg)
-            game.prepare_hand_poins_and_get_points_feedbacks()
-            redirect_to_state_multi(players, state_NEXT_HAND)
+            recap_votes(game, answer_received=False)
             return
         if len(correct_players)>0:
             exact_answers_names_str = ', '.join(correct_players_names)
@@ -757,15 +766,14 @@ def state_WRITERS_SELECT_BEST_ANSWER(user, message_obj):
                 recap_votes(game)
             return
         number_answers = len(shuffled_answers_info)
+        if game.game_type == 'SYNONYM':
+            incomplete_text, original_completion = game.get_current_incomplete_text_and_original_completion()
+            completed_text = incomplete_text.replace(original_completion, '*{}*'.format(original_completion))
+            msg = ux.MSG_ORIGINAL_TEXT[lang].format(completed_text)
+            send_message(players, msg)
         intro_msg = ux.MSG_INTRO_NUMBERED_TEXT[lang]
-        send_message(players, intro_msg)
-        all_num_completed_answers = []
-        for num, answer_info in enumerate(shuffled_answers_info,1):
-            answer = answer_info['answer']
-            num_completed_answers = '{}: '.format(num) + \
-                ux.render_complete_text(game, answer)
-            all_num_completed_answers.append(num_completed_answers)
-        all_num_completed_answers_str = '\n\n'.join(all_num_completed_answers)
+        send_message(players, intro_msg)      
+        all_num_completed_answers_str = get_all_num_completed_answers_str(shuffled_answers_info)
         send_message(players, all_num_completed_answers_str)
         game.set_var('ALL_NUM_COMPLETED_ANSWERS', all_num_completed_answers_str)
         msg_reader_list = [
@@ -815,7 +823,7 @@ def state_WRITERS_SELECT_BEST_ANSWER(user, message_obj):
             return
         if user == reader:
             if text_input=='/jump' and game.game_control == 'TEACHER':
-                send_message(players, ux.MSG_TEACHER_HAS_JUMPED_TO_NEXT_PHASE[lang])
+                send_message(players, ux.MSG_TEACHER_HAS_JUMPED_TO_NEXT_PHASE[lang], remove_keyboard=True)
                 redirect_to_state_multi(players, state_TEACHER_VALIDATION)
             else:
                 send_message(user, ux.MSG_WRONG_INPUT_WAIT_FOR_PLAYERS_TO_SELECT[lang])
@@ -862,25 +870,33 @@ def state_TEACHER_VALIDATION(user, message_obj):
         if game.is_voting_no_or_multiple_answers_allowed() \
         else ''
     if message_obj is None:
-        if user == reader:
-            # teacher
-            user.set_var('CORRECT_ANSWERS_NUMBERS', [])
-            numbers_list = [str(i) for i in list(range(1,number_answers+1))]
-            kb = utility.distribute_elements(numbers_list) # should exclude the original one
-            if game.is_voting_no_or_multiple_answers_allowed():
-                kb.append([ux.BUTTON_NO_CORRECT_ANSWER_NO_EMOJI[lang]])
-            if game.game_type == 'SYNONYM':
-                incomplete_text, original_completion = game.get_current_incomplete_text_and_original_completion()
-                completed_text = incomplete_text.replace(original_completion, '*{}*'.format(original_completion))
-                msg = ux.MSG_TEACHER_ORIGINAL_TEXT[lang].format(completed_text)
-                send_message(user, msg, kb, sleep=True)
-            msg_list = [
-                ux.MSG_RECAP_STUDENTS_ANSWERS[lang], 
-                game.get_var('ALL_NUM_COMPLETED_ANSWERS'),
-                ux.MSG_TEACHER_SELECT[lang].format(msg_or_none)
-            ]
-            send_message(user, '\n'.join(msg_list), kb, sleep=True)
-            send_message(writers, ux.MSG_WAIT_FOR_TEACHER_EVALUATION[lang], remove_keyboard=True)
+        if user != reader:
+            return
+        # teacher
+        user.set_var('CORRECT_ANSWERS_NUMBERS', [])
+        numbers_list = [str(i) for i in list(range(1,number_answers+1))]
+        kb = utility.distribute_elements(numbers_list) # should exclude the original one
+        if game.is_voting_no_or_multiple_answers_allowed():
+            kb.append([ux.BUTTON_NO_CORRECT_ANSWER_NO_EMOJI[lang]])
+        if game.game_type == 'SYNONYM':
+            incomplete_text, original_completion = game.get_current_incomplete_text_and_original_completion()
+            completed_text = incomplete_text.replace(original_completion, '*{}*'.format(original_completion))
+            msg = ux.MSG_ORIGINAL_TEXT[lang].format(completed_text)
+            send_message(user, msg, kb, sleep=True)
+
+        all_num_completed_answers_str = game.get_var('ALL_NUM_COMPLETED_ANSWERS')
+        if all_num_completed_answers_str is None:
+            all_num_completed_answers_str = get_all_num_completed_answers_str(game, shuffled_answers_info)
+
+        msg_list = [
+            ux.MSG_RECAP_STUDENTS_ANSWERS[lang], 
+            '',
+            all_num_completed_answers_str,
+            '',
+            ux.MSG_TEACHER_SELECT[lang].format(msg_or_none)
+        ]
+        send_message(user, '\n'.join(msg_list), kb, sleep=True)
+        send_message(writers, ux.MSG_WAIT_FOR_TEACHER_EVALUATION[lang], remove_keyboard=True)
     else:
         if user != reader:
             send_message(user, ux.MSG_WRONG_INPUT_WAIT_FOR_TEACHER_TO_SELECT[lang])
@@ -949,71 +965,68 @@ def state_TEACHER_VALIDATION(user, message_obj):
 # ================================
 # UTIL FUNCTION TO RECAP VOTES
 # ================================
-def recap_votes(game):
+def recap_votes(game, answer_received=True):
     lang = game.language
-    players, _, writers = game.get_current_hand_players_reader_writers()
-    include_no_vote = game.is_voting_no_or_multiple_answers_allowed()
-    shuffled_answers_info = game.get_shuffled_answers_info(include_no_vote)
-    msg_list = [
-        ux.MSG_ANSWERS_RECAP_PL[lang]
-        if game.is_voting_no_or_multiple_answers_allowed()
-        else ux.MSG_ANSWERS_RECAP_SG[lang]
-    ]
-    for answer_info in shuffled_answers_info:
-        answer = answer_info['answer']
-        voters_names = [players[i].get_name() for i in answer_info['voted_by']]
-        num_voters_and_names = str(len(voters_names))
-        num = answer_info['shuffled_number']
-        if voters_names:
-            num_voters_and_names += ": {}".format(', '.join(voters_names))
-        if answer == parameters.NO_ANSWER_KEY: # no vote
-            answer_report = ("❌ ⭐️ → {}" if answer_info['correct'] \
-                else "❌ → {}").format(ux.MSG_NO_ANSWER[lang])
-        else:
-            complete_text = ux.render_complete_text(game, answer)
-            answer_report = ("{} ⭐️ → {}" if answer_info['correct'] \
-                else "{} → {}").format(num, complete_text)
-            authors_names = [players[i].get_name() for i in answer_info['authors']]
-            if authors_names:
-                authors_names_str = ', '.join(authors_names)
-                answer_report += '\n' + ux.MSG_WRITTEN_BY[lang].format(authors_names_str)
-        answer_report += '\n' + ux.MSG_SELECTED_BY[lang].format(num_voters_and_names)
-        msg_list.append(answer_report)
-    send_message(players, '\n\n'.join(msg_list), remove_keyboard=True)
+    players, _, writers = game.get_current_hand_players_reader_writers()    
+    
+    if answer_received:
+        include_no_vote = game.is_voting_no_or_multiple_answers_allowed()
+        shuffled_answers_info = game.get_shuffled_answers_info(include_no_vote)
+        msg_list = [
+            ux.MSG_ANSWERS_RECAP_PL[lang]
+            if game.is_voting_no_or_multiple_answers_allowed()
+            else ux.MSG_ANSWERS_RECAP_SG[lang]
+        ]
+        for answer_info in shuffled_answers_info:
+            answer = answer_info['answer']
+            voters_names = [players[i].get_name() for i in answer_info['voted_by']]
+            num_voters_and_names = str(len(voters_names))
+            num = answer_info['shuffled_number']
+            if voters_names:
+                num_voters_and_names += ": {}".format(', '.join(voters_names))
+            if answer == parameters.NO_ANSWER_KEY: # no vote
+                answer_report = ("❌ ⭐️ → {}" if answer_info['correct'] \
+                    else "❌ → {}").format(ux.MSG_NO_ANSWER[lang])
+            else:
+                complete_text = ux.render_complete_text(game, answer)
+                answer_report = ("{} ⭐️ → {}" if answer_info['correct'] \
+                    else "{} → {}").format(num, complete_text)
+                authors_names = [players[i].get_name() for i in answer_info['authors']]
+                if authors_names:
+                    authors_names_str = ', '.join(authors_names)
+                    answer_report += '\n' + ux.MSG_WRITTEN_BY[lang].format(authors_names_str)
+            answer_report += '\n' + ux.MSG_SELECTED_BY[lang].format(num_voters_and_names)
+            msg_list.append(answer_report)
+        send_message(players, '\n\n'.join(msg_list), remove_keyboard=True)
     
     # send points feedback
     points_feedbacks = game.prepare_hand_poins_and_get_points_feedbacks()
     for w in writers:
         p_index = players.index(w)
         p_feedback = points_feedbacks[p_index]
-        msg_points_correct_answer = ux.MSG_POINT_SG_PL(parameters.POINTS['CORRECT_ANSWER'])[lang]
-        msg_points_incorrect_answer = ux.MSG_POINT_SG_PL(parameters.POINTS['INCORRECT_ANSWER'])[lang]
         msg_points_no_answer = ux.MSG_POINT_SG_PL(parameters.POINTS['NO_ANSWER'])[lang]
-        msg_points_correct_selection = ux.MSG_POINT_SG_PL(parameters.POINTS['CORRECT_SELECTION'])[lang]
+        msg_points_correct_answer = ux.MSG_POINT_SG_PL(parameters.POINTS['CORRECT_ANSWER'])[lang]
+        msg_points_incorrect_answer = ux.MSG_POINT_SG_PL(parameters.POINTS['INCORRECT_ANSWER'])[lang]        
         msg_points_no_selection = ux.MSG_POINT_SG_PL(parameters.POINTS['NO_SELECTION'])[lang]
+        msg_points_correct_selection = ux.MSG_POINT_SG_PL(parameters.POINTS['CORRECT_SELECTION'])[lang]        
+        msg_points_incorrect_selection = ux.MSG_POINT_SG_PL(parameters.POINTS['INCORRECT_SELECTION'])[lang]
+
+        msg_list = [ux.MSG_YOUR_ROUND_POINTS[lang].format(p_feedback['POINTS'])]
         
-        msg_list = [ux.MSG_YOUR_POINTS[lang]]
-        
-        if p_feedback['ANSWERED_CORRECTLY']:
-            msg_list.append(ux.MSG_CORRECT_ANSWER[lang].format(msg_points_correct_answer))
-        elif p_feedback['NO_ANSWER']:
+        if p_feedback['NO_ANSWER']:
             msg_list.append(ux.MSG_NO_GIVEN_ANSWER[lang].format(msg_points_no_answer))
+        elif p_feedback['ANSWERED_CORRECTLY']:
+            msg_list.append(ux.MSG_CORRECT_ANSWER[lang].format(msg_points_correct_answer))        
         else:
             msg_list.append(ux.MSG_WRONG_ANSWER[lang].format(msg_points_incorrect_answer))
         
-        if p_feedback['SELECTED_CORRECTLY']:
+        if p_feedback['NO_SELECTION']: 
+            if not p_feedback['ANSWERED_CORRECTLY']:                
+                msg_list.append(ux.MSG_NO_GIVEN_SELECTION[lang].format(msg_points_no_selection))
+        elif p_feedback['SELECTED_CORRECTLY']:
             msg_list.append(ux.MSG_CORRECT_SELECTION[lang].format(msg_points_correct_selection))
         else:            
-            if game.game_control == 'TEACHER':
-                if p_feedback['NO_SELECTION']:                          
-                    msg_points_no_selection = ux.MSG_POINT_SG_PL(parameters.POINTS['INCORRECT_SELECTION'])[lang]
-                    msg_list.append(ux.MSG_NO_GIVEN_SELECTION[lang].format(msg_points_no_selection))
-                elif not p_feedback['ANSWERED_CORRECTLY']:
-                    msg_points_incorrect_selection = ux.MSG_POINT_SG_PL(parameters.POINTS['INCORRECT_SELECTION'])[lang]
-                    msg_list.append(ux.MSG_WRONG_SELECTION_PENALTY[lang].format(msg_points_incorrect_selection))
-            else:
-                msg_list.append(ux.MSG_WRONG_SELECTION_NO_PENALTY[lang])
-        #else no voting took place
+            msg_list.append(ux.MSG_WRONG_SELECTION_PENALTY[lang].format(msg_points_incorrect_selection))
             
         if game.game_control != 'TEACHER':
             received_votes = p_feedback['NUM_VOTES_RECEIVED']
@@ -1022,21 +1035,19 @@ def recap_votes(game):
             msg_list.append(ux.MSG_RECEIVED_VOTES[lang].format(msg_received_votes_total_points))
         
         send_message(w, '\n'.join(msg_list))
-
-    send_message(players, ux.MSG_POINT_ROUND_SUMMARY[lang].format(game.get_hand_number()))            
-    game.send_hand_point_img_data(players)
+    
     if game.is_last_hand():
         send_message(players, ux.MSG_POINT_GAME_SUMMARY[lang])
-        game.send_game_point_img_data(players, save=True)
+        game.send_points_img_data(players, save=True)
         winners_names = game.get_winner_names()
         winner_msg = ux.MSG_WINNER_SINGULAR[lang] if len(winners_names)==1 else ux.MSG_WINNER_PLURAL[lang]
         winner_msg = winner_msg.format(', '.join(winners_names))
         send_message(players, winner_msg)
         end_game(game, players)
     else:
+        send_message(players, ux.MSG_POINT_GAME_PARTIAL_SUMMARY[lang])
+        game.send_points_img_data(players)
         redirect_to_state_multi(players, state_NEXT_HAND)
-        # send_message(players, ux.MSG_POINT_GAME_PARTIAL_SUMMARY[lang])
-        # game.send_game_point_img_data(players)
         
 
 # ================================

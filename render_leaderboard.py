@@ -22,6 +22,34 @@ def get_image_data_from_points(names, points, show=False):
     img_data = get_image_data_from_table(table, alignment = 'clr', show=show)
     return img_data
 
+def get_image_data_from_hands_points(names, hands_points, total_points, show=False):
+    num_hands = len(hands_points)
+    player_index_points_info = {}
+    total_points_ordered_set = sorted(set(total_points))
+    for i,n in enumerate(names):
+        player_index_points_info[i] = {
+            'name': n,
+            'index': i,
+            'rank': total_points_ordered_set.index(total_points[i])+1,
+            'points': [hp[i] for hp in hands_points]
+        }
+    table = []
+    table_header = ['', ''] + [str(r) for r in range(1,num_hands+1)] + ['TOT']
+    alignment = 'cl' + 'r' * (num_hands+1)
+    table.append(table_header)
+    # todo: line
+    for player_info in sorted(player_index_points_info.values(), key=lambda x: x['rank']):
+        r = player_info['rank']
+        rank = '🥇' if r==1 else '🥈' if r==2 else '🥉' if r==3 else str(r)
+        tp = total_points[player_info['index']]
+        table_row = \
+            [rank, player_info['name']] + \
+            [str(hp) for hp in player_info['points']] + \
+            [str(tp)]
+        table.append(table_row)
+    img_data = get_image_data_from_table(table, alignment, show=show)
+    return img_data
+
 def get_image_data_from_table(result_table, alignment, show=False):
     NUMBER_ROWS = len(result_table)
     #NUMBER_COLUMNS = len(result_table[0])    
@@ -66,7 +94,24 @@ def test1(show=False):
     # return get_image_data_from_points(names=['BOB','PETER','ALEX'], points=[5,3,1], show=show)
     return get_image_data_from_points(names=['Gülşen Eryiğit','B','C','D','E','F','G','H'], points=[1, 2, 1, 2, 1, 4, 0, 3], show=show)
 
+def test2(show=False):
+    names=['Gülşen Eryiğit','Bob','Alice','Rob']
+    hands_points = [
+        [0, 2, 1, 2],
+        [0, 2, 1, 2],
+        [0, 2, 1, 2],
+        [0, 2, 1, 2],
+        [0, 2, 1, 2]
+    ]
+    total_points = [
+        sum([hp[i] for hp in hands_points]) 
+        for i in range(len(hands_points[0]))
+    ]
+    return get_image_data_from_hands_points(
+        names, hands_points, total_points, show=show)
+
 
 if __name__ == "__main__": 
     # test(show=True)
-    test1(show=True)
+    # test1(show=True)
+    test2(show=True)

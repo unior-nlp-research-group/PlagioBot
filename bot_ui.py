@@ -147,8 +147,8 @@ BUTTON_SUBMIT = {
     'it': "✅ INVIA"
 }
 BUTTON_NEXT_ROUND = {
-    'en': "⭕️ NEXT ROUND",
-    'it': "🖐 PROSSIMA MANO"
+    'en': "🚦 NEXT ROUND",
+    'it': "🚦 PROSSIMA MANO"
 }
 
 ####################
@@ -330,8 +330,8 @@ MSG_WAIT_FOR_MORE_PEOPLE_TO_START = {
     'it': "⌛ Ci devono essere almeno {} giocatori per iniziare.".format(parameters.MIN_NUM_OF_PLAYERS)
 }
 MSG_WAIT_FOR_X_TO_START_NEXT_ROUND = {
-    'en': "⌛ Let's wait for {} to proceed to next round.",
-    'it': "⌛ Attendiamo che {} avvii la prossima mano."
+    'en': "🚦 Let's wait for {} to proceed to next round.",
+    'it': "🚦 Attendiamo che {} avvii la prossima mano."
 }
 MSG_ANNOUNCE_GAME_PUBLICLY = {
     'en': "📮 New game created by {}. Join the game by clicking here: {}",
@@ -514,12 +514,12 @@ MSG_SELECTION = {
 }
 
 MSG_NEXT_ROUND = {
-    'en': "⭕️🚦 Please press the button below when you are ready for the next round.",
-    'it': "⭕️🚦 Premi il pulsante qua sotto quando sei pronto/a alla prossima mano."
+    'en': "🚦 Please press the button below when you are ready for the next round.",
+    'it': "🚦 Premi il pulsante qua sotto quando sei pronto/a alla prossima mano."
 }
-MSG_TEACHER_ORIGINAL_TEXT = {
-    'en': "🧑‍🏫 This is the original sentence:\n{}",
-    'it': "🧑‍🏫 Queta è la frase originale:\n{}"
+MSG_ORIGINAL_TEXT = {
+    'en': "📝 This is the original sentence:\n{}",
+    'it': "📝 Queta è la frase originale:\n{}"
 }
 MSG_OR_NONE = {
     'en': ' (or NONE)',
@@ -597,9 +597,9 @@ MSG_NO_SELECTION_ALL_GUESSED_CORRECTLY = {
     'en': "❌🔘 No selection: all player inserted the correct answer.",
     'it': "❌🔘 Nessuna selezione: tutti i giocatori hanno inserito la soluzione corretta."
 }
-MSG_NO_ANSWER_GOING_TO_NEXT_ROUND = {
-    'en': "🦘 No answer received, we go to next round.",
-    'it': "🦘 Nessuna risposta ricevuta, si passa alla prossima mano."
+MSG_NO_ANSWER_RECEIVED = {
+    'en': "🦘 No answer received.",
+    'it': "🦘 Nessuna risposta ricevuta."
 }
 MSG_CORRECT_ANSWER_NO_SELECTION = {
     'en': "😀 Wow, you entered the correct answer!",
@@ -630,7 +630,7 @@ MSG_WAIT_TILL_YOUR_TURN = {
     'it': "💤 Verrai informato quando sarà nuovamente il tuo turno."
 }
 MSG_STATUS_INSTRUCTIONS = {
-    'en': "👀 If you want to see who we are still waiting for use the command /status",
+    'en': "👀 If you want to see who we are still waiting for, use the command /status",
     'it': "👀 Se vuoi sapre chi stiamo aspettando, usa il comando /status!"
 }
 MSG_WAIT_FOR_TEACHER_EVALUATION = {
@@ -657,9 +657,9 @@ MSG_ANSWERS_RECAP_PL = {
     'en': "📜 Answers recap: correct answers are marked with a ⭐️",
     'it': "📜 Sintesi risposte: le risposte corrette sono segnate con una ⭐️"
 }
-MSG_YOUR_POINTS = {
-    'en': "💰 Your points:",
-    'it': "💰 I tuoi punti:"
+MSG_YOUR_ROUND_POINTS = {
+    'en': "💰 Your round points: {}",
+    'it': "💰 I tuoi punti di questa mano: {}"
 }
 MSG_SELECTED_BY = {
     'en': "Chosen by {}",
@@ -678,8 +678,8 @@ MSG_POINT_ROUND_SUMMARY = {
     'it': "🖐 PUNTI MANO {}"
 }
 MSG_POINT_GAME_SUMMARY = {
-    'en': "🎲 GAME POINTS",
-    'it': "🎲 PUNTI GIOCO"
+    'en': "🎲 FINAL GAME POINTS",
+    'it': "🎲 PUNTI GIOCO FINALI"
 }
 MSG_POINT_GAME_PARTIAL_SUMMARY = {
     'en': "🎲 GAME POINTS (PARTIAL)",
