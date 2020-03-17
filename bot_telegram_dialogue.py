@@ -773,7 +773,7 @@ def state_WRITERS_SELECT_BEST_ANSWER(user, message_obj):
             send_message(players, msg)
         intro_msg = ux.MSG_INTRO_NUMBERED_TEXT[lang]
         send_message(players, intro_msg)      
-        all_num_completed_answers_str = get_all_num_completed_answers_str(shuffled_answers_info)
+        all_num_completed_answers_str = get_all_num_completed_answers_str(game, shuffled_answers_info)
         send_message(players, all_num_completed_answers_str)
         game.set_var('ALL_NUM_COMPLETED_ANSWERS', all_num_completed_answers_str)
         msg_reader_list = [
