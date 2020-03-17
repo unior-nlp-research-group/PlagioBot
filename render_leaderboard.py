@@ -25,7 +25,7 @@ def get_image_data_from_points(names, points, show=False):
 def get_image_data_from_hands_points(names, hands_points, total_points, show=False):
     num_hands = len(hands_points)
     player_index_points_info = {}
-    total_points_ordered_set = sorted(set(total_points))
+    total_points_ordered_set = sorted(set(total_points), reverse=True)
     for i,n in enumerate(names):
         player_index_points_info[i] = {
             'name': n,

@@ -487,7 +487,7 @@ MSG_ALL_ANSWERS_RECEIVED = {
     'it': "📚 Ricevute tutte le risposte."
 }
 MSG_INTRO_NUMBERED_TEXT = {
-    'en': "📝 These are all the answers provided by the group in random order:",
+    'en': "📝 These are all the collected answers in random order:",
     'it': "📝 Queste sono tutte le risposte in ordine casuale:"
 }
 MSG_WAIT_FOR_PLAYERS_TO_SELECT_PL = {
@@ -581,8 +581,8 @@ MSG_WRONG_SELECTION_PENALTY= {
     'it': '❌📌 Non hai scelto correttamente ({}).'
 }
 MSG_RECEIVED_VOTES = {
-    'en': "🔘 {} players chosen your answer ({}).",
-    'it': "🔘 {} giocatori hanno scelto la tua risposta ({})."
+    'en': "🔘 {} player(s) has/have chosen your answer ({}).",
+    'it': "🔘 {} giocatore/i ha/nno scelto la tua risposta ({})."
 }
 
 MSG_NO_SELECTION_ONLY_ONE_OPTION = {

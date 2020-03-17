@@ -210,7 +210,7 @@ class Game(Model):
     def get_reader_index(self):
         if self.game_control == 'TEACHER':
             return 0
-        return self.variables['HAND'] - 1
+        return (self.variables['HAND'] - 1 ) % self.num_players
 
     def get_hand_number(self):
         return self.variables['HAND']
@@ -342,7 +342,11 @@ class Game(Model):
                 'authors': [self.get_reader_index()],
                 'correct': True,
                 'voted_by': []
-             }                
+             }   
+        
+        selection_took_place = len(answers_info) > 2  # we should not count the answer give bu the same person
+        self.set_var('SELECTION_ENABLED', selection_took_place)
+        
         self.save()
 
     def get_correct_answers_authors_indexes(self):        
@@ -469,10 +473,8 @@ class Game(Model):
                 elif teacher_mode:
                     # wrong answer (we penalize wrong answers only in teacher mode)
                     current_hand_points[str(i)] += parameters.POINTS['INCORRECT_SELECTION']                
-            else:
-                # no selection, penalty only if not answered correctly
-                if not points_feedbacks[i]['ANSWERED_CORRECTLY']:                    
-                    current_hand_points[str(i)] += parameters.POINTS['NO_SELECTION']                
+            elif self.get_var('SELECTION_ENABLED'):
+                current_hand_points[str(i)] += parameters.POINTS['NO_SELECTION']                
             if not teacher_mode:    
                 # in teacher mode we don't reward students being voted by others (if not correct)
                 if player_voted_answer_info and not player_voted_answer_info['correct']: 

@@ -37,7 +37,7 @@ class User(Model):
         return '{}_{}'.format(application, serial_id)
 
     def __eq__(self, other):
-        return type(self) == type(other) and self.id == other.id
+        return type(self) == type(other) and self.serial_id == other.serial_id
 
     @staticmethod
     def create_user(application, serial_id, name, username, language, bot=False):
