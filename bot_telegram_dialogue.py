@@ -254,11 +254,7 @@ def state_WAITING_FOR_START(user, message_obj, updated_settings=False):
                 elif text_input == ux.BUTTON_START_GAME[lang]:
                     assert len(players) >= parameters.MIN_NUM_OF_PLAYERS
                     if game.setup(user):
-                        if game.auto_exercise_mode():
-                            game.fill_exercises_automatically()
-                            redirect_to_state_multi(players, state_WRITERS_WRITE_ANSWERS)
-                        else:
-                            redirect_to_state_multi(players, state_READER_WRITES_INCOMPLETE_TEXT)
+                        go_to_next_hand(game, players, first_hand = True)
                     else:
                         send_message(user, ux.MSG_GAME_NOT_AVAILABLE[lang])
                 else:
@@ -541,15 +537,8 @@ def state_READER_WRITES_INCOMPLETE_TEXT(user, message_obj):
     lang = game.language
     if message_obj is None:
         if user == reader:
-            if hand_number == 1:
-                msg_all = ux.MSG_GAME_HAS_STARTED_WITH_PLAYERS[lang].format(', '.join(game.players_names))
-                send_message(players, msg_all, remove_keyboard=True)
-                send_message(players, ux.MSG_INSTRUCTIONS[game.game_type][lang])
-            msg_intro_list = [ux.MSG_CURRENT_ROUND[lang].format(hand_number)]
-            reader_name = ux.MSG_THE_TEACHER[lang] if game.game_control=='TEACHER' else reader.get_name()
-            msg_intro = '\n'.join(msg_intro_list)
-            send_message(players, msg_intro, remove_keyboard=True)
             msg_reader = ux.MSG_WRITE_INCOMPLETE[game.game_type][lang]
+            reader_name = ux.MSG_THE_TEACHER[lang] if game.game_control=='TEACHER' else reader.get_name()            
             msg_writers = ux.MSG_WAIT_READER_WRITE_INCOMPLETE[game.game_type][lang].format(reader_name)
             send_message(reader, msg_reader)
             send_message(writers, msg_writers)
@@ -631,8 +620,6 @@ def state_WRITERS_WRITE_ANSWERS(user, message_obj):
     lang = game.language
     if message_obj is None:
         if user == reader:
-            msg_round_num = ux.MSG_ROUND_NUM[lang].format(game.get_hand_number(), game.num_hands)
-            send_message(players, msg_round_num, remove_keyboard=True)
             msg_reader_list = [ux.MSG_WAIT_WRITERS_WRITE_ANSWERS[game.game_type][lang]]
             msg_writers = ux.MSG_WRITERS_WRITE_ANSWER[game.game_type][lang]
             if game.game_type in ['CONTINUATION','FILL']:
@@ -1050,6 +1037,24 @@ def recap_votes(game, answer_received=True):
         redirect_to_state_multi(players, state_NEXT_HAND)
         
 
+def go_to_next_hand(game, players, first_hand=False):
+    lang = game.language
+    
+    if first_hand == 1:
+        msg_all = ux.MSG_GAME_HAS_STARTED_WITH_PLAYERS[lang].format(', '.join(game.players_names))
+        send_message(players, msg_all, remove_keyboard=True)
+        send_message(players, ux.MSG_INSTRUCTIONS[game.game_type][lang])
+    
+    msg_round_num = ux.MSG_ROUND_NUM[lang].format(game.get_hand_number(), game.num_hands)
+    send_message(players, msg_round_num, remove_keyboard=True)
+
+    if game.auto_exercise_mode():                            
+        if first_hand:
+            game.fill_exercises_automatically()
+        redirect_to_state_multi(players, state_WRITERS_WRITE_ANSWERS)
+    else:
+        redirect_to_state_multi(players, state_READER_WRITES_INCOMPLETE_TEXT)
+
 # ================================
 # SETUP NEXT ROUND
 # ================================
@@ -1073,10 +1078,7 @@ def state_NEXT_HAND(user, message_obj):
             if text_input in utility.flatten(kb):
                 assert text_input == ux.BUTTON_NEXT_ROUND[lang]
                 game.setup_next_hand(user)
-                if game.auto_exercise_mode():                            
-                    redirect_to_state_multi(players, state_WRITERS_WRITE_ANSWERS)
-                else:
-                    redirect_to_state_multi(players, state_READER_WRITES_INCOMPLETE_TEXT)
+                go_to_next_hand(game, players)
             else:
                 send_message(user, ux.MSG_WRONG_INPUT_USE_BUTTONS[lang], kb)
 

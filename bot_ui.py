@@ -361,10 +361,6 @@ MSG_CHAT_INFO = {
     'en': "💬 To chat with other players, please type /chat followed by the message.",
     'it': "💬 Per chattare con gli altri giocatori, scrivi /chat seguito dal messaggio."
 }
-MSG_CURRENT_ROUND = {
-    'en': '⭕️ Current round: {}',
-    'it': '🖐 Mano: {}'
-}
 MSG_READER_NAME = {
     'en': '📖 Reader: {}',
     'it': '📖 Lettore: {}'
