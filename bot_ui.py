@@ -537,6 +537,18 @@ MSG_TEACHER_SELECT_OR_SUBMIT = {
     'en': "🧑‍🏫 Please select another correct response{} or press *{}* to confirm.".format('{}',BUTTON_SUBMIT['en']),
     'it': "🧑‍🏫 Seleziona un'altra risposta corretta{} o premi *{}* per confermare.".format('{}',BUTTON_SUBMIT['it'])
 }
+MSG_TEACHER_SELECT_EXERCISE_BATCH = {
+    'en': "🧑‍🏫 Please select the exercise batch number you want to use:",
+    'it': "🧑‍🏫 Seleziona il set di esercizi da usare."
+}
+MSG_WAIT_FOR_TEACHER_TO_SELECT_EXERCISE_BATCH = {
+    'en': "🧑‍🏫 Let's wait for the teacher to setup the exercise.",
+    'it': "🧑‍🏫 Attendiamo che l'insegnate imposti l'esercizio."
+}
+MSG_EXERCISE_SETUP_SUCCESSFULLY = {
+    'en': "🧑‍🏫 Exercise setup completed.",
+    'it': "🧑‍🏫 Impostazione esercizio completato."
+}
 MSG_RECAP_INSTRUCTION = {
     'en': "📜 Use the command /recap\\_answers if you want to see the students' answers again.",
     'it': "📜 Usa il comando /recap\\_answers se vuoi vedere nuovamente le risposte degli studenti."
@@ -745,6 +757,10 @@ MSG_WRONG_INPUT_WAIT_FOR_X_TO_START_NEXT_ROUND = {
 MSG_WRONG_INPUT_WAIT_FOR_TEACHER_TO_SELECT = {
     'en': "⛔️ Let's wait for the teacher's evaluation.",
     'it': "⛔️ Attendiamo la valutazione dell'insegnante."
+}
+MSG_WRONG_INPUT_WAIT_FOR_TEACHER_TO_SETUP_EXERCISE = {
+    'en': "⛔️ Let's wait for the teacher to set up the exercise.",
+    'it': "⛔️ Attendiamo che l'insegnante imposti l'esercizio."
 }
 MSG_WRONG_INPUT_WAIT_FOR_READER = {
     'en': '⛔️ Please wait for {} to insert the text.',

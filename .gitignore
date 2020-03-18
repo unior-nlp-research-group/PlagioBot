@@ -3,3 +3,4 @@ key.py
 .gcloudignore
 .flaskenv
 WebApp
+tmp/

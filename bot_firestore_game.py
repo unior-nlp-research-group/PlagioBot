@@ -7,6 +7,7 @@ import logging
 from random import shuffle
 import itertools
 import parameters
+import copy
 
 # https://firebase.google.com/docs/firestore/manage-data/add-data
 from google.cloud import firestore
@@ -157,7 +158,7 @@ class Game(Model):
                 # otherwise set it manually
             self.players_names = [p.get_name() for p in players]
             self.variables = {
-                'HAND': 1,
+                'HAND': 0, # 1 for the first hand
                 'INCOMPLETE_TEXTS': [],
                 'ORIGINAL_COMPLETION': [], # original completion from reader
                 'PLAYERS_ANSWERS': [{} for i in range(self.num_hands)], # one dict per hand
@@ -173,7 +174,7 @@ class Game(Model):
                     #     'correct': bool -> if correct answer
                     #     'voted_by': list(int) -> indexes of players' indexes voting that answer
                     # }
-                'HAND_POINTS': [{str(i):0 for i in range(self.num_players)} for i in range(self.num_hands)], 
+                'HAND_POINTS': [{str(i):0 for i in range(self.num_players)} for i in range(self.num_hands)], # we can't have list of list in firestore
                 'GAME_POINTS': [], # list of points (int) for each player
                 'WINNERS_NAMES': []
             }
@@ -187,9 +188,9 @@ class Game(Model):
     def auto_exercise_mode(self):
         return self.game_type=='SYNONYM' and self.language == 'en' and self.game_control == 'TEACHER'
 
-    def fill_exercises_automatically(self, save=True):
-        import extract_sentences
-        exercises = extract_sentences.extract_random_exercises(self.num_hands)
+    def fill_exercises_automatically(self, batch_number, save=True):
+        import exercise_data_utils
+        exercises = exercise_data_utils.extract_random_exercises(batch_number, self.num_hands)
         # list of dict {"SENTENCE": <str>, "MWE": <str>}
         for e in exercises:
             self.variables['INCOMPLETE_TEXTS'].append(e['SENTENCE'].upper())
@@ -200,7 +201,7 @@ class Game(Model):
         creator_name = self.players_names[0]
         return escape_markdown(creator_name)
 
-    def setup_next_hand(self, save=True):
+    def increment_hand_number(self, save=True):
         self.variables['HAND'] += 1
         if save: self.save()
 
@@ -488,7 +489,7 @@ class Game(Model):
             points_feedbacks[i]['POINTS'] = current_hand_points[str(i)]
         
         # recalculate game points
-        self.variables['GAME_POINTS'] = game_points = [
+        self.variables['GAME_POINTS'] = [
             sum(
                 current_hand_points[str(i)] 
                 for current_hand_points in self.variables['HAND_POINTS']
@@ -498,14 +499,13 @@ class Game(Model):
         self.save()
         return points_feedbacks
 
-
     def send_points_img_data(self, players, save=False):
         from render_leaderboard import get_image_data_from_hands_points
-        from bot_telegram import send_photo_from_data_multi
-        
+        from bot_telegram import send_photo_from_data_multi        
+
         hand_number = self.variables['HAND']
-        hands_points = self.variables['HAND_POINTS']
-        game_points = self.variables['GAME_POINTS']
+        hands_points = copy.deepcopy(self.variables['HAND_POINTS'])
+        game_points = copy.deepcopy(self.variables['GAME_POINTS'])
         players_names = [p.get_name(escape_md=False) for p in players]
         hands_points_list = [
             [hp[str(i)] for i in range(self.num_players)]
@@ -516,16 +516,21 @@ class Game(Model):
             del(players_names[0])            
             del(game_points[0])  
             for hp in hands_points_list:
-                del(hp[0])
-        
+                del(hp[0])        
               
         img_data = get_image_data_from_hands_points(players_names, hands_points_list, game_points)
         send_photo_from_data_multi(players, 'leaderboard_hand.png', img_data, sleep=True)
 
     def get_winner_names(self):        
-        players_names = self.players_names
-        max_point = max(self.variables['GAME_POINTS'])
-        winner_names = [players_names[i] for i,p in enumerate(self.variables['GAME_POINTS']) if p==max_point]
+        players_names = list(self.players_names)
+        game_points = copy.deepcopy(self.variables['GAME_POINTS'])
+        
+        if self.game_control == 'TEACHER':
+            del(players_names[0])            
+            del(game_points[0])  
+
+        max_point = max(game_points)
+        winner_names = [players_names[i] for i,p in enumerate(game_points) if p==max_point]
         self.variables['WINNERS_NAMES'] = winner_names
         self.save()
         return winner_names

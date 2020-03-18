@@ -206,25 +206,5 @@
             "MWE": "go down"
          }
       ]
-   },
-   "4": {
-      "go off": [
-         {
-            "SENTENCE": "Quick as a wink, the man flicked the main switch so that all the lights went off and everyone was standing in darkness.",
-            "MWE": "went off"
-         },
-         {
-            "SENTENCE": "I’d been asleep for just about thirty minutes when my alarm clock went off at 6:32.",
-            "MWE": "went off"
-         },
-         {
-            "SENTENCE": "All the other rescues went off smoothly, and they were probably just as badly planned as hers.",
-            "MWE": "went off"
-         },
-         {
-            "SENTENCE": "Sometimes the guns go off during the night, between one and four.",
-            "MWE": "go off"
-         }
-      ]
    }
 }

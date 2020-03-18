@@ -36,6 +36,9 @@ def generate_data_file_from_spreadsheet():
     accepted_mwe_types = [m for m in accepted_mwe_types if len(mwe_type_sentences_dict[m])>=2]
     group_size = 5
     batches = utility.split_list(accepted_mwe_types, group_size)
+    
+    if len(batches[-1]) < group_size:
+        batches = batches[:-1]
 
     batch_mwe_type_sentences_dict = {}
     for batch_num, mwe_batch in enumerate(batches,1):
@@ -48,8 +51,17 @@ def generate_data_file_from_spreadsheet():
     with open(data_file, 'w') as f_out:
         json.dump(batch_mwe_type_sentences_dict, f_out, indent=3, ensure_ascii=False)
 
-def extract_random_exercises(num_samples):
-    batch_num = 1
+def get_exercise_batch_and_description():
+    result = {}
+    with open(data_file) as f_in:
+        batch_exercise_dict = json.load(f_in)
+    return [
+        "{}: {}".format(num, ', '.join(sorted(ex.keys())))  
+        for num, ex in batch_exercise_dict.items()
+    ]
+
+
+def extract_random_exercises(batch_num, num_samples):
     import itertools
     import random
     with open(data_file) as f_in:
@@ -65,7 +77,7 @@ def extract_random_exercises(num_samples):
 
 
 if __name__ == '__main__':
-    # generate_data_file_from_spreadsheet()
-    result = extract_random_exercises(5)
-    print(json.dumps(result, indent=3))
+    generate_data_file_from_spreadsheet()
+    # result = extract_random_exercises(5)
+    # print(json.dumps(result, indent=3))
     
