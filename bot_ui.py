@@ -164,15 +164,15 @@ MSG_HOME = {
     'it': "🏠 Schermata Iniziale"
 }
 MSG_NOTIFICATIONS_ON = {
-    'en': "🔔 You have the notifications enabled.",
+    'en': "🔔 You have enabled notifications.",
     'it': "🔔 Hai le notifiche abilitate."
 }
 MSG_NOTIFICATIONS_OFF = {
-    'en': "🔕 You have the notifications disabled.",
+    'en': "🔕 You have disabled notifications.",
     'it': "🔕 Hai le notifiche disabilitate."
 }
 MSG_NO_START_COMMAND_AVAILABLE_DURING_GAME = {
-    'en': "⛔ No /start command availale during the game. Type /exit if you want to abandon the game.",
+    'en': "⛔ No /start command available during the game. Type /exit if you want to stop the game.",
     'it': "⛔ Il comando /start non è disponibile durante il gioco. Scrivi /exit se vuoi terminare il gioco."
 }
 MSG_INFO = {
@@ -180,7 +180,7 @@ MSG_INFO = {
     'it': "{}".format(parameters.INSTRUCTION_URL_IT)
 }
 MSG_WORK_IN_PROGRESS = {
-    'en': "🏗 System under maintanance, please try later.",
+    'en': "🏗 System under maintenance, please try later.",
     'it': "🏗 Sistema in manutenzione, riprova più tardi."
 }
 MSG_FEATURE_NOT_YET_IMPLEMENTED = {
