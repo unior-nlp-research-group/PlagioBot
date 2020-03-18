@@ -993,6 +993,13 @@ def recap_votes(game, answer_received=True):
     players, _, writers = game.get_current_hand_players_reader_writers()    
     
     if answer_received:
+
+        if game.game_type == 'SYNONYM':
+            incomplete_text, original_completion = game.get_current_incomplete_text_and_original_completion()
+            completed_text = incomplete_text.replace(original_completion, '*{}*'.format(original_completion))
+            msg = ux.MSG_ORIGINAL_TEXT[lang].format(completed_text)
+            send_message(players, msg)
+
         include_no_vote = game.is_voting_no_or_multiple_answers_allowed()
         shuffled_answers_info = game.get_shuffled_answers_info(include_no_vote)
         msg_list = [

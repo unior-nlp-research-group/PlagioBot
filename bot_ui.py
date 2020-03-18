@@ -445,7 +445,7 @@ MSG_WRITERS_WRITE_ANSWER = {
         'it': "✍️ Scrivi una possibile riempimento dello spazio della frase."
     },
     'SYNONYM': {
-        'en': "✍️ Please, write down a synonym of the boldfaced part of the sentence (*{}*). It can be one or more words. Please do not type the whole sentence but only the part to substitute!",
+        'en': "✍️ Please write down a synonym for the boldfaced word/s in the sentence (*{}*). Your suggestion can be one or more words. Type only your suggested synonym; there is no need to retype the whole sentence.",
         'it': "✍️ Scrivi un sinonimo della parte del testo in grassetto (*{}*). Può essere una o più parole. Non inserire la frase intera ma solo la parte da sostituire."
     }
 }
