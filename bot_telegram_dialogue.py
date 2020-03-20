@@ -1187,6 +1187,9 @@ def deal_with_universal_commands(user, text_input):
         return True
     if text_input.startswith('/chat '):
         game = user.get_current_game()
+        if game == None:
+            send_message(user, ux.MSG_ERROR_CHAT_NO_GAME[lang])
+            return True
         lang = game.language
         chat_msg = ' '.join(text_input.split()[1:])
         if game:
