@@ -639,7 +639,7 @@ MSG_WAIT_TILL_YOUR_TURN = {
 }
 MSG_STATUS_INSTRUCTIONS = {
     'en': "👀 If you want to see who we are still waiting for, use the command /status",
-    'it': "👀 Se vuoi sapre chi stiamo aspettando, usa il comando /status!"
+    'it': "👀 Se vuoi sapre chi deve ancora rispondere, usa il comando /status"
 }
 MSG_WAIT_FOR_TEACHER_EVALUATION = {
     'en': "🧑‍🏫 Let's wait for the teacher's evaluation!",
