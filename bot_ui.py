@@ -240,7 +240,7 @@ MSG_SELECT_GAME_CONTROL = {
     'it': "Seleziona la modalità di gioco:"
 }
 MSG_GAME_CONTROL_DEFAULT_DESCR = {
-    'en': "every players choose a sentence to be completed",
+    'en': "every player chooses a sentence to be completed",
     'it': "ogni giocatore sceglie una frase da completare"
 }
 MSG_GAME_CONTROL_TEACHER_DESCR = {
@@ -248,12 +248,12 @@ MSG_GAME_CONTROL_TEACHER_DESCR = {
     'it': "tu (l'insegnante) sceglierai tutte le frasi"
 }
 MSG_INSERT_NUMBER_OF_ROUNDS = {
-    'en': "🔢⭕️ Please insert the number of rouds to play.\n\n*Current rounds*: {}",
+    'en': "🔢⭕️ Please insert the number of rounds to play.\n\n*Current rounds*: {}",
     'it': "🔢🖐️ Seleziona il numero di mani da giocare.\n\n*Mani attuali*: {}"
 }
 MSG_INSTRUCTIONS = {
     'CONTINUATION': {
-        'en': "ℹ️ *Instructions*: The game is set to *CONTINUATION* mode. Participants will be presented with an incomplete sentence (previously written by the reader), and need to provide a plausible continuation. Next, all completion (including the original) are collected and displayed in random order. Participants will then have to try guess which one is the original continuation. Each player will gain a point if she correctly guess the original completion, otherwise she will give the point to the player who wrote that completion.",
+        'en': "ℹ️ *Instructions*: The game is set to *CONTINUATION* mode. Participants will be presented with an incomplete sentence (previously written by the reader), and need to provide a plausible continuation. Next, all completions (including the original) are collected and displayed in random order. Participants will then have to try to guess which one is the original continuation. Each player will gain a point if she correctly guessed the original completion, otherwise she will give the point to the player who wrote that completion.",
         'it': "ℹ️ *Instructions*: Il gioco è impostato in modalità *COMPLETAMENTO*. I partecipanti riceveranno una frase incompleta (scritta dal lettore in precedenza), e gli verrà chiesto di scrivere di completare la frase in maniera plausibile. Successivamente, verranno mostrate tutte le frase complete in ordine casuale (inclusa quella originale). I partecipanti dovranno quindi cercare di indovinare quale frase è quella originale. Ogni giocatore riceverà un punto se indovinerà correttamente, altrimenti darà il punto al giocatore che ha scritto la frase selezionata."
     },
     'FILL': {
@@ -261,7 +261,7 @@ MSG_INSTRUCTIONS = {
         'it': "ℹ️ *Instructions*: Il gioco è impostato in modalità *RIEMPIMENTO*."
     },
     'SYNONYM': {
-        'en': "ℹ️ *Instructions*: The game is set to *SYNONYM* mode. In this game, you are presented with a sentence containing a part (one or more words) *highlighted in boldface*. Firstly you have to come up with a synonym of the highleted part. It can be a *single word* or *multiple words* that will retain the meaning of the sentence, once substituted to the boldfaced part. In the next phase, all answers are listed in random order; you will be asked to choose for one answer (from another player) that you think is also correct. If no other answer is correct, you can select *NONE*. Finally, the *teacher will validate all answers*: you will get 2 points if you answered correctly, 1 point if you chose correctly and -1 point if you chose incorrectly.",
+        'en': "ℹ️ *Instructions*: The game is set to *SYNONYM* mode. In this game, you are presented with a sentence containing a part (one or more words) *highlighted in boldface*. Firstly you have to come up with a synonym of the highlighted part. It can be a *single word* or *multiple words* that will retain the meaning of the sentence, once substituted for the boldfaced part. In the next phase, all answers are listed in random order; you will be asked to select one answer (from another player) that you think is also correct. If no other answer is correct, you can select *NONE*. Finally, the *teacher will validate all answers*: you will get 2 points if you answered correctly, 1 point if you chose correctly and -1 point if you chose incorrectly.",
         'it': "ℹ️ *Instructions*: Il gioco è impostato in modalità *SINONIMI*."
     }
 }
@@ -294,7 +294,7 @@ MSG_WRONG_COMMAND = {
     'it': '⛔️ Comando non riconosciuto'
 }
 MSG_CANT_JOIN_ALREADY_IN_GAME = {
-    'en': '⛔️ You can open a new game when you are already in a game. You have to exit first.',
+    'en': '⛔️ You cannot open a new game when you are already in a game. You have to exit first.',
     'it': "⛔️ Non puoi unirti ad un gioco quando sei già all'interno di un gioco. Devi prima uscire."
 }
 MSG_CANT_JOIN_GAME = {
@@ -326,11 +326,11 @@ MSG_CURRENT_PLAYER = {
     'it': '👤 *{} giocatore*: {}'
 }
 MSG_WAIT_FOR_MORE_PEOPLE_TO_START = {
-    'en': "⌛ There needs to be at least {} players in the game to start it.".format(parameters.MIN_NUM_OF_PLAYERS),
+    'en': "⌛ There need to be at least {} players in the game to start it.".format(parameters.MIN_NUM_OF_PLAYERS),
     'it': "⌛ Ci devono essere almeno {} giocatori per iniziare.".format(parameters.MIN_NUM_OF_PLAYERS)
 }
 MSG_WAIT_FOR_X_TO_START_NEXT_ROUND = {
-    'en': "🚦 Let's wait for {} to proceed to next round.",
+    'en': "🚦 Let's wait for {} to proceed to the next round.",
     'it': "🚦 Attendiamo che {} avvii la prossima mano."
 }
 MSG_ANNOUNCE_GAME_PUBLICLY = {
@@ -526,7 +526,7 @@ MSG_TEACHER_SELECT = {
     'it': "🧑‍🏫 Seleziona una risposta corretta*{}."
 }
 MSG_RECAP_STUDENTS_ANSWERS = {
-    'en': "🧑‍🏫 These are the student's answers:",
+    'en': "🧑‍🏫 These are the students' answers:",
     'it': "🧑‍🏫 Queste sono le risposte degli studenti:"
 }
 MSG_TEACHER_YOU_SELECTED = {
@@ -698,7 +698,7 @@ MSG_EXIT_GAME = {
     'it': "🚪 Gioco terminato perché {} ha interrotto il gioco."
 }
 MSG_EXIT_GAME_EXPIRED = {
-    'en': "🚪 Game has terminated because none made a move for long time.",
+    'en': "🚪 Game has terminated because nobody made a move for long time.",
     'it': "🚪 Gioco terminato perché nessuno ha giocato per troppo tempo."
 }
 MSG_NO_GAME_TO_EXIT = {
@@ -751,7 +751,7 @@ MSG_WRONG_INPUT_WAIT_FOR_PLAYERS_TO_SELECT = {
     'it': "⛔️ Attendiamo che le altre persone facciano la loro scelta."
 }
 MSG_WRONG_INPUT_WAIT_FOR_X_TO_START_NEXT_ROUND = {
-    'en': "⛔️ Let's wait for {} to proceed to next round.",
+    'en': "⛔️ Let's wait for {} to proceed to the next round.",
     'it': "⛔️ Attendiamo che {} avvii la prossima mano."
 }
 MSG_WRONG_INPUT_WAIT_FOR_TEACHER_TO_SELECT = {
@@ -795,7 +795,7 @@ MSG_INPUT_TOO_SHORT = {
     'it': '⛔️ Input troppo corto.'
 }
 MSG_INPUT_CONTAINS_SPACE_OR_MARKDOWN = {
-    'en': '⛔️ Input cannot contain spaces or following characters: "{}".'.format(utility.escape_markdown(utility.MARKDOWN_CHARS)),
+    'en': '⛔️ Input cannot contain spaces or the following characters: "{}".'.format(utility.escape_markdown(utility.MARKDOWN_CHARS)),
     'it': '⛔️ Input non può conotenere spazi o i caratteri: "{}".'.format(utility.escape_markdown(utility.MARKDOWN_CHARS))
 }
 MSG_INPUT_NO_MARKDOWN = {
@@ -811,7 +811,7 @@ MSG_INPUT_NO_GAP = {
     'it': '⛔️ Il testo inserito non contiene la sequenza di 3 punti di domanda (\'???\') per indicare la parte mancante da completare.'
 }
 MSG_INPUT_NO_SYNONYM = {
-    'en': '⛔️ The text you have inserted does not contain parenthesis or they are not in the correct format.',
+    'en': '⛔️ The text you have inserted does not contain parentheses or they are not in the correct format.',
     'it': '⛔️ Il testo inserito non contiene le parentsi in formato corretto.'
 }
 MSG_INPUT_SUBSTITUION_NOT_IN_SENTENCE = {
