@@ -225,7 +225,7 @@ MSG_NUM_PLAYERS = {
     'it': "👤 Una mano per giocatore"
 }
 MSG_WRITE_GAME_SPECIAL_RULES = {
-    'en': "✍️ If you want you can write down any special rule you want to set for the game (e.g., rymes, length of sentences, etc...).",
+    'en': "✍️ If you want you can write down any special rule you want to set for the game (e.g., rhymes, length of sentences, etc...).",
     'it': "✍️ Inserisci se vuoi delle regole particolari da adottare nel gioco (ad esempio rime, lunghezza frasi, ecc...).",
 }
 MSG_CURRENT_GAME_SPECIAL_RULES = {
@@ -261,7 +261,7 @@ MSG_SELECT_GAME_CONTROL = {
     'it': "Seleziona la modalità di gioco:"
 }
 MSG_GAME_CONTROL_DEFAULT_DESCR = {
-    'en': "every players choose a sentence to be completed",
+    'en': "every player chooses a sentence to be completed",
     'it': "ogni giocatore sceglie una frase da completare"
 }
 MSG_GAME_CONTROL_TEACHER_DESCR = {
@@ -289,7 +289,7 @@ MSG_TELL_SPECIAL_RULES = {
     'it': "🧭 {} ha scelto le seguenti regole del gioco: {}"
 }
 MSG_ENABLE_TEXT_INFO = {
-    'en': "ℹ️ Specify whether the reader can specify additional infor in each hand.",
+    'en': "ℹ️ Specify whether the reader can specify additional info in each hand.",
     'it': "ℹ️ Indica se il lettore può inserire info aggiuntive in ogni mano."
 }
 MSG_GAME_ALREADY_ACTIVE = {
@@ -321,7 +321,7 @@ MSG_WRONG_COMMAND = {
     'it': '⛔️ Comando non riconosciuto'
 }
 MSG_CANT_JOIN_ALREADY_IN_GAME = {
-    'en': '⛔️ You can open a new game when you are already in a game. You have to exit first.',
+    'en': '⛔️ You cannot open a new game when you are already in a game. You have to exit first.',
     'it': "⛔️ Non puoi unirti ad un gioco quando sei già all'interno di un gioco. Devi prima uscire."
 }
 MSG_CANT_JOIN_GAME = {
@@ -441,7 +441,7 @@ MSG_PLAYERS_INCOMPLETE_SENTENCE = {
     'it': "📖 Questa è la frase che deve essere completata:\n{}"
 }
 MSG_PLAYERS_SENTENCE_WITH_HIGHLITED_SUBSTITUTION = {
-    'en': "📖 This is the sentence with the highlited part to be substituted:\n{}",
+    'en': "📖 This is the sentence with the highlighted part to be substituted:\n{}",
     'it': "📖 Questa è la frase con la parte evidenziata da sostituire:\n{}"
 }
 MSG_READER_WRITE_CORRECT_COMPLETION = {
@@ -457,7 +457,7 @@ MSG_WRITERS_WRITE_COMPLETION = {
     'it': "✍️ Scrivi un possibile completamento del testo."
 }
 MSG_WRITERS_WRITE_SUBSTITUTION = {
-    'en': "✍️ Please, write down a possible substitution of the highlited part.",
+    'en': "✍️ Please, write down a possible substitution of the highlighted part.",
     'it': "✍️ Scrivi un possibile sostituzione della parte evidenziata."
 }
 MSG_ALREADY_SENT_COMPLETION = {
@@ -545,7 +545,7 @@ MSG_EXIT_GAME = {
     'it': "🚪 Gioco terminato perché {} è uscito/a."
 }
 MSG_EXIT_GAME_EXPIRED = {
-    'en': "🚪 Game has terminated because none made a move for long time.",
+    'en': "🚪 Game has terminated because nobody made a move for long time.",
     'it': "🚪 Gioco terminato perché nessuno ha giocato per troppo tempo."
 }
 MSG_NO_GAME_TO_EXIT = {
@@ -622,11 +622,11 @@ MSG_INPUT_TOO_SHORT = {
     'it': '⛔️ Input troppo corto.'
 }
 MSG_INPUT_CONTAINS_SPACE_OR_MARKDOWN = {
-    'en': '⛔️ Input cannot contain spaces or following characters: "{}".'.format(utility.escape_markdown(utility.MARKDOWN_CHARS)),
+    'en': '⛔️ Input cannot contain spaces or the following characters: "{}".'.format(utility.escape_markdown(utility.MARKDOWN_CHARS)),
     'it': '⛔️ Input non può conotenere spazi o i caratteri: "{}".'.format(utility.escape_markdown(utility.MARKDOWN_CHARS))
 }
 MSG_INPUT_NO_MARKDOWN = {
-    'en': '⛔️ Input cannot contains the following characters: {}'.format(utility.escape_markdown(utility.MARKDOWN_CHARS)),
+    'en': '⛔️ Input cannot contain the following characters: {}'.format(utility.escape_markdown(utility.MARKDOWN_CHARS)),
     'it': '⛔️ Il testo non può contenere i caratteri: {}'.format(utility.escape_markdown(utility.MARKDOWN_CHARS))
 }
 MSG_INPUT_NO_GAP = {
@@ -634,7 +634,7 @@ MSG_INPUT_NO_GAP = {
     'it': '⛔️ Il testo inserito non contiene la sequenza di 3 punti di domanda (\'???\') per indicare la parte mancante da completare.'
 }
 MSG_INPUT_NO_SUBSTITUTION = {
-    'en': '⛔️ The text you have inserted does not contain parenthesis or they are not in the correct format.',
+    'en': '⛔️ The text you have inserted does not contain parentheses or they are not in the correct format.',
     'it': '⛔️ Il testo inserito non contiene le parentsi in formato corretto.'
 }
 MSG_INPUT_SUBSTITUION_NOT_IN_SENTENCE = {
@@ -684,9 +684,9 @@ def render_complete_text(game, incomplete_text, completion, markdown=True, upper
     if uppercase:
             completion = completion.upper()
             incomplete_text = incomplete_text.upper()
-    if game.game_type == 'CONTINUATION':        
+    if game.game_type == 'CONTINUATION':
         completed_text = "{} *{}*".format(incomplete_text, completion)
-    elif game.game_type == 'FILL':        
+    elif game.game_type == 'FILL':
         pre_gap, post_gap = game.get_incomplete_text_pre_post_gap()
         if uppercase:
             pre_gap, post_gap = pre_gap.upper(), post_gap.upper()
@@ -709,8 +709,8 @@ def check_multi_button(buttons_value_description, selected_value, multi_line=Fal
     buttons = [
         '{}{}'.format(
             b,
-            ' ' + CHECK_SYMBOL if v['value']==selected_value else ''            
-        ) 
+            ' ' + CHECK_SYMBOL if v['value']==selected_value else ''
+        )
         for b,v in sorted(buttons_value_description.items(), key=lambda i: i[1]['order'])
     ]
     if multi_line:
@@ -720,10 +720,10 @@ def check_multi_button(buttons_value_description, selected_value, multi_line=Fal
 def check_multi_description(buttons_value_description, selected_value):
     return '\n'.join([
         '{} {}: {}'.format(
-            CHECK_SYMBOL if v['value']==selected_value else BLACK_CHECK_SYMBOL, 
+            CHECK_SYMBOL if v['value']==selected_value else BLACK_CHECK_SYMBOL,
             b,
             v['description']
-        ) 
+        )
         for b,v in sorted(buttons_value_description.items(), key=lambda i: i[1]['order'])
     ])
 
