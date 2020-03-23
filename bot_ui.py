@@ -179,6 +179,10 @@ MSG_INFO = {
     'en': "{}".format(parameters.INSTRUCTION_URL_EN),
     'it': "{}".format(parameters.INSTRUCTION_URL_IT)
 }
+MSG_NO_INFO = {
+    'en': "⛔ No /info command available inside a game.",
+    'it': "⛔ Il comando /info non è disponibile all'interno di un gioco."
+}
 MSG_WORK_IN_PROGRESS = {
     'en': "🏗 System under maintenance, please try later.",
     'it': "🏗 Sistema in manutenzione, riprova più tardi."

@@ -1220,6 +1220,10 @@ def deal_with_universal_commands(user, text_input):
     if text_input == '/refresh':
         repeat_state(user)
         return True
+    if text_input == '/info':
+        msg = ux.MSG_NO_INFO[lang] if user.current_game_id else ux.MSG_INFO[lang]
+        send_message(user, msg)            
+        return True
     if user.is_master():
         if text_input == '/debug':
             import json
