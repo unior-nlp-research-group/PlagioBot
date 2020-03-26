@@ -466,6 +466,10 @@ MSG_TEACHER_HAS_JUMPED_TO_NEXT_PHASE = {
     'en': "🦘 The teacher has decided to jump to the next phase without waiting for all the answers.",
     'it': "🦘 L'insegnante ha deciso di saltare alla fase successiva senza aspettare tutte le risposte."
 }
+MSG_READER_HAS_JUMPED_TO_NEXT_PHASE = {
+    'en': "🦘 The reader has decided to jump to the next phase without waiting for all the answers.",
+    'it': "🦘 Il lettore ha deciso di saltare alla fase successiva senza aspettare tutte le risposte."
+}
 MSG_PLAYERS_INCOMPLETE_SENTENCE = {
     'en': "📖 This is the sentence that needs to be completed:\n\n{}",
     'it': "📖 Questa è la frase che deve essere completata:\n\n{}"

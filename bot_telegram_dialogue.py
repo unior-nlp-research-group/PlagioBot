@@ -699,9 +699,13 @@ def state_WRITERS_WRITE_ANSWERS(user, message_obj):
             send_message(user, '\n'.join(msg_list))
             return
         if user == reader:
-            if text_input=='/jump' and game.game_control == 'TEACHER':
-                send_message(players, ux.MSG_TEACHER_HAS_JUMPED_TO_NEXT_PHASE[lang], remove_keyboard=True)
-                redirect_to_state_multi(game, players, state_WRITERS_SELECT_BEST_ANSWER)
+            if text_input=='/jump':
+                if game.game_control == 'TEACHER':
+                    send_message(players, ux.MSG_TEACHER_HAS_JUMPED_TO_NEXT_PHASE[lang], remove_keyboard=True)
+                    redirect_to_state_multi(game, players, state_WRITERS_SELECT_BEST_ANSWER)
+                else:
+                    send_message(players, ux.MSG_READER_HAS_JUMPED_TO_NEXT_PHASE[lang], remove_keyboard=True)
+                    redirect_to_state_multi(game, players, state_WRITERS_SELECT_BEST_ANSWER)
             else:
                 send_message(user, ux.MSG_WRONG_INPUT_WAIT_FOR_PLAYERS_TO_ANSWER[lang])
             return        
@@ -845,9 +849,13 @@ def state_WRITERS_SELECT_BEST_ANSWER(user, message_obj):
             send_message(user, '\n'.join(msg_list))
             return
         if user == reader:
-            if text_input=='/jump' and game.game_control == 'TEACHER':
-                send_message(players, ux.MSG_TEACHER_HAS_JUMPED_TO_NEXT_PHASE[lang], remove_keyboard=True)
-                redirect_to_state_multi(game, players, state_TEACHER_VALIDATION)
+            if text_input=='/jump':
+                if game.game_control == 'TEACHER':
+                    send_message(players, ux.MSG_TEACHER_HAS_JUMPED_TO_NEXT_PHASE[lang], remove_keyboard=True)
+                    redirect_to_state_multi(game, players, state_TEACHER_VALIDATION)
+                else:
+                    send_message(players, ux.MSG_READER_HAS_JUMPED_TO_NEXT_PHASE[lang], remove_keyboard=True)
+                    recap_votes(game)
             else:
                 send_message(user, ux.MSG_WRONG_INPUT_WAIT_FOR_PLAYERS_TO_SELECT[lang])
             return        

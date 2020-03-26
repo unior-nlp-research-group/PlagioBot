@@ -13,5 +13,5 @@ def save_game(game_name):
         print("Saved {}".format(output_file_path))
 
 if __name__ == '__main__':
-    save_game('PLAGIOWOODROSE2')
+    save_game('TELEGRAMMARSJA')
     
