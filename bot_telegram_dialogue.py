@@ -121,8 +121,8 @@ def state_NEW_ROOM_NAME(user, message_obj):
                     assert(False)
             elif ux.text_is_button_or_digit(text_input):
                 send_message(user, ux.MSG_WRONG_BUTTON_INPUT[lang], kb)
-            elif ' ' in text_input or utility.contains_markdown(text_input):
-                send_message(user, ux.MSG_INPUT_CONTAINS_SPACE_OR_MARKDOWN[lang], kb)
+            elif any(x in text_input for x in [' ','/']) or utility.contains_markdown(text_input):
+                send_message(user, ux.MSG_GAME_NAME_ERROR[lang], kb)
                 repeat_state(user)
             else:
                 room_name = text_input.upper()

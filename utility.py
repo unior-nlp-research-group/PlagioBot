@@ -25,6 +25,7 @@ def represents_int_between(s, low, high):
     return False
 
 MARKDOWN_CHARS = '*_`['
+MARKDOWN_CHARS_SLASH = MARKDOWN_CHARS + ' /'
 
 def contains_markdown(text):
     return any(c in text for c in MARKDOWN_CHARS)

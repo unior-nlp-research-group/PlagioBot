@@ -806,9 +806,9 @@ MSG_INPUT_TOO_SHORT = {
     'en': '⛔️ Input too short.',
     'it': '⛔️ Input troppo corto.'
 }
-MSG_INPUT_CONTAINS_SPACE_OR_MARKDOWN = {
-    'en': '⛔️ Input cannot contain spaces or the following characters: "{}".'.format(utility.escape_markdown(utility.MARKDOWN_CHARS)),
-    'it': '⛔️ Input non può conotenere spazi o i caratteri: "{}".'.format(utility.escape_markdown(utility.MARKDOWN_CHARS))
+MSG_GAME_NAME_ERROR = {
+    'en': '⛔️ Game name cannot contain spaces or the following characters: "{}".'.format(utility.escape_markdown(utility.MARKDOWN_CHARS_SLASH)),
+    'it': '⛔️ Il nome del gioco non può conotenere spazi o i caratteri: "{}".'.format(utility.escape_markdown(utility.MARKDOWN_CHARS_SLASH))
 }
 MSG_INPUT_NO_MARKDOWN = {
     'en': '⛔️ Input cannot contain the following characters: {}'.format(utility.escape_markdown(utility.MARKDOWN_CHARS)),
