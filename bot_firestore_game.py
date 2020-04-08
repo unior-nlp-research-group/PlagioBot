@@ -79,6 +79,8 @@ class Game(Model):
         id_str = "{}_{}".format(name, timestamp)
         return Game.get(id_str)
 
+    # not necesssary, consider removing
+    # only use refresh_from_transaction in firestore_model
     def refresh(self):
         self.copy_from_dict(Game.get(self.id).to_dict())
 
@@ -289,7 +291,7 @@ class Game(Model):
             return len(remaining_players_indexes)
         
         remaining_players_num = update_in_transaction(db.transaction())        
-        self.refresh()
+        self.refresh() # not necesssary, consider removing
         return remaining_players_num
 
     def get_remaining_answers_names(self):
@@ -307,7 +309,8 @@ class Game(Model):
         original_completion = self.variables['ORIGINAL_COMPLETION'][hand_index]
         players_answers_unique = sorted(set(players_answers.values()))
         number_displayed_answers = len(players_answers_unique)
-        if not self.is_voting_no_or_multiple_answers_allowed():
+        original_in_players_answers = original_completion in players_answers_unique
+        if not self.is_voting_no_or_multiple_answers_allowed() and not original_in_players_answers:
             number_displayed_answers += 1 # adding the original one
         shuffled_numbers = list(range(1,number_displayed_answers+1))
         shuffle(shuffled_numbers)
@@ -336,17 +339,24 @@ class Game(Model):
                 'voted_by': []
             }
         else:
-             # add correct answer
-             answers_info[original_completion] = {
-                'answer': original_completion,
-                'shuffled_number': next(iter_shuffled_numbers),
-                'authors': [self.get_reader_index()],
-                'correct': True,
-                'voted_by': []
-             }   
+            reader_index = self.get_reader_index()
+            if original_in_players_answers:
+                correct_answer = answers_info[original_completion]
+                correct_answer['authors'].append(reader_index)
+                correct_answer['correct'] = True
+            else:
+                # add correct answer
+                answers_info[original_completion] = {
+                    'answer': original_completion,
+                    'shuffled_number': next(iter_shuffled_numbers),
+                    'authors': [reader_index],
+                    'correct': True,
+                    'voted_by': []
+                }   
         
-        selection_took_place = len(answers_info) > 2  # we should not count the answer give bu the same person
-        self.set_var('SELECTION_ENABLED', selection_took_place)
+        # selection is enabled only if there are at least 2 unique answers
+        # we should not count the answer given by the same person
+        self.set_var('SELECTION_ENABLED', len(answers_info) > 2)
         
         self.save()
 
@@ -390,7 +400,7 @@ class Game(Model):
             return len(remaining_players_indexes)
         
         remaining_players_num = update_in_transaction(db.transaction())
-        self.refresh()
+        self.refresh() # not necesssary, consider removing
         return remaining_players_num
 
     def get_names_remaining_voters(self):        
