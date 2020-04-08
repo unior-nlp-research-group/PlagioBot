@@ -1,3 +1,5 @@
+# from https://gitlab.com/jeremyfromearth/firestore-model
+
 import logging
 import uuid
 import functools
