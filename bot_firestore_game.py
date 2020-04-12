@@ -22,8 +22,8 @@ class Game(Model):
     players_id: List    
     state: str = "INITIAL" # INITIAL, STARTED, ENDED, INTERRUPTED    
     sub_state: str = None # players states
-    game_type: str = 'SYNONYM' # 'CONTINUATION', 'FILL', 'SYNONYM'
-    game_control: str = 'TEACHER' # 'DEFAULT', 'TEACHER'
+    game_type: str = 'CONTINUATION' # 'CONTINUATION', 'FILL', 'SYNONYM'
+    game_control: str = 'DEFAULT' # 'DEFAULT', 'TEACHER'
     num_hands: int = parameters.NUM_HANDS_IN_TEACHER_MODE
     players_names: List = None                
     num_players: int = -1
