@@ -4,7 +4,7 @@ import key
 import logging
 import google.cloud.logging
 client = google.cloud.logging.Client()
-client.setup_logging(log_level=logging.DEBUG) # INFO
+client.setup_logging(log_level=logging.WARNING) # INFO DEBUG
 
 
 # If `entrypoint` is not defined in app.yaml, App Engine will look for an app
