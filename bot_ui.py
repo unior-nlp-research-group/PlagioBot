@@ -637,6 +637,10 @@ MSG_THANKS = {
     'en': "😀 Thanks!",
     'it': "😀 Grazie!"
 }
+MSG_THANKS_THIS_IS_THE_COMPLETED_ANSWER = {
+    'en': "😀 Thanks, this is your completed answer:",
+    'it': "😀 Grazie, questa è la tua risposta completa:"
+}
 MSG_THANKS_YOU_ENTERED_X = {
     'en': "😀 Thanks, you entered *{}*.",
     'it': "😀 Grazie, hai inserito *{}*."
@@ -644,6 +648,10 @@ MSG_THANKS_YOU_ENTERED_X = {
 MSG_THANKS_YOU_SELECTED_X = {
     'en': "😀 Thanks, you selected *{}*.",
     'it': "😀 Grazie, hai selezionato *{}*."
+}
+MSG_CONFIRM_ANSWER_YES_NO = {
+    'en': "✔ Please confirm that it is correct.",
+    'it': "✔ Conferma se è corretto."
 }
 MSG_WAIT_TILL_YOUR_TURN = {
     'en': "💤 We will get back as soon as it is your turn again.",

@@ -633,7 +633,7 @@ def state_READER_WRITES_ANSWER(user, message_obj):
                 else:
                     answer = text_input.upper()
                     if game.game_type == 'CONTINUATION':
-                        answer = utility.normalize_answer(answer)
+                        answer = utility.add_full_stop_if_missing_end_puct(answer)
                     elif game.game_type == 'SYNONYM':
                         inserted_sentence = game.get_current_incomplete_text()
                         freq = inserted_sentence.count(answer)
