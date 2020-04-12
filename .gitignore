@@ -4,3 +4,4 @@ key.py
 .flaskenv
 WebApp
 tmp/
+ws.code-workspace
