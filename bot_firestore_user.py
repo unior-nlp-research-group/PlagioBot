@@ -4,18 +4,10 @@ from utility import escape_markdown
 import json
 import logging
 
-# https://firebase.google.com/docs/firestore/manage-data/add-data
-from google.cloud import firestore
-
 from dataclasses import dataclass, field
 from typing import List, Dict, Any
 
-# https://gitlab.com/futureprojects/firestore-model/blob/master/examples/main.py
-import firestore_model
 from firestore_model import Model
-
-db = firestore.Client()
-firestore_model.db = db
 
 
 @dataclass
