@@ -258,15 +258,15 @@ MSG_INSERT_NUMBER_OF_ROUNDS = {
 MSG_INSTRUCTIONS = {
     'CONTINUATION': {
         'en': "ℹ️ *Instructions*: The game is set to *CONTINUATION* mode. Participants will be presented with an incomplete sentence (previously written by the reader), and need to provide a plausible continuation. Next, all completions (including the original) are collected and displayed in random order. Participants will then have to try to guess which one is the original continuation. Each player will gain a point if she correctly guessed the original completion, otherwise she will give the point to the player who wrote that completion.",
-        'it': "ℹ️ *Instructions*: Il gioco è impostato in modalità *COMPLETAMENTO*. I partecipanti riceveranno una frase incompleta (scritta dal lettore in precedenza), e gli verrà chiesto di scrivere di completare la frase in maniera plausibile. Successivamente, verranno mostrate tutte le frase complete in ordine casuale (inclusa quella originale). I partecipanti dovranno quindi cercare di indovinare quale frase è quella originale. Ogni giocatore riceverà un punto se indovinerà correttamente, altrimenti darà il punto al giocatore che ha scritto la frase selezionata."
+        'it': "ℹ️ *Istruzioni*: Il gioco è impostato in modalità *COMPLETAMENTO*. I partecipanti riceveranno una frase incompleta (scritta dal lettore in precedenza), e gli verrà chiesto di scrivere di completare la frase in maniera plausibile. Successivamente, verranno mostrate tutte le frase complete in ordine casuale (inclusa quella originale). I partecipanti dovranno quindi cercare di indovinare quale frase è quella originale. Ogni giocatore riceverà un punto se indovinerà correttamente, altrimenti darà il punto al giocatore che ha scritto la frase selezionata."
     },
     'FILL': {
         'en': "ℹ️ *Instructions*: The game is set to *FILL* mode.",
-        'it': "ℹ️ *Instructions*: Il gioco è impostato in modalità *RIEMPIMENTO*."
+        'it': "ℹ️ *Istruzioni*: Il gioco è impostato in modalità *RIEMPIMENTO*."
     },
     'SYNONYM': {
         'en': "ℹ️ *Instructions*: The game is set to *SYNONYM* mode. In this game, you are presented with a sentence containing a part (one or more words) *highlighted in boldface*. Firstly you have to come up with a synonym of the highlighted part. It can be a *single word* or *multiple words* that will retain the meaning of the sentence, once substituted for the boldfaced part. In the next phase, all answers are listed in random order; you will be asked to select one answer (from another player) that you think is also correct. If no other answer is correct, you can select *NONE*. Finally, the *teacher will validate all answers*: you will get 2 points if you answered correctly, 1 point if you chose correctly and -1 point if you chose incorrectly.",
-        'it': "ℹ️ *Instructions*: Il gioco è impostato in modalità *SINONIMI*."
+        'it': "ℹ️ *Istruzioni*: Il gioco è impostato in modalità *SINONIMI*."
     }
 }
 MSG_GAME_ALREADY_ACTIVE = {
@@ -564,47 +564,51 @@ MSG_RECAP_INSTRUCTION = {
 MSG_POINT_SG_PL = lambda x: \
     {
         'en': "{} point".format(x),
-        'it': '{} punto'.format(x),        
+        'it': '{} punto'.format(x)
     } \
     if abs(x) == 1 else \
     {
         'en': "{} points".format(x),
-        'it': '{} punti'.format(x),        
+        'it': '{} punti'.format(x)     
     }
-
-MSG_CORRECT_ANSWER= {
+MSG_CORRECT_ANSWER = {
     'en': '🌟✍ You have answered correctly! ({})',
     'it': '🌟✍ Hai risposto correttamente! ({})'
 }
-MSG_NO_GIVEN_ANSWER= {
+MSG_NO_GIVEN_ANSWER = {
     'en': "🤷‍♀️✍ You didn't provide an answer ({}).",
     'it': '🤷‍♀️✍ Non hai dato una risposta ({}).',
 }
-MSG_WRONG_ANSWER= {
+MSG_WRONG_ANSWER = {
     'en': "❌✍ You didn't give the correct answer ({}).",
     'it': '❌✍ Non hai dato la risposta corretta ({}).',
 }
-MSG_CORRECT_SELECTION= {
+MSG_CORRECT_SELECTION = {
     'en': '🌟📌 You have chosen correctly! ({})',
     'it': '🌟📌 Hai scelto correttamete! ({})'
 }
-MSG_WRONG_SELECTION_NO_PENALTY= {
+MSG_WRONG_SELECTION_NO_PENALTY = {
     'en': "❌📌 You didn't choose correctly.",
     'it': '❌📌 Non hai scelto correttamente.'
 }
-MSG_NO_GIVEN_SELECTION= {
+MSG_NO_GIVEN_SELECTION = {
     'en': "🤷‍♀️📌 You didn't make a selection. ({})",
     'it': '🤷‍♀️📌 Non hai fatto una scelta. ({})'
 }
-MSG_WRONG_SELECTION_PENALTY= {
+MSG_WRONG_SELECTION_PENALTY = {
     'en': "❌📌 You didn't choose correctly ({}).",
     'it': '❌📌 Non hai scelto correttamente ({}).'
 }
-MSG_RECEIVED_VOTES = {
-    'en': "🔘 {} player(s) has/have chosen your answer ({}).",
-    'it': "🔘 {} giocatore/i ha/nno scelto la tua risposta ({})."
-}
-
+MSG_RECEIVED_VOTES_SG_PL =  lambda x: \
+    {
+        'en': "🔘 {} player has chosen your answer ({}).".format(x,'{}'),
+        'it': "🔘 {} giocatore ha scelto la tua risposta ({}).".format(x,'{}')
+    } \
+    if abs(x) == 1 else \
+    {
+        'en': "🔘 {} players have chosen your answer ({}).".format(x,'{}'),
+        'it': "🔘 {} giocatori hanno scelto la tua risposta ({}).".format(x,'{}')
+    }
 MSG_NO_SELECTION_ONLY_ONE_OPTION = {
     'en': "❌🔘 No selection: some player would only have one option to choose from.",
     'it': "❌🔘 Nessuna selezione: alcuni giocatori avrebbero solo una sola opzione da scegliere."
@@ -623,11 +627,11 @@ MSG_CORRECT_ANSWER_NO_SELECTION = {
 }
 MSG_X_PLAYER_SG_GUESSED_EXACT_ANSWERS = {
     'en': "🤠 {} has inserted the correct answer.",
-    'it': "🤠 {} ha inserito la risposta corretta.",
+    'it': "🤠 {} ha inserito la risposta esatta.",
 }
 MSG_X_PLAYERS_PL_GUESSED_EXACT_ANSWERS = {
     'en': "🤠 {} have inserted the correct answer.",
-    'it': "🤠 {} hanno inserito la risopsta corretta.",
+    'it': "🤠 {} hanno inserito la risopsta esatta.",
 }
 MSG_THANKS = {
     'en': "😀 Thanks!",
@@ -753,6 +757,10 @@ MSG_WINNER_PLURAL = {
 MSG_WRONG_INPUT_ONLY_TEXT_ACCEPTED = {
     'en': "⛔️ Wrong input, only text is accepted here.",
     'it': "⛔️ Input non valido, devi inserire solo del testo."
+}
+MSG_WRONG_INPUT_DO_NOT_FORWARD = {
+    'en': "⛔️ Please, don't forward me other conversations.",
+    'it': "⛔️ Non puoi inoltrarmi altre conversazioni."
 }
 MSG_WRONG_INPUT_WAIT_FOR_PLAYERS_TO_ANSWER = {
     'en': "⛔️ Let's wait for the other players to provide their answers.",

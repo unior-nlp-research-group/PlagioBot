@@ -16,6 +16,11 @@ from google.cloud import firestore
 # -------------------------------------------
 db = firestore.Client()
 
+def get_env_collection_name(c_name):
+    if key.TEST:
+        return '{}_{}'.format(key.VERSION, c_name)
+    return c_name
+
 
 def require_database(f, *args, **kwargs):
     """ Decorator for methods that access the database
@@ -28,6 +33,26 @@ def require_database(f, *args, **kwargs):
             raise Exception('Database is not defined.')
         else:
             return f(*args, **kwargs)
+    return wrapper
+
+def transactional(f, *args, **kwargs):
+    
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        
+        @firestore.transactional 
+        def update_in_transaction(transaction): 
+            __self = args[0]
+            logging.debug('Entering transactional function {} with args={} and kwargs={}'.format(f.__name__, args, kwargs))
+            snapshot_copy_dict = __self.ref().get(transaction=transaction).to_dict()
+            __self.copy_from_dict(snapshot_copy_dict)
+            result =  f(*args, **kwargs)
+            transaction.set(__self.ref(), asdict(__self))                        
+            logging.debug('Exiting transactional function {} with args={} and kwargs={}'.format(f.__name__, args, kwargs))
+            return result
+
+        return update_in_transaction(db.transaction())
+
     return wrapper
 
 # --------------------------------------------
@@ -68,7 +93,8 @@ class Query(object):
         """
         self.cls = cls
         self.result = None
-        self.q = db.collection(cls.__name__)
+        env_collection_name = get_env_collection_name(cls.__name__)
+        self.q = db.collection(env_collection_name)
 
         # parse the params
         for param in query_params:
@@ -103,7 +129,8 @@ class Model:
     @require_database
     def delete_doc(cls, doc_id):
         try:
-            result = db.collection(cls.__name__).document(doc_id).delete()
+            env_collection_name = get_env_collection_name(cls.__name__)
+            result = db.collection(env_collection_name).document(doc_id).delete()
         except Exception as e:
             logging.error(e)
 
@@ -116,7 +143,8 @@ class Model:
           @return A model instance of type class hydrated w/ data from the database 
         """
         try:
-            doc_ref = db.collection(cls.__name__).document(doc_id).get()
+            env_collection_name = get_env_collection_name(cls.__name__)
+            doc_ref = db.collection(env_collection_name).document(doc_id).get()
             return cls(**doc_ref.to_dict())
         except Exception as e:
             return None
@@ -151,25 +179,6 @@ class Model:
         """
         return Query(cls, q)
 
-
-    # def wrap_transactional(self, f, *args, **kwargs):
-    
-    #     @functools.wraps(f)
-    #     def wrapper(*args, **kwargs):
-            
-    #         @firestore.transactional 
-    #         def update_in_transaction(transaction): 
-    #             logging.debug('Entering transactional {} with args={} and kwargs={}'.format(f.__name__, args, kwargs))
-    #             self.refresh_from_transaction(transaction)
-    #             result =  f(*args, **kwargs)
-    #             self.save_transactional(transaction)                        
-    #             logging.debug('Exiting transactional {} with args={} and kwargs={}'.format(f.__name__, args, kwargs))
-    #             return result
-
-    #         return update_in_transaction(db.transaction())
-
-    #     return wrapper
-
     # --------------------------------------------
     #
     #  instance
@@ -182,8 +191,9 @@ class Model:
 
     @require_database
     def ref(self):
-        collection_name = self.__class__.__name__
-        return db.collection(collection_name).document(self.id)
+        env_collection_name = get_env_collection_name(self.__class__.__name__)
+        
+        return db.collection(env_collection_name).document(self.id)
 
     @require_database
     def delete(self):
@@ -202,10 +212,6 @@ class Model:
         """ Saves this model to Cloud Firestore """
         return self.set(asdict(self))
 
-    def save_transactional(self, transaction):
-        """ Saves this model to Cloud Firestore withing a transaction"""
-        return transaction.set(self.ref(), asdict(self))
-
     def copy_from_dict(self, kvs):
         """ Set values on this model
           @param kvs A dictionary containing key value pairs to set on this model. 
@@ -214,10 +220,6 @@ class Model:
         for k, v in kvs.items():
             if hasattr(self, k):
                 setattr(self, k, v)
-
-    def refresh_from_transaction(self, transaction):
-        snapshot_copy_dict = self.ref().get(transaction=transaction).to_dict()
-        self.copy_from_dict(snapshot_copy_dict)
 
     @require_database
     def set(self, kvs):

@@ -1039,15 +1039,16 @@ def recap_votes(game, answer_received=True):
     
     # send points feedback
     points_feedbacks = game.prepare_hand_poins_and_get_points_feedbacks()
+    POINT_SYSTEM = parameters.POINTS[game.game_type]
     for w in writers:
         p_index = players.index(w)
         p_feedback = points_feedbacks[p_index]
-        msg_points_no_answer = ux.MSG_POINT_SG_PL(parameters.POINTS['NO_ANSWER'])[lang]
-        msg_points_correct_answer = ux.MSG_POINT_SG_PL(parameters.POINTS['CORRECT_ANSWER'])[lang]
-        msg_points_incorrect_answer = ux.MSG_POINT_SG_PL(parameters.POINTS['INCORRECT_ANSWER'])[lang]        
-        msg_points_no_selection = ux.MSG_POINT_SG_PL(parameters.POINTS['NO_SELECTION'])[lang]
-        msg_points_correct_selection = ux.MSG_POINT_SG_PL(parameters.POINTS['CORRECT_SELECTION'])[lang]        
-        msg_points_incorrect_selection = ux.MSG_POINT_SG_PL(parameters.POINTS['INCORRECT_SELECTION'])[lang]        
+        msg_points_no_answer = ux.MSG_POINT_SG_PL(POINT_SYSTEM['NO_ANSWER'])[lang]
+        msg_points_correct_answer = ux.MSG_POINT_SG_PL(POINT_SYSTEM['CORRECT_ANSWER'])[lang]
+        msg_points_incorrect_answer = ux.MSG_POINT_SG_PL(POINT_SYSTEM['INCORRECT_ANSWER'])[lang]        
+        msg_points_no_selection = ux.MSG_POINT_SG_PL(POINT_SYSTEM['NO_SELECTION'])[lang]
+        msg_points_correct_selection = ux.MSG_POINT_SG_PL(POINT_SYSTEM['CORRECT_SELECTION'])[lang]        
+        msg_points_incorrect_selection = ux.MSG_POINT_SG_PL(POINT_SYSTEM['INCORRECT_SELECTION'])[lang]        
 
         msg_list = [ux.MSG_YOUR_ROUND_POINTS[lang].format(p_feedback['POINTS'])]
         
@@ -1060,7 +1061,9 @@ def recap_votes(game, answer_received=True):
                 msg_list.append(ux.MSG_WRONG_ANSWER[lang].format(msg_points_incorrect_answer))
         
         if game.get_var('SELECTION_ENABLED'):
-            if p_feedback['NO_SELECTION']: 
+            if p_feedback['ANSWERED_CORRECTLY']:
+                msg_list.append(ux.MSG_CORRECT_ANSWER[lang].format(msg_points_correct_answer))
+            elif p_feedback['NO_SELECTION']: 
                 msg_list.append(ux.MSG_NO_GIVEN_SELECTION[lang].format(msg_points_no_selection))
             elif p_feedback['SELECTED_CORRECTLY']:
                 msg_list.append(ux.MSG_CORRECT_SELECTION[lang].format(msg_points_correct_selection))
@@ -1071,9 +1074,9 @@ def recap_votes(game, answer_received=True):
             
         if game.game_control != 'TEACHER':
             received_votes = p_feedback['NUM_VOTES_RECEIVED']
-            received_votes_total_points = received_votes * parameters.POINTS['RECEIVED_VOTE']            
+            received_votes_total_points = received_votes * POINT_SYSTEM['RECEIVED_VOTE']            
             msg_received_votes_total_points = ux.MSG_POINT_SG_PL(received_votes_total_points)[lang]
-            msg_list.append(ux.MSG_RECEIVED_VOTES[lang].format(received_votes, msg_received_votes_total_points))
+            msg_list.append(ux.MSG_RECEIVED_VOTES_SG_PL(received_votes)[lang].format(msg_received_votes_total_points))
         
         send_message(w, '\n'.join(msg_list))
     
@@ -1295,6 +1298,9 @@ def deal_with_request(request_json):
     else:
         user.update_user(name, username)
 
+    if message_obj.forward_from:
+        send_message(user, ux.MSG_WRONG_INPUT_DO_NOT_FORWARD[user.language])
+        return
     if message_obj.text:
         text_input = message_obj.text
         logging.debug('Message from @{} in state {} with text {}'.format(user.serial_id, user.state, text_input))
