@@ -347,7 +347,7 @@ MSG_SENT_ANNOUNCEMENT = {
 }
 MSG_PLAYER_X_JOINED_GAME = {
     'en': "👤 Player {} joined the game.",
-    'it': "👤 Il/a giocatore/ice {} si è unito/a al gioco."
+    'it': "👤 {} si è unito/a al gioco."
 }
 MSG_YOU_CAN_START_GAME = {
     'en': "🏁 You can start the game by pressing the button *{}*.".format(BUTTON_START_GAME['en']),

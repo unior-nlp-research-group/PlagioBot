@@ -721,7 +721,7 @@ def state_WRITERS_WRITE_ANSWERS(user, message_obj, first_call=True):
                     redirect_to_state_multi(game, players, state_WRITERS_SELECT_BEST_ANSWER)
             else:
                 send_message(user, ux.MSG_WRONG_INPUT_WAIT_FOR_PLAYERS_TO_ANSWER[lang])
-                return        
+            return        
         if game.has_player_already_written_answer(user):
             send_message(user, ux.MSG_ALREADY_SENT_ANSWER[lang])
             return
