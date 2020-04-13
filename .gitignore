@@ -3,4 +3,5 @@ key.py
 .gcloudignore
 .flaskenv
 WebApp
-tmp
+tmp/
+ws.code-workspace

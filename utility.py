@@ -25,6 +25,7 @@ def represents_int_between(s, low, high):
     return False
 
 MARKDOWN_CHARS = '*_`['
+MARKDOWN_CHARS_SLASH = MARKDOWN_CHARS + ' /'
 
 def contains_markdown(text):
     return any(c in text for c in MARKDOWN_CHARS)
@@ -39,31 +40,82 @@ def remove_markdown(text):
         text = text.replace(char, '')
     return text
 
+PUNCTUATION = ['.','!','?',':',';']
+
 def add_full_stop_if_missing_end_puct(text):
-    if text[-1] not in ['.','!','?']:
+    if text[-1] not in PUNCTUATION:
         text = text + '.'
     return text
+
+def remove_trailing_punctuation(text):
+    if text[-1] in PUNCTUATION:
+        return remove_trailing_punctuation(text[:-1])
+    else:
+        return text
 
 def normalize_apostrophe(text):    
     for char in '’`':
         text = text.replace(char, "'")
     return text
 
-def normalize_completion(text):
-    text = add_full_stop_if_missing_end_puct(text)
-    return text
+def check_if_substitue_suggestion_matches_prefix_suffix(text, replacement_in_text, answer):
+    text = remove_trailing_punctuation(text)
+    answer = remove_trailing_punctuation(answer)
+    prefix_end = text.index(replacement_in_text)
+    suffix_start = prefix_end + len(replacement_in_text)
+    prefix = text[:prefix_end]
+    suffix = text[suffix_start:]
+    return answer.startswith(prefix) and answer.endswith(suffix)
 
 def has_parenthesis_in_correct_format(text):
     open_index = text.find('(')
     close_index = text.find(')')
     return open_index!=-1 and close_index!=-1 and open_index < close_index
 
-def validate_substring_presence(text, s):
-    return text.count(s)==1
+def distribute_elements(seq, max_size=5):
+    if len(seq)==0:
+        return []
+    lines = len(seq) // max_size
+    if len(seq) % max_size > 0:
+        lines += 1
+    avg = len(seq) / float(lines)
+    result = []
+    last = 0.0
+    while last < len(seq):
+        result.append(seq[int(last):int(last + avg)])
+        last += avg
+    return result
 
+def split_list(iterable, group_size):
+    from itertools import zip_longest
+    args = [iter(iterable)] * group_size
+    return list(([e for e in t if e != None] for t in zip_longest(*args)))
 
 def get_milliseconds():
   """
     @return Milliseconds since the epoch
   """
   return int(round(time() * 1000))
+
+def clean_new_lines(s):
+    return s.replace('\\n', '\n').strip()
+
+def import_url_csv_to_dict_list(url_csv, remove_new_line_escape=True): #escapeMarkdown=True
+    import csv
+    import requests
+    r = requests.get(url_csv)
+    r.encoding = "utf-8"
+    spreadsheet_csv = r.text.split('\n')
+    reader = csv.DictReader(spreadsheet_csv)
+    if remove_new_line_escape:
+        return [
+            {
+                clean_new_lines(k): clean_new_lines(v)
+                for k,v in dict.items()
+            } for dict in reader
+        ]
+    return [dict for dict in reader]
+
+def get_google_spreadsheet_dict_list(spreadsheed_id, gid):
+    url = 'https://docs.google.com/spreadsheets/d/{}/export?gid={}&format=csv'.format(spreadsheed_id, gid)
+    return import_url_csv_to_dict_list(url)

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import telegram
 import telegram.error
 from telegram.error import TelegramError, Unauthorized, BadRequest, TimedOut, ChatMigrated, NetworkError
@@ -34,17 +32,19 @@ def exception_reporter(func):
     def exception_wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except Exception:
+        except (TimedOut, NetworkError):
+            rety_on_network_error(func)
+        except Exception: #(Unauthorized, BadRequest, ChatMigrated, TelegramError)
             report_string = '❗️ Exception {}'.format(traceback.format_exc()) #.splitlines()
             logging.error(report_string)
             try:
                 report_master(report_string)
             except Exception:
                 report_string = '❗️ Exception {}'.format(traceback.format_exc())
-                logging.error(report_string)
+                logging.error(report_string)        
     return exception_wrapper
 
-@exception_reporter
+
 def rety_on_network_error(func):
     def retry_on_network_error_wrapper(*args, **kwargs):
         for retry_num in range(1, 5):
@@ -62,6 +62,7 @@ def rety_on_network_error(func):
     return retry_on_network_error_wrapper
 
 def set_webhook():
+    print("Attempting to set webhook to\n{}".format(key.WEBHOOK_TELEGRAM_BASE))
     s = BOT.setWebhook(key.WEBHOOK_TELEGRAM_BASE, allowed_updates=['message'])
     if s:
         print("webhook setup ok: {}".format(key.WEBHOOK_TELEGRAM_BASE))
@@ -85,33 +86,38 @@ def get_webhook_info():
 #     while(True):
 #         entries, cursor = get_next_page_of_users(cursor)
 #         users = [User(entry=e) for e in entries]
-#         send_message_multi(users, text, kb, markdown, remove_keyboard, **kwargs)
+#         send_message(users, text, kb, markdown, remove_keyboard, **kwargs)
 #         #logging.debug("sending invitation to {}".format(', '.join(u.get_name() for u in users)))
 #         if cursor == None:
 #             break
 
-def send_message_multi(users, text, kb=None, markdown=True, remove_keyboard=False, **kwargs):
-    for u in users:
-        send_message(u, text, kb=kb, markdown=markdown, remove_keyboard=remove_keyboard, sleep=True, **kwargs)
 '''
 If kb==None keep last keyboard
 '''
-@rety_on_network_error
+@exception_reporter
 def send_message(user, text, kb=None, markdown=True, remove_keyboard=False, sleep=False, **kwargs):
-    #sendMessage(chat_id, text, parse_mode=None, disable_web_page_preview=None, disable_notification=False,
-    # reply_to_message_id=None, reply_markup=None, timeout=None, **kwargs)
-    if kb or remove_keyboard:
-        if remove_keyboard:
-            user.set_empy_keyboard()            
+    if type(user) is list:
+        for u in user:
+            send_message(u, text, kb=kb, markdown=markdown, remove_keyboard=remove_keyboard, sleep=True, **kwargs)
+        return
+    is_user = type(user) is User
+    chat_id = user.serial_id if is_user else user
+
+    if kb!=None or remove_keyboard:
+        if kb==[] or remove_keyboard:
+            if is_user:
+                user.set_empy_keyboard()            
             reply_markup = telegram.ReplyKeyboardRemove()
         else:
-            user.set_keyboard(kb)
+            if is_user:
+                user.set_keyboard(kb)
             reply_markup = telegram.ReplyKeyboardMarkup(kb, resize_keyboard=True)
     else:
         reply_markup = None        
+    
     try:
         BOT.sendMessage(
-            chat_id = user.serial_id,
+            chat_id,
             text = text,
             parse_mode = telegram.ParseMode.MARKDOWN if markdown else None,
             reply_markup = reply_markup,
@@ -173,19 +179,14 @@ def get_text_from_file(file_id):
     r = requests.get(file_url)
     return r.text
 
-bot_telegram_MASTER = None
-
 def report_master(message):
-    global bot_telegram_MASTER
-    if bot_telegram_MASTER is None:
-        bot_telegram_MASTER = User.get_user('telegram', key.TELEGRAM_BOT_MASTER_ID)
     max_length = 2000
     if len(message)>max_length:
         chunks = (message[0+i:max_length+i] for i in range(0, len(message), max_length))
         for m in chunks:
-            send_message(bot_telegram_MASTER, m, markdown=False)    
+            send_message(key.TELEGRAM_BOT_MASTER_ID, m, markdown=False)    
     else:
-        send_message(bot_telegram_MASTER, message, markdown=False)
+        send_message(key.TELEGRAM_BOT_MASTER_ID, message, markdown=False)
 
 if __name__ == "__main__":
     set_webhook()

@@ -4,18 +4,10 @@ from utility import escape_markdown
 import json
 import logging
 
-# https://firebase.google.com/docs/firestore/manage-data/add-data
-from google.cloud import firestore
-
 from dataclasses import dataclass, field
 from typing import List, Dict, Any
 
-# https://gitlab.com/futureprojects/firestore-model/blob/master/examples/main.py
-import firestore_model
 from firestore_model import Model
-
-db = firestore.Client()
-firestore_model.db = db
 
 
 @dataclass
@@ -37,7 +29,7 @@ class User(Model):
         return '{}_{}'.format(application, serial_id)
 
     def __eq__(self, other):
-        return type(self) == type(other) and self.id == other.id
+        return type(self) == type(other) and self.serial_id == other.serial_id
 
     @staticmethod
     def create_user(application, serial_id, name, username, language, bot=False):
@@ -46,7 +38,7 @@ class User(Model):
             serial_id = str(serial_id),
             name = name,
             username = username,
-            language = language if language in ['en','it'] else 'it',
+            language = language if language in ['en','it'] else 'en',
             bot = bot
         )
         user.id = User.make_id(application, serial_id)
@@ -63,8 +55,16 @@ class User(Model):
         self.username = username
         self.save()
 
-    def get_name(self):
-        return escape_markdown(self.name)
+    def get_name(self, escape_md=True):
+        if escape_md:
+            return escape_markdown(self.name)
+        return self.name
+
+    def get_name_and_id(self, escape_md=True):
+        result = "{} ({})".format(self.name, self.serial_id)
+        if escape_markdown:
+            return escape_markdown(result)
+        return result
 
     def get_name_at_username(self, escape_markdown=False):
         if self.username:
@@ -76,8 +76,11 @@ class User(Model):
         return result
 
     def set_state(self, state, save=True):
-        self.state = state
-        if save: self.save()
+        if self.state != state:
+            self.state = state
+            if save: self.save()
+            return True
+        return False
 
     def switch_language(self, save=True):
         self.language = 'it' if self.language == 'en' else 'en'
@@ -102,12 +105,14 @@ class User(Model):
         return Game.get(self.current_game_id)
 
     def set_keyboard(self, value, save=True):
-        self.keyboard = {str(i):v for i,v in enumerate(value)}
+        new_keyboard = {str(i):v for i,v in enumerate(value)}
+        if self.keyboard == new_keyboard:
+            return
+        self.keyboard = new_keyboard
         if save: self.save()
 
     def set_empy_keyboard(self, save=True):
-        self.keyboard = {}
-        if save: self.save()
+        self.set_keyboard({},save=save)
 
     def get_keyboard(self):
         return [self.keyboard[str(i)] for i in range(len(self.keyboard))] 
@@ -117,11 +122,16 @@ class User(Model):
         if save: self.save()
 
     def set_var(self, var_name, var_value, save=True):
+        if self.variables.get(var_name,None) == var_value:
+            return
         self.variables[var_name] = var_value
         if save: self.save()
 
-    def get_var(self, var_name):
-        return self.variables.get(var_name,None)
+    def get_var(self, var_name, init_value=None):
+        if var_name in self.variables:
+            return self.variables[var_name]
+        self.variables[var_name] = init_value
+        return init_value
 
     def is_master(self):
         return self.serial_id == key.TELEGRAM_BOT_MASTER_ID
@@ -132,6 +142,7 @@ class User(Model):
     @staticmethod
     def get_user_lang_state_notification_on(lang, state):
         users_generator = User.query([
+            ('language', '==', lang),
             ('notifications', '==', True), 
             ('state', '==', state)
         ]).get()
