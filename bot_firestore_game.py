@@ -42,35 +42,10 @@ class Game(Model):
         game.save()
         return game
 
-    def set_announced(self, value, save=True):
-        self.announced = value
-        if save: self.save()
-    
-    def set_translate_help(self, value, save=True):
-        self.translate_help = value
-        if save: self.save()
-
-    def set_game_type(self, t, save=True):
-        assert t in ['CONTINUATION', 'FILL', 'SYNONYM']
-        self.game_type = t
-        if save: self.save()
-    
-    def set_game_control(self, m, save=True):
-        assert m in ['DEFAULT', 'TEACHER']
-        self.game_control = m
-        if save: self.save()
-
-    def set_num_hands(self, h, save=True):
-        self.num_hands = h
-        if save: self.save()
-
     @staticmethod
     def get_game(name, timestamp):
         id_str = "{}_{}".format(name, timestamp)
         return Game.get(id_str)
-
-    def get_name(self):
-        return escape_markdown(self.name)
 
     def get_player_at_index(self,i):  
         from bot_firestore_user import User      
@@ -81,10 +56,6 @@ class Game(Model):
         from bot_firestore_user import User
         players = [User.get(p_id) for p_id in self.players_id]
         return players
-
-    def set_state(self, state, save=True):
-        self.state = state
-        if save: self.save()
     
     def reset_variables(self, save=True):
         self.variables = {}
@@ -103,9 +74,39 @@ class Game(Model):
     def is_voting_no_or_multiple_answers_allowed(self):
         return self.game_type == 'SYNONYM'
 
-    # --------------------------
-    # TRANSACTIONAL OPERATION
-    # --------------------------
+    def teacher_validation_enabled(self):
+        return self.game_control == 'TEACHER' and self.game_type == 'SYNONYM'
+
+    ##########################################
+    # START of TRANSACTIONAL FUNCTIONS
+    ##########################################
+
+    @transactional
+    def set_announced(self, value):
+        self.announced = value
+
+    @transactional
+    def set_translate_help(self, value):
+        self.translate_help = value
+
+    @transactional
+    def set_game_type(self, t):
+        assert t in ['CONTINUATION', 'FILL', 'SYNONYM']
+        self.game_type = t
+    
+    @transactional
+    def set_game_control(self, m):
+        assert m in ['DEFAULT', 'TEACHER']
+        self.game_control = m
+
+    @transactional
+    def set_num_hands(self, h):
+        self.num_hands = h
+
+    @transactional
+    def set_state(self, state):
+        self.state = state
+
     @transactional
     def add_player(self, user): 
         if self.state != "INITIAL":
@@ -114,9 +115,6 @@ class Game(Model):
         user.set_current_game(self)  
         return True
 
-    # --------------------------
-    # TRANSACTIONAL OPERATION
-    # --------------------------
     @transactional
     def setup(self, user):
         if self.state != 'INITIAL':
@@ -148,11 +146,40 @@ class Game(Model):
             'GAME_POINTS': [], # list of points (int) for each player
             'WINNERS_NAMES': []
         }
-        self.set_state('STARTED',save=False)
+        self.state = 'STARTED'
         return True
 
+    @transactional
+    def set_player_text_answer_and_get_remaining(self, user, text): 
+        player_index = self.players_id.index(user.id)
+        hand_index = self.variables['HAND']-1
+        current_players_answers = self.variables['PLAYERS_ANSWERS'][hand_index]
+        current_players_answers[str(player_index)] = text
+        remaining_players_indexes = [i for i in range(self.num_players) if str(i) not in current_players_answers]
+        remaining_players_indexes.remove(self.get_reader_index())
+        return len(remaining_players_indexes)
+
+    @transactional
+    def set_voted_indexes_and_get_remaining(self, user, voted_shuffled_number): 
+        answers_info = self.get_current_hand_answers_info()
+        player_index = self.players_id.index(user.id)
+        reader_index = self.get_reader_index()
+        assert player_index != reader_index # reader doesn't vote                    
+        voted_answer_info = next(info for c,info in answers_info.items() if info['shuffled_number']==voted_shuffled_number)
+        voted_answer_info['voted_by'].append(player_index)   
+        voted_by_list = [info['voted_by'] for info in answers_info.values()] 
+        voters_indexes = list(itertools.chain(*voted_by_list))        
+        exact_author_list = next((info['authors'] for info in answers_info.values() if info['correct']),[reader_index])
+        remaining_players_indexes = [i for i in range(self.num_players) if i not in voters_indexes and i not in exact_author_list]
+        return len(remaining_players_indexes)
+
+    ##########################################
+    # END of TRANSACTIONAL FUNCTIONS
+    ##########################################
+
     def auto_exercise_mode(self):
-        return self.game_type=='SYNONYM' and self.language == 'en' and self.game_control == 'TEACHER'
+        False
+        # return self.game_type=='SYNONYM' and self.language == 'en' and self.game_control == 'TEACHER'
 
     def fill_exercises_automatically(self, batch_number, save=True):
         import exercise_data_utils
@@ -237,19 +264,6 @@ class Game(Model):
                 d['correct'] = True
         if save: self.save()
 
-    #--------------------------
-    # TRANSACTIONAL OPERATION
-    #--------------------------
-    @transactional
-    def set_player_text_answer_and_get_remaining(self, user, text): 
-        player_index = self.players_id.index(user.id)
-        hand_index = self.variables['HAND']-1
-        current_players_answers = self.variables['PLAYERS_ANSWERS'][hand_index]
-        current_players_answers[str(player_index)] = text
-        remaining_players_indexes = [i for i in range(self.num_players) if str(i) not in current_players_answers]
-        remaining_players_indexes.remove(self.get_reader_index())
-        return len(remaining_players_indexes)
-
     def get_remaining_answers_names(self):
         hand_index = self.variables['HAND']-1
         current_players_answers = self.variables['PLAYERS_ANSWERS'][hand_index]
@@ -328,23 +342,6 @@ class Game(Model):
         answers_info = self.get_current_hand_answers_info()
         return any(player_index in info['voted_by'] for info in answers_info.values())
 
-    #--------------------------
-    # TRANSACTIONAL OPERATION
-    #--------------------------
-    @transactional
-    def set_voted_indexes_and_get_remaining(self, user, voted_shuffled_number): 
-        answers_info = self.get_current_hand_answers_info()
-        player_index = self.players_id.index(user.id)
-        reader_index = self.get_reader_index()
-        assert player_index != reader_index # reader doesn't vote                    
-        voted_answer_info = next(info for c,info in answers_info.items() if info['shuffled_number']==voted_shuffled_number)
-        voted_answer_info['voted_by'].append(player_index)   
-        voted_by_list = [info['voted_by'] for info in answers_info.values()] 
-        voters_indexes = list(itertools.chain(*voted_by_list))        
-        exact_author_list = next((info['authors'] for info in answers_info.values() if info['correct']),[reader_index])
-        remaining_players_indexes = [i for i in range(self.num_players) if i not in voters_indexes and i not in exact_author_list]
-        return len(remaining_players_indexes)
-
     def get_names_remaining_voters(self):        
         answers_info = self.get_current_hand_answers_info()
         names = self.players_names        
@@ -375,7 +372,6 @@ class Game(Model):
         answers_info = self.variables['ANSWERS_INFO'][hand_index]
         current_hand_points = self.variables['HAND_POINTS'][hand_index]
         reader_index = self.get_reader_index()
-        teacher_mode = self.game_control == 'TEACHER'
         
         points_feedbacks = [{} for i in range(self.num_players)]         
             # one dict per player
@@ -427,14 +423,14 @@ class Game(Model):
                 pfi['SELECTED_CORRECTLY'] = player_selected_correctly
                 if player_selected_correctly:
                     pfi['POINTS'] += POINT_SYSTEM['CORRECT_SELECTION']                    
-                elif teacher_mode:
-                    # wrong answer (we penalize wrong answers only in teacher mode)
+                elif self.teacher_validation_enabled():
+                    # wrong answer (we penalize wrong answers only if teacher validation is on)
                     pfi['POINTS'] += POINT_SYSTEM['INCORRECT_SELECTION']                
             elif not pfi['ANSWERED_CORRECTLY'] and self.get_var('SELECTION_ENABLED'):
                 # penalize player for not voting
                 pfi['POINTS'] += POINT_SYSTEM['NO_SELECTION']                
-            if not teacher_mode:    
-                # in teacher mode we don't reward students being voted by others
+            if not self.teacher_validation_enabled():    
+                # peole get awarded points when voted by others only if teacher validation is off
                 if player_voted_answer_info:                     
                     # give points only if answer is not the exact one (reader)
                     for j in player_voted_answer_info['authors']:

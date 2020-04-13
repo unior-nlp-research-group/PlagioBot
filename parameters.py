@@ -11,18 +11,18 @@ POINTS = {
         'INCORRECT_ANSWER': 0,
         'NO_ANSWER': -1,
         'CORRECT_SELECTION': 1,
-        'INCORRECT_SELECTION': -1, # applicable only in teacher mode
-        'NO_SELECTION': -1, # applicable only in teacher mode
-        'RECEIVED_VOTE': 1, # not applicable in teacher mode    
+        'INCORRECT_SELECTION': 0, 
+        'NO_SELECTION': -1,
+        'RECEIVED_VOTE': 1,
     },
     'FILL': {
         'CORRECT_ANSWER': 1,
         'INCORRECT_ANSWER': 0,
         'NO_ANSWER': -1,
         'CORRECT_SELECTION': 1,
-        'INCORRECT_SELECTION': -1, # applicable only in teacher mode
-        'NO_SELECTION': -1, # applicable only in teacher mode
-        'RECEIVED_VOTE': 1, # not applicable in teacher mode    
+        'INCORRECT_SELECTION': 0,
+        'NO_SELECTION': -1,
+        'RECEIVED_VOTE': 1,
     },
     'SYNONYM': {
         'CORRECT_ANSWER': 2,

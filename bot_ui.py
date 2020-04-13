@@ -22,6 +22,14 @@ LANGUAGES = ['it','en']
 # BUTTONS
 # ================================
 
+INT_BUTTON_ITALIAN = "🇮🇹 ITALIANO"
+INT_BUTTON_ENGLISH = "🇬🇧 ENGLISH"
+
+BUTTON_AGREE = {
+    'en': '✅ I AGREE',
+    'it': '✅ ACCETTO'
+}
+
 BUTTON_YES = {
     'en': '✅ YES',
     'it': '✅ SI'
@@ -120,7 +128,7 @@ BUTTON_GAME_CONTROL = {
 }
 BUTTON_GAME_CONTROL_DEFAULT = {
     'en': "⚛️ DEFAULT",
-    'it': "⚛️ TRADIZIONALE"
+    'it': "⚛️ DEFAULT"
 }
 BUTTON_GAME_CONTROL_TEACHER = {
     'en': "🧑‍🏫 TEACHER",
@@ -154,7 +162,12 @@ BUTTON_NEXT_ROUND = {
 ####################
 # CONVERSATIONS
 ####################
+MSG_SET_LANGUAGE = "🇮🇹 Imposta la tua lingua sull'italiano. \n🇬🇧 Set you langauge on English"
 
+MSG_DISCLAIMER = {
+    'en': "⚖️ PlagioBot is a system developed for scientific research purposes. By using this bot you agree that the data you insert can be used for developing linguistic models. No personal information will be used in any of our studies or sent to third parties. For further information, please contact @kercos.",
+    'it': "⚖️ PlagioBot è un sistema sviluppato a scopo di ricerca scientifica. Nell'utilizzare questo bot accetti che i dati che inserisci potranno essere usati per sviluppare modelli linguistici. Nessun dato personale verà utilizzato nei nostri studi o inviato a parti terze. Per maggiori informazioni ti invitiamo a contattare @kercos."
+}
 MSG_WELCOME = {
     'en': "🤗 Welcome to PlagioBot!",
     'it': "🤗 Benvenuto a PlagioBot!"
@@ -215,6 +228,10 @@ MSG_NUM_PLAYERS = {
     'en': "👤 One round per player",
     'it': "👤 Una mano per giocatore"
 }
+MSG_INSERT_INVITATION = {
+    'en': "📮 Please insert a *message to invite other players to this game*. Your invitation, together with a direct command to join this game, will be sent to *all users* that are not in game and have the *English* interface anabled.",
+    'it': "📮Inserisci un messaggio per *invitare altri giocatori a questo gioco*. L'invito verrà inoltratao, assieme ad un comando diretto per unirsi al gioco, a *tutti gli utenti* che non sono atualmente in un gioco e hanno l'interfaccia impostata sull'*italiano*."
+}
 MSG_X_CHANGED_GAME_TYPE_TO_Y = {
     'en': "🕹️ {} changed the game type to {}.",
     'it': "🕹️ {} ha impostato la modalità di gioco su {}."
@@ -258,7 +275,7 @@ MSG_INSERT_NUMBER_OF_ROUNDS = {
 MSG_INSTRUCTIONS = {
     'CONTINUATION': {
         'en': "ℹ️ *Instructions*: The game is set to *CONTINUATION* mode. Participants will be presented with an incomplete sentence (previously written by the reader), and need to provide a plausible continuation. Next, all completions (including the original) are collected and displayed in random order. Participants will then have to try to guess which one is the original continuation. Each player will gain a point if she correctly guessed the original completion, otherwise she will give the point to the player who wrote that completion.",
-        'it': "ℹ️ *Istruzioni*: Il gioco è impostato in modalità *COMPLETAMENTO*. I partecipanti riceveranno una frase incompleta (scritta dal lettore in precedenza), e gli verrà chiesto di scrivere di completare la frase in maniera plausibile. Successivamente, verranno mostrate tutte le frase complete in ordine casuale (inclusa quella originale). I partecipanti dovranno quindi cercare di indovinare quale frase è quella originale. Ogni giocatore riceverà un punto se indovinerà correttamente, altrimenti darà il punto al giocatore che ha scritto la frase selezionata."
+        'it': "ℹ️ *Istruzioni*: Il gioco è impostato in modalità *CONTINUAZIONE*. I partecipanti riceveranno una frase incompleta (scritta dal lettore in precedenza), e verrà chiesto loro di completare la frase in maniera plausibile. Successivamente, verranno mostrate tutte le frase complete in ordine casuale (inclusa quella originale). I partecipanti dovranno quindi cercare di indovinare quale frase è quella originale. Ogni giocatore riceverà un punto se indovinerà correttamente, altrimenti darà il punto al giocatore che ha scritto la frase selezionata."
     },
     'FILL': {
         'en': "ℹ️ *Instructions*: The game is set to *FILL* mode.",
@@ -298,8 +315,12 @@ MSG_WRONG_COMMAND = {
     'it': '⛔️ Comando non riconosciuto'
 }
 MSG_CANT_JOIN_ALREADY_IN_GAME = {
-    'en': '⛔️ You cannot open a new game when you are already in a game. You have to exit first.',
+    'en': '⛔️ You cannot join a new game when you are already in a game. You have to exit first.',
     'it': "⛔️ Non puoi unirti ad un gioco quando sei già all'interno di un gioco. Devi prima uscire."
+}
+MSG_CANT_JOIN_GAME = {
+    'en': '⛔️ You are not allowed to join the game.',
+    'it': "⛔️ Non sei autorizzato/a ad unirti al gioco."
 }
 MSG_CANT_JOIN_GAME = {
     'en': '⛔️ The game you want to join has already started.',
@@ -317,9 +338,13 @@ MSG_GAME_NAME = {
     'en': '🕹️ Game name: *{}*',
     'it': '🕹️ Nome gioco: *{}*'
 }
-MSG_GAME_SETTINGS_INFO = {
-    'en': '⚙️ Mode: *{}* Control: *{}*',
-    'it': '⚙️ Modalità: *{}* Controllo: *{}*'
+MSG_GAME_TYPE_INFO = {
+    'en': '⚙️ Mode: *{}*',
+    'it': '⚙️ Modalità: *{}*'
+}
+MSG_GAME_CONTROL_INFO = {
+    'en': '📡 Control: *{}*',
+    'it': '📡 Controllo: *{}*'
 }
 MSG_CURRENT_PLAYERS = {
     'en': '👥 *{} players*: {}',
@@ -338,8 +363,8 @@ MSG_WAIT_FOR_X_TO_START_NEXT_ROUND = {
     'it': "🚦 Attendiamo che {} avvii la prossima mano."
 }
 MSG_ANNOUNCE_GAME_PUBLICLY = {
-    'en': "📮 New game created by {}. Join the game by clicking here: {}",
-    'it': "📮 Nuovo gioco creato da {}. Unisciti premendo qua: {}"
+    'en': "📮 New game created by {}.\n*Messaggio*: {}\nJoin the game by clicking here: {}",
+    'it': "📮 Nuovo gioco creato da {}.\n*Messaggio*: {}\nUnisciti premendo qua: {}"
 }
 MSG_SENT_ANNOUNCEMENT = {
     'en': "📮 Announcement sent! Let's wait for new players to join.",
@@ -358,8 +383,8 @@ MSG_WAITING_FOR_START_GAME = {
     'it': "😴 Stiamo aspettando che {} faccia partire il gioco *{}*."
 }
 MSG_INVITE_OTHER_PLAYERS_ANNOUNCE = {
-    'en': "📮 You can invite other players to the game. If you want you can press the button *{}* to announce it publicly to all users.".format(BUTTON_ANNOUNCE_GAME_PUBLICLY['en']),
-    'it': "📮 Puoi invitare altri/e giocatori/trici ad unirsi. Se vuoi puoi mandare un invito a tutti gli utenti premendo il pulsante *{}*".format(BUTTON_ANNOUNCE_GAME_PUBLICLY['it'])
+    'en': "📮 Press the button *{}* if you want to announce the game publicly to all users.".format(BUTTON_ANNOUNCE_GAME_PUBLICLY['en']),
+    'it': "📮 Premei il pulsante *{}* se vuoi mandare un invito ad unirsi al gioco a tutti gli utenti.".format(BUTTON_ANNOUNCE_GAME_PUBLICLY['it'])
 }
 MSG_CHAT_INFO = {
     'en': "💬 To chat with other players, please type /chat followed by the message.",
@@ -504,8 +529,8 @@ MSG_SELECTION = {
 }
 
 MSG_NEXT_ROUND = {
-    'en': "🚦 Please press the button below when you are ready for the next round.",
-    'it': "🚦 Premi il pulsante qua sotto quando sei pronto/a alla prossima mano."
+    'en': "🚦 Please press the button below to start next round.",
+    'it': "🚦 Premi il pulsante qua sotto per avviare la prossima mano."
 }
 MSG_ORIGINAL_TEXT = {
     'en': "📝 This is the original sentence:\n{}",
@@ -851,21 +876,30 @@ MSG_COMMAND_NOT_RECOGNIZED = {
 
 ALL_BUTTONS_TEXT_LIST = [v[l] for l in LANGUAGES for k,v in globals().items() if k.startswith('BUTTON_')]
 
-GAME_SETTINGS_BUTTON_VALUE_UX_MAPPING = lambda lang: {
-    BUTTON_GAME_TYPE[lang]: {
+GAME_TYPE_DICT = lambda lang: \
+    {
         'CONTINUATION': BUTTON_GAME_TYPE_CONTINUATION[lang],
         'FILL': BUTTON_GAME_TYPE_FILL[lang],
         'SYNONYM': BUTTON_GAME_TYPE_SYNONYM[lang],
-    },
-    BUTTON_GAME_CONTROL[lang]: {
+    }
+
+GAME_CONTROL_DICT = lambda lang: \
+    {
         'DEFAULT': BUTTON_GAME_CONTROL_DEFAULT[lang],
         'TEACHER': BUTTON_GAME_CONTROL_TEACHER[lang]
-    },
+    }
+
+GAME_SETTINGS_BUTTON_VALUE_UX_MAPPING = lambda lang: {
+    BUTTON_GAME_TYPE[lang]: GAME_TYPE_DICT(lang),
+    BUTTON_GAME_CONTROL[lang]: GAME_CONTROL_DICT(lang),
     BUTTON_GAME_TRANSLATE_HELP[lang]: {
         True: BUTTON_YES[lang],
         False: BUTTON_NO[lang]
     }
 }
+
+MSG_GAME_TYPE = lambda type,lang: GAME_TYPE_DICT(lang)[type]
+MSG_GAME_CONTROL = lambda type,lang: GAME_CONTROL_DICT(lang)[type]
 
 def render_incomplete_text(game):    
     incomplete_text, original_completion = game.get_current_incomplete_text_and_original_completion()

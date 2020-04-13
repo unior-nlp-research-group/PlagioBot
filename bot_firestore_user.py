@@ -14,14 +14,14 @@ from firestore_model import Model
 class User(Model):
     application: str
     serial_id: str
-    name: str #= field(compare=False)
-    username: str #= field(compare=False)
-    language: str #= field(compare=False)
-    bot: bool = False #field(default=False, compare=False)
-    state: str = None #field(default=None, compare=False)
-    keyboard: List = None #field(default=None, compare=False)
-    notifications: bool = True #field(default=True, compare=False)    
-    current_game_id: str = None #field(default=None, compare=False)     
+    name: str
+    username: str
+    language: str = None
+    bot: bool = False
+    state: str = None
+    keyboard: List = None
+    notifications: bool = True
+    current_game_id: str = None
     variables: Dict = field(default_factory=dict)
 
     @staticmethod
@@ -32,13 +32,13 @@ class User(Model):
         return type(self) == type(other) and self.serial_id == other.serial_id
 
     @staticmethod
-    def create_user(application, serial_id, name, username, language, bot=False):
+    def create_user(application, serial_id, name, username, bot=False):
         user = User.make(
             application = application,
             serial_id = str(serial_id),
             name = name,
             username = username,
-            language = language if language in ['en','it'] else 'en',
+            # language = language if language in ['en','it'] else 'en',
             bot = bot
         )
         user.id = User.make_id(application, serial_id)
@@ -152,5 +152,5 @@ def get_fede():
     return User.get_user('telegram', key.TELEGRAM_BOT_MASTER_ID)
 
 if __name__ == "__main__":
-    user = User.create_user('test','123','name','username','it')
+    user = User.create_user('test','123','name','username')
     
