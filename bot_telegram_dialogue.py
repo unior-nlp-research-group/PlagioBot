@@ -91,7 +91,7 @@ def state_SET_LANGUAGE(user, message_obj):
                 user.language = 'en'
             redirect_to_state(user, state_DISCLAIMER)
         else:
-            send_message(user, ux.MSG_WRONG_INPUT_USE_BUTTONS[lang])
+            send_message(user, ux.MSG_WRONG_INPUT_USE_BUTTONS['en'])
 
 
 # ================================
