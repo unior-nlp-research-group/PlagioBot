@@ -130,7 +130,7 @@ class Model:
     def delete_doc(cls, doc_id):
         try:
             env_collection_name = get_env_collection_name(cls.__name__)
-            result = db.collection(env_collection_name).document(doc_id).delete()
+            db.collection(env_collection_name).document(doc_id).delete()
         except Exception as e:
             logging.error(e)
 
@@ -147,7 +147,7 @@ class Model:
             doc_ref = db.collection(env_collection_name).document(doc_id).get()
             return cls(**doc_ref.to_dict())
         except Exception as e:
-            return None
+            logging.error(e)
 
     @classmethod
     def make(cls, save=False, *args, **kwargs):

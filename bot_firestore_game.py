@@ -21,7 +21,6 @@ class Game(Model):
     language: str
     players_id: List    
     state: str = "INITIAL" # INITIAL, STARTED, ENDED, INTERRUPTED    
-    sub_state: str = None # players states
     game_type: str = 'CONTINUATION' # 'CONTINUATION', 'FILL', 'SYNONYM'
     game_control: str = 'DEFAULT' # 'DEFAULT', 'TEACHER'
     num_hands: int = parameters.NUM_HANDS_IN_TEACHER_MODE
@@ -87,10 +86,6 @@ class Game(Model):
         self.state = state
         if save: self.save()
     
-    def set_sub_state(self, sub_state, save=True):
-        self.sub_state = sub_state
-        if save: self.save()
-    
     def reset_variables(self, save=True):
         self.variables = {}
         if save: self.save()
@@ -134,8 +129,8 @@ class Game(Model):
         self.players_names = [p.get_name() for p in players]
         self.variables = {
             'HAND': 0, # 1 for the first hand
-            'INCOMPLETE_TEXTS': [],
-            'ORIGINAL_COMPLETION': [], # original completion from reader
+            'INCOMPLETE_TEXTS': ['' for i in range(self.num_hands)],
+            'ORIGINAL_COMPLETION': ['' for i in range(self.num_hands)], # original completion from reader
             'PLAYERS_ANSWERS': [{} for i in range(self.num_hands)], # one dict per hand
                 # str(player_index) in key mapping to its answer
                 # we use str in keys because of firebase constraints
@@ -194,7 +189,8 @@ class Game(Model):
         return players, reader, writers
 
     def set_current_incomplete_text(self, text, save=True):        
-        self.variables['INCOMPLETE_TEXTS'].append(text)
+        hand_index = self.variables['HAND']-1
+        self.variables['INCOMPLETE_TEXTS'][hand_index] = text
         if save: self.save()
 
     def get_current_incomplete_text(self):        
@@ -208,7 +204,8 @@ class Game(Model):
         return incomplete_text, original_completion
 
     def set_current_completion_text(self, text, save=True):        
-        self.variables['ORIGINAL_COMPLETION'].append(text)
+        hand_index = self.variables['HAND']-1
+        self.variables['ORIGINAL_COMPLETION'][hand_index] = text
         if save: self.save()
 
     def get_current_completion_text(self):        
@@ -392,28 +389,31 @@ class Game(Model):
             # }
         
         # init received_votes
-        for d in points_feedbacks: 
-            d['NUM_VOTES_RECEIVED'] = 0
+        for pfi in points_feedbacks: 
+            pfi['NUM_VOTES_RECEIVED'] = 0
+            pfi['POINTS'] = 0            
 
         for i in range(self.num_players):            
             if i==reader_index:
                 continue # reader doesn't give/receive points
+            pfi = points_feedbacks[i]
             player_answer_info = next((info for info in answers_info.values() if i in info['authors']),None)
             player_voted_answer_info = next((info for info in answers_info.values() if i in info['voted_by']),None)            
 
             if player_answer_info is None:
                 # player didn't answer
-                current_hand_points[str(i)] += POINT_SYSTEM['NO_ANSWER']
-            elif player_answer_info['correct']:        
-                current_hand_points[str(i)] += POINT_SYSTEM['CORRECT_ANSWER']
+                pfi['POINTS'] += POINT_SYSTEM['NO_ANSWER']
+            elif player_answer_info['correct']:    
+                pfi['POINTS'] += POINT_SYSTEM['CORRECT_ANSWER']
             else: # incorrect answer (0)
-                current_hand_points[str(i)] += POINT_SYSTEM['INCORRECT_ANSWER']
+                pfi['POINTS'] += POINT_SYSTEM['INCORRECT_ANSWER']
 
-            points_feedbacks[i]['ANSWERED_CORRECTLY'] = player_answer_info and player_answer_info['correct']
-            points_feedbacks[i]['NO_ANSWER'] = player_answer_info is None
-            points_feedbacks[i]['NO_SELECTION'] = player_voted_answer_info is None
+            pfi['ANSWERED_CORRECTLY'] = player_answer_info and player_answer_info['correct']
+            pfi['NO_ANSWER'] = player_answer_info is None
+            pfi['NO_SELECTION'] = player_voted_answer_info is None
 
             if player_voted_answer_info:
+                # player has voted
                 if player_voted_answer_info['shuffled_number'] == -1:
                     # player voted NONE ANSWER 
                     # NONE is relative to the option available
@@ -424,27 +424,28 @@ class Game(Model):
                     player_selected_correctly = all_available_answers_are_wrong
                 else:
                     player_selected_correctly = player_voted_answer_info['correct']
-                points_feedbacks[i]['SELECTED_CORRECTLY'] = player_selected_correctly
+                pfi['SELECTED_CORRECTLY'] = player_selected_correctly
                 if player_selected_correctly:
-                    current_hand_points[str(i)] += POINT_SYSTEM['CORRECT_SELECTION']                    
+                    pfi['POINTS'] += POINT_SYSTEM['CORRECT_SELECTION']                    
                 elif teacher_mode:
                     # wrong answer (we penalize wrong answers only in teacher mode)
-                    current_hand_points[str(i)] += POINT_SYSTEM['INCORRECT_SELECTION']                
-            elif self.get_var('SELECTION_ENABLED'):
-                current_hand_points[str(i)] += POINT_SYSTEM['NO_SELECTION']                
+                    pfi['POINTS'] += POINT_SYSTEM['INCORRECT_SELECTION']                
+            elif not pfi['ANSWERED_CORRECTLY'] and self.get_var('SELECTION_ENABLED'):
+                # penalize player for not voting
+                pfi['POINTS'] += POINT_SYSTEM['NO_SELECTION']                
             if not teacher_mode:    
                 # in teacher mode we don't reward students being voted by others
                 if player_voted_answer_info:                     
                     # give points only if answer is not the exact one (reader)
                     for j in player_voted_answer_info['authors']:
-                        current_hand_points[str(j)] += POINT_SYSTEM['RECEIVED_VOTE']
+                        points_feedbacks[j]['POINTS'] += POINT_SYSTEM['RECEIVED_VOTE']
                         points_feedbacks[j]['NUM_VOTES_RECEIVED'] += 1
-            # if 'SELECTED_CORRECTLY' not in points_feedbacks[i]:
+            # if 'SELECTED_CORRECTLY' not in pfi:
             #     # either i) she previous answered correctly or ii) she didn't provide a selection (jump)
-            #     points_feedbacks[i]['SELECTED_CORRECTLY'] = False
+            #     pfi['SELECTED_CORRECTLY'] = False
         
         for i in range(self.num_players):            
-            points_feedbacks[i]['POINTS'] = current_hand_points[str(i)]
+            current_hand_points[str(i)] = points_feedbacks[i]['POINTS']
         
         # recalculate game points
         self.variables['GAME_POINTS'] = [
@@ -518,8 +519,11 @@ class Game(Model):
     @staticmethod
     def get_game_state_stats():
         for s in ['INITIAL', 'STARTED', 'ENDED', 'INTERRUPTED']:
-            count = len(list(Game.query([('state', '==', s)]).get()))
-            print("{}:{}".format(s, count))
+            games = list(Game.query([('state', '==', s)]).get())
+            count = len(games)
+            id_list = [g.id for g in games]
+            print("{}:{} {}".format(s, count, id_list))
+            
 
     @staticmethod
     def get_expired_games():
@@ -537,4 +541,4 @@ class Game(Model):
         return games_generator
 
 if __name__ == "__main__":
-    pass
+    Game.get_game_state_stats()

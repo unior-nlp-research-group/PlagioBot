@@ -40,13 +40,15 @@ def remove_markdown(text):
         text = text.replace(char, '')
     return text
 
+PUNCTUATION = ['.','!','?',':',';']
+
 def add_full_stop_if_missing_end_puct(text):
-    if text[-1] not in ['.','!','?']:
+    if text[-1] not in PUNCTUATION:
         text = text + '.'
     return text
 
 def remove_trailing_punctuation(text):
-    if text[-1] in ['.','!','?']:
+    if text[-1] in PUNCTUATION:
         return remove_trailing_punctuation(text[:-1])
     else:
         return text

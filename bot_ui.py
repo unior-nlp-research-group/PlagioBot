@@ -385,16 +385,16 @@ MSG_WRITE_INCOMPLETE = {
 }
 MSG_WAIT_READER_WRITE_INCOMPLETE = {
     'CONTINUATION': {
-        'en': "😴 Let's wait for {} to write down the beginning of a sentence.",
-        'it': "😴 Aspettiamo che {} scriva l'inizio di una frase."
+        'en': "😴 Let's wait for {} to write down the beginning of a sentence and its continuation.",
+        'it': "😴 Aspettiamo che {} scriva l'inizio di una frase e la sua continuazione."
     },
     'FILL': {
-        'en': "😴 Let's wait for {} to write down the sentence with a missing gap.",
-        'it': "😴 Aspettiamo che {} scriva una frase con una parte mancante da completare."
+        'en': "😴 Let's wait for {} to write down the sentence with a missing gap and its completion.",
+        'it': "😴 Aspettiamo che {} scriva una frase con una parte mancante da completare e il suo corretto completamento."
     },
     'SYNONYM': {
-        'en': "😴 Let's wait for {} to write down the sentence with a part to be substituted.",
-        'it': "😴 Aspettiamo che {} scriva una frase con una parte da sostituire."
+        'en': "😴 Let's wait for {} to write down the sentence and indicate the part to be substituted .",
+        'it': "😴 Aspettiamo che {} scriva una frase e indichi la parte da sostituire."
     }
 }
 MSG_WRITE_CORRECT_ANSWER = {
@@ -409,20 +409,6 @@ MSG_WRITE_CORRECT_ANSWER = {
     'SYNONYM': {
         'en': "✍️ Please, write down the part of the sentence to substitute.",
         'it': "✍️ Scrivi la parte della frase da sostituire."
-    }
-}
-MSG_WAIT_READER_WRITE_CORRECT_ANSWER = {
-    'CONTINUATION': {
-        'en': "😴 Let's wait for {} to write down the original continuation.",
-        'it': "😴 Aspettiamo che {} scriva la continuazione corretta."
-    },
-    'FILL': {
-        'en': "😴 Let's wait for {} to write down the original text in the gap.",
-        'it': "😴 Aspettiamo che {} scriva la parte mancante della frase."
-    },
-    'SYNONYM': {
-        'en': "😴 Let's wait for {} to write down the part of the sentence to substitute.",
-        'it': "😴 Aspettiamo che {} scriva la parte della frase da sostituire."
     }
 }
 MSG_WAIT_WRITERS_WRITE_ANSWERS = {
@@ -641,13 +627,13 @@ MSG_THANKS_THIS_IS_THE_COMPLETED_ANSWER = {
     'en': "😀 Thanks, this is your completed answer:",
     'it': "😀 Grazie, questa è la tua risposta completa:"
 }
-MSG_THANKS_YOU_ENTERED_X = {
-    'en': "😀 Thanks, you entered *{}*.",
-    'it': "😀 Grazie, hai inserito *{}*."
-}
 MSG_THANKS_YOU_SELECTED_X = {
     'en': "😀 Thanks, you selected *{}*.",
     'it': "😀 Grazie, hai selezionato *{}*."
+}
+MSG_RECAP_INPUT_TEXT = {
+    'en': "📝 This is your complete text:",
+    'it': "📝 Questo è il tuo testo completo:"
 }
 MSG_CONFIRM_ANSWER_YES_NO = {
     'en': "✔ Please confirm that it is correct.",
@@ -880,6 +866,29 @@ GAME_SETTINGS_BUTTON_VALUE_UX_MAPPING = lambda lang: {
         False: BUTTON_NO[lang]
     }
 }
+
+def render_incomplete_text(game):    
+    incomplete_text, original_completion = game.get_current_incomplete_text_and_original_completion()
+    lang = game.language
+    if game.game_type in ['CONTINUATION','FILL']:
+        if game.game_type == 'CONTINUATION':
+            incomplete_text = '*{}*'.format(game.get_current_incomplete_text())
+        elif game.game_type == 'FILL':
+            pre_gap, post_gap = game.get_incomplete_text_pre_post_gap()
+            gap = '\\_\\_\\_\\_\\_\\_\\_\\_'
+            incomplete_text = '*{}*{}*{}*'.format(pre_gap, gap, post_gap)
+        msg_incomplete_sentence = MSG_PLAYERS_INCOMPLETE_SENTENCE[lang].format(incomplete_text)
+    else:
+        assert game.game_type == 'SYNONYM'
+        incomplete_text = incomplete_text.replace(original_completion, '*{}*'.format(original_completion))
+        msg_incomplete_sentence = MSG_PLAYERS_SENTENCE_WITH_HIGHLITED_SYNONYM[lang].format(incomplete_text)
+    if game.translate_help:
+        import translate
+        correct_completed_text = render_complete_text(game, original_completion)
+        translated_text = translate.get_google_translation(correct_completed_text).upper()
+        msg_incomplete_sentence += '\n(*{}*)'.format(translated_text)
+    return msg_incomplete_sentence
+
 
 def render_complete_text(game, answer):
     incomplete_text = game.get_current_incomplete_text()    

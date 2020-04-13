@@ -60,6 +60,12 @@ class User(Model):
             return escape_markdown(self.name)
         return self.name
 
+    def get_name_and_id(self, escape_md=True):
+        result = "{} ({})".format(self.name, self.serial_id)
+        if escape_markdown:
+            return escape_markdown(result)
+        return result
+
     def get_name_at_username(self, escape_markdown=False):
         if self.username:
             result = "{} @{}".format(self.name, self.username)
@@ -70,8 +76,11 @@ class User(Model):
         return result
 
     def set_state(self, state, save=True):
-        self.state = state
-        if save: self.save()
+        if self.state != state:
+            self.state = state
+            if save: self.save()
+            return True
+        return False
 
     def switch_language(self, save=True):
         self.language = 'it' if self.language == 'en' else 'en'
@@ -96,12 +105,14 @@ class User(Model):
         return Game.get(self.current_game_id)
 
     def set_keyboard(self, value, save=True):
-        self.keyboard = {str(i):v for i,v in enumerate(value)}
+        new_keyboard = {str(i):v for i,v in enumerate(value)}
+        if self.keyboard == new_keyboard:
+            return
+        self.keyboard = new_keyboard
         if save: self.save()
 
     def set_empy_keyboard(self, save=True):
-        self.keyboard = {}
-        if save: self.save()
+        self.set_keyboard({},save=save)
 
     def get_keyboard(self):
         return [self.keyboard[str(i)] for i in range(len(self.keyboard))] 
@@ -111,6 +122,8 @@ class User(Model):
         if save: self.save()
 
     def set_var(self, var_name, var_value, save=True):
+        if self.variables.get(var_name,None) == var_value:
+            return
         self.variables[var_name] = var_value
         if save: self.save()
 

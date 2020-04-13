@@ -1,5 +1,7 @@
 import logging
-from bot_telegram import BOT, send_message, send_typing_action, send_text_document, exception_reporter, report_master
+from bot_telegram import BOT, send_message, \
+    send_typing_action, send_text_document, \
+    exception_reporter, report_master
 import utility
 import bot_ui as ux
 import telegram
@@ -11,7 +13,6 @@ import utility
 import time
 import parameters
 import re
-import translate
 import exercise_data_utils
 
 # ================================
@@ -42,14 +43,12 @@ def redirect_to_state_multi(game, users, new_function, message_obj=None, **kwarg
 
 def redirect_to_state(user, new_function, message_obj=None, **kwargs):
     new_state = new_function.__name__
-    if user.state != new_state:
-        logging.debug("In redirect_to_state. current_state:{0}, new_state: {1}".format(str(user.state), str(new_state)))
-        user.set_state(new_state)
-        current_game = user.get_current_game()
-        if current_game and current_game.sub_state != new_state:
-            current_game.set_sub_state(new_state)
+    if user.set_state(new_state):
+        logging.debug(
+            'Redirect {} to state {}'.format(
+                user.get_name_and_id(escape_md=False), new_state)
+        )
     repeat_state(user, message_obj, **kwargs)
-
 
 # ================================
 # REPEAT STATE
@@ -540,7 +539,6 @@ def state_WAITING_FOR_START(user, message_obj, updated_settings=False):
 # ================================
 def state_TEACHER_EXERCISE_SETUP(user, message_obj):    
     game = user.get_current_game()
-    hand_number = game.get_hand_number()
     players, reader, writers = game.get_current_hand_players_reader_writers()
     lang = game.language
     if message_obj is None:
@@ -569,19 +567,19 @@ def state_TEACHER_EXERCISE_SETUP(user, message_obj):
 # ================================
 # GAME_READER_WRITES_INCOMPLETE_TEXT
 # ================================
-def state_READER_WRITES_INCOMPLETE_TEXT(user, message_obj):
+def state_READER_WRITES_INCOMPLETE_TEXT(user, message_obj, first_call=True):
     game = user.get_current_game()
-    hand_number = game.get_hand_number()
     players, reader, writers = game.get_current_hand_players_reader_writers()
     lang = game.language
     if message_obj is None:
         if user != reader:
             return
-        msg_reader = ux.MSG_WRITE_INCOMPLETE[game.game_type][lang]
-        reader_name = ux.MSG_THE_TEACHER[lang] if game.game_control=='TEACHER' else reader.get_name()            
-        msg_writers = ux.MSG_WAIT_READER_WRITE_INCOMPLETE[game.game_type][lang].format(reader_name)
-        send_message(reader, msg_reader)
-        send_message(writers, msg_writers)
+        msg_reader = ux.MSG_WRITE_INCOMPLETE[game.game_type][lang]        
+        send_message(reader, msg_reader, remove_keyboard=True)        
+        if first_call:
+            reader_name = ux.MSG_THE_TEACHER[lang] if game.game_control=='TEACHER' else reader.get_name()            
+            msg_writers = ux.MSG_WAIT_READER_WRITE_INCOMPLETE[game.game_type][lang].format(reader_name)
+            send_message(writers, msg_writers)
     else:
         if user == reader:
             text_input = message_obj.text
@@ -612,16 +610,14 @@ def state_READER_WRITES_INCOMPLETE_TEXT(user, message_obj):
 # ================================
 def state_READER_WRITES_ANSWER(user, message_obj):
     game = user.get_current_game()
-    players, reader, writers = game.get_current_hand_players_reader_writers()
+    players, reader, _ = game.get_current_hand_players_reader_writers()
     lang = game.language
     reader_name = ux.MSG_THE_TEACHER[lang] if game.game_control=='TEACHER' else reader.get_name()
     if message_obj is None:
         if user != reader:
             return
         msg_reader = ux.MSG_WRITE_CORRECT_ANSWER[game.game_type][lang]
-        msg_writers = ux.MSG_WAIT_READER_WRITE_CORRECT_ANSWER[game.game_type][lang].format(reader_name)
         send_message(reader, msg_reader, remove_keyboard=True)
-        send_message(writers, msg_writers, remove_keyboard=True)
     else:
         if user == reader:
             text_input = message_obj.text
@@ -644,7 +640,7 @@ def state_READER_WRITES_ANSWER(user, message_obj):
                             send_message(user, ux.MSG_INPUT_SUBSTITUION_PRESENT_TWICE_OR_MORE_IN_SENTENCE[lang])
                             return
                     game.set_current_completion_text(answer)
-                    redirect_to_state_multi(game, players, state_WRITERS_WRITE_ANSWERS)
+                    redirect_to_state(user, state_READER_CONFIRMS_INPUT)
             else:
                 send_message(user, ux.MSG_WRONG_INPUT_USE_TEXT[lang])
         else:
@@ -652,54 +648,71 @@ def state_READER_WRITES_ANSWER(user, message_obj):
             send_message(user, msg)
 
 # ================================
-# GAME_PLAYERS_WRITE_ANSWERS
+# GAME_READER_CONFIRMS_INPUT
 # ================================
-def state_WRITERS_WRITE_ANSWERS(user, message_obj):
+def state_READER_CONFIRMS_INPUT(user, message_obj):
     game = user.get_current_game()
-    players, reader, writers = game.get_current_hand_players_reader_writers()
-    incomplete_text, original_completion = game.get_current_incomplete_text_and_original_completion()
     lang = game.language
     if message_obj is None:
-        if user != reader:
-            return
-        msg_reader_list = [ux.MSG_WAIT_WRITERS_WRITE_ANSWERS[game.game_type][lang]]
-        msg_writers = ux.MSG_WRITERS_WRITE_ANSWER[game.game_type][lang]
-        if game.game_type in ['CONTINUATION','FILL']:
-            if game.game_type == 'CONTINUATION':
-                incomplete_text = '*{}*'.format(game.get_current_incomplete_text())
-            elif game.game_type == 'FILL':
-                pre_gap, post_gap = game.get_incomplete_text_pre_post_gap()
-                gap = '\\_\\_\\_\\_\\_\\_\\_\\_'
-                incomplete_text = '*{}*{}*{}*'.format(pre_gap, gap, post_gap)
-            msg_incomplete_sentence = ux.MSG_PLAYERS_INCOMPLETE_SENTENCE[lang].format(incomplete_text)
-        else:
-            assert game.game_type == 'SYNONYM'
-            incomplete_text = game.get_current_incomplete_text()
-            incomplete_text = incomplete_text.replace(original_completion, '*{}*'.format(original_completion))
-            msg_incomplete_sentence = ux.MSG_PLAYERS_SENTENCE_WITH_HIGHLITED_SYNONYM[lang].format(incomplete_text)
-            msg_writers = msg_writers.format(original_completion)
-        if game.translate_help:
-            correct_completed_text = ux.render_complete_text(game, original_completion)
-            translated_text = translate.get_google_translation(correct_completed_text).upper()
-            msg_incomplete_sentence += '\n(*{}*)'.format(translated_text)
-        send_message(players, msg_incomplete_sentence)                            
-        msg_reader_list.append(ux.MSG_STATUS_INSTRUCTIONS[lang])
-        if game.game_control == 'TEACHER':
-            msg_reader_list.append(ux.MSG_JUMP_TO_NEXT_PHASE[lang])            
-        send_message(reader, '\n'.join(msg_reader_list))
-        send_message(writers, msg_writers)
+        original_completion = game.get_current_completion_text()
+        currect_completed_text = ux.render_complete_text(game, original_completion)
+        msg_reader_list = [
+            ux.MSG_RECAP_INPUT_TEXT[lang], '',
+            currect_completed_text, '',
+            ux.MSG_CONFIRM_ANSWER_YES_NO[lang],
+        ]
+        kb = [[ux.BUTTON_YES[lang], ux.BUTTON_NO[lang]]]
+        send_message(user, '\n'.join(msg_reader_list), kb)
     else:
         text_input = message_obj.text
-        if text_input == '/status':
-            remaining_names = game.get_remaining_answers_names()
-            remaining_names_str = ', '.join(remaining_names)
-            msg_list = [ux.MSG_WAITING_FOR[lang].format(remaining_names_str)]
-            if user == reader and game.game_control == 'TEACHER':
-                msg_list.append(ux.MSG_JUMP_TO_NEXT_PHASE[lang])
-            send_message(user, '\n'.join(msg_list))
-            return
+        kb = user.get_keyboard()
+        if text_input in utility.flatten(kb):                
+            if text_input == ux.BUTTON_YES[lang]:                
+                players = game.get_players()
+                redirect_to_state_multi(game, players, state_WRITERS_WRITE_ANSWERS)
+            else:
+                assert text_input == ux.BUTTON_NO[lang]
+                redirect_to_state(user, state_READER_WRITES_INCOMPLETE_TEXT, first_call=False)
+        else:
+            send_message(user, ux.MSG_WRONG_INPUT_USE_BUTTONS[lang])
+
+# ================================
+# GAME_WRITERS_WRITE_ANSWERS
+# ================================
+def state_WRITERS_WRITE_ANSWERS(user, message_obj, first_call=True):
+    game = user.get_current_game()
+    players, reader, _ = game.get_current_hand_players_reader_writers()
+    incomplete_text, original_completion = game.get_current_incomplete_text_and_original_completion()
+    lang = game.language
+    if message_obj is None:        
         if user == reader:
-            if text_input=='/jump':
+            if first_call:            
+                msg_reader_list = [                    
+                    ux.MSG_WAIT_WRITERS_WRITE_ANSWERS[game.game_type][lang],                    
+                    ux.MSG_STATUS_INSTRUCTIONS[lang],
+                    ux.MSG_CHAT_INFO[lang],
+                    ux.MSG_JUMP_TO_NEXT_PHASE[lang]
+                ]
+                send_message(user, '\n'.join(msg_reader_list), remove_keyboard=True)                            
+
+        else:
+            msg_incomplete_sentence = ux.render_incomplete_text(game)
+            msg_writers = [
+                msg_incomplete_sentence, '',
+                ux.MSG_WRITERS_WRITE_ANSWER[game.game_type][lang]
+            ]
+            send_message(user, '\n'.join(msg_writers), remove_keyboard=True)                            
+    else:
+        text_input = message_obj.text
+        if user == reader:
+            if text_input == '/status':
+                remaining_names = game.get_remaining_answers_names()
+                remaining_names_str = ', '.join(remaining_names)
+                msg_list = [ux.MSG_WAITING_FOR[lang].format(remaining_names_str)]
+                if game.game_control == 'TEACHER':
+                    msg_list.append(ux.MSG_JUMP_TO_NEXT_PHASE[lang])
+                send_message(user, '\n'.join(msg_list))
+            elif text_input=='/jump':
                 if game.game_control == 'TEACHER':
                     send_message(players, ux.MSG_TEACHER_HAS_JUMPED_TO_NEXT_PHASE[lang], remove_keyboard=True)
                     redirect_to_state_multi(game, players, state_WRITERS_SELECT_BEST_ANSWER)
@@ -708,20 +721,20 @@ def state_WRITERS_WRITE_ANSWERS(user, message_obj):
                     redirect_to_state_multi(game, players, state_WRITERS_SELECT_BEST_ANSWER)
             else:
                 send_message(user, ux.MSG_WRONG_INPUT_WAIT_FOR_PLAYERS_TO_ANSWER[lang])
-            return        
+                return        
         if game.has_player_already_written_answer(user):
             send_message(user, ux.MSG_ALREADY_SENT_ANSWER[lang])
             return
         if text_input:
             if ux.text_is_button_or_digit(text_input):
                 send_message(user, ux.MSG_WRONG_BUTTON_INPUT[lang])
-            else:
+            else:                
                 answer = text_input.upper()
                 if utility.contains_markdown(answer):
                     send_message(user, ux.MSG_INPUT_NO_MARKDOWN[lang])
                 else:
                     if game.game_type == 'CONTINUATION':
-                        answer = utility.normalize_answer(answer)
+                        answer = utility.add_full_stop_if_missing_end_puct(answer)
                     elif game.game_type == 'SYNONYM':
                         if answer == original_completion:
                             send_message(user, ux.MSG_INPUT_SYNONYM_IDENTICAL_TO_ORIGINAL[lang])
@@ -729,17 +742,60 @@ def state_WRITERS_WRITE_ANSWERS(user, message_obj):
                         elif utility.check_if_substitue_suggestion_matches_prefix_suffix(incomplete_text, original_completion, answer):
                             send_message(user, ux.MSG_INPUT_SYNONYM_MATCHED_PREFIX_SUFFIX[lang])
                             pass
-                    remaining_players_num = game.set_player_text_answer_and_get_remaining(user, answer)
-                    tx_msg = ux.MSG_THANKS_YOU_ENTERED_X[lang].format(answer)
-                    if remaining_players_num==0:                        
-                        send_message(user, tx_msg, sleep=True)
-                        send_message(players, ux.MSG_ALL_ANSWERS_RECEIVED[lang], remove_keyboard=True)
-                        redirect_to_state_multi(game, players, state_WRITERS_SELECT_BEST_ANSWER)
-                    else:
-                        msg_list = [tx_msg, ux.MSG_WAIT_TILL_YOUR_TURN[lang], ux.MSG_STATUS_INSTRUCTIONS[lang]]
-                        send_message(user, '\n'.join(msg_list))                        
+                    user.set_var('ANSWER', answer)
+                    redirect_to_state(user, state_WRITER_CONFIRMS_INPUT)                    
         else:
             send_message(user, ux.MSG_WRONG_INPUT_USE_TEXT[lang])
+
+# ================================
+# GAME_WRITER_CONFIRMS_INPUT
+# ================================
+def state_WRITER_CONFIRMS_INPUT(user, message_obj):
+    game = user.get_current_game()    
+    lang = game.language
+    answer = user.get_var('ANSWER')
+    if message_obj is None:
+        currect_completed_text = ux.render_complete_text(game, answer)
+        msg_list = [
+            ux.MSG_RECAP_INPUT_TEXT[lang], '',
+            currect_completed_text, '',
+            ux.MSG_CONFIRM_ANSWER_YES_NO[lang],
+        ]
+        kb = [[ux.BUTTON_YES[lang], ux.BUTTON_NO[lang]]]
+        send_message(user, '\n'.join(msg_list), kb)
+    else:
+        text_input = message_obj.text
+        kb = user.get_keyboard()
+        if text_input in utility.flatten(kb):                
+            if text_input == ux.BUTTON_YES[lang]:
+                remaining_players_num = game.set_player_text_answer_and_get_remaining(user, answer)
+                if remaining_players_num==0:       
+                    players = game.get_players()
+                    send_message(user, ux.MSG_THANKS[lang])
+                    send_message(players, ux.MSG_ALL_ANSWERS_RECEIVED[lang], remove_keyboard=True)
+                    redirect_to_state_multi(game, players, state_WRITERS_SELECT_BEST_ANSWER)
+                else:
+                    msg_list = [
+                        ux.MSG_THANKS[lang], 
+                        ux.MSG_WAIT_TILL_YOUR_TURN[lang], 
+                        ux.MSG_STATUS_INSTRUCTIONS[lang]
+                    ]
+                    send_message(user, '\n'.join(msg_list), remove_keyboard=True)                                        
+            else:
+                assert text_input == ux.BUTTON_NO[lang]
+                redirect_to_state(user, state_WRITERS_WRITE_ANSWERS, first_call=False)
+        else:
+            if text_input == '/status':       
+                remaining_names = game.get_remaining_answers_names()
+                remaining_names_str = ', '.join(remaining_names)     
+                msg_list = [ux.MSG_WAITING_FOR[lang].format(remaining_names_str)]
+                if game.game_control == 'TEACHER':
+                    msg_list.append(ux.MSG_JUMP_TO_NEXT_PHASE[lang])
+                send_message(user, '\n'.join(msg_list))
+                return
+            else:
+                send_message(user, ux.MSG_WRONG_INPUT_USE_BUTTONS[lang])
+
 
 def get_all_num_completed_answers_str(game, shuffled_answers_info):
     all_num_completed_answers = []
@@ -751,7 +807,7 @@ def get_all_num_completed_answers_str(game, shuffled_answers_info):
     return all_num_completed_answers_str
 
 # ================================
-# GAME_PLAYERS_SELECT_BEST_ANSWERS
+# GAME_WRITERS_SELECT_BEST_ANSWERS
 # ================================
 def state_WRITERS_SELECT_BEST_ANSWER(user, message_obj):
     game = user.get_current_game()
@@ -1153,8 +1209,9 @@ def interrupt_game(game, user=None):
             send_message(players, ux.MSG_EXIT_GAME_EXPIRED[lang], remove_keyboard=True)
     restart_multi(players)
 
-def deal_with_universal_commands(user, text_input):
+def deal_with_universal_commands(user, message_obj):
     #logging.debug('In universal command with input "{}". User is master: {}'.format(text_input, user.is_master()))
+    text_input = message_obj.text
     lang = user.language
     if text_input == '/forcedstart':
         restart_user(user)
@@ -1209,7 +1266,8 @@ def deal_with_universal_commands(user, text_input):
             if utility.contains_markdown(text_input):
                 send_message(user, ux.MSG_CHAT_MSG_NO_MARKDOWN[lang])
             else:
-                players = game.get_players()
+                players = game.get_players()                
+                message_obj.delete()
                 send_message(players, "📩 *{}*: {}".format(user.get_name(), chat_msg))
         else:
             send_message(user, ux.MSG_NO_GAME_NO_CHAT[lang])
@@ -1303,11 +1361,14 @@ def deal_with_request(request_json):
         return
     if message_obj.text:
         text_input = message_obj.text
-        logging.debug('Message from @{} in state {} with text {}'.format(user.serial_id, user.state, text_input))
+        logging.debug(
+            'Message from {} in state {} with text {}'.format(
+                user.get_name_and_id(escape_md=False), user.state, text_input)
+        )
         if DEBUG and not user.is_tester():
             send_message(user, ux.MSG_WORK_IN_PROGRESS[user.language])
             return
-        if deal_with_universal_commands(user, text_input):
+        if deal_with_universal_commands(user, message_obj):
             return
         repeat_state(user, message_obj=message_obj)
     else:
