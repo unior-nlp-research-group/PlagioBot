@@ -431,16 +431,17 @@ class Game(Model):
                 pfi['POINTS'] += POINT_SYSTEM['NO_SELECTION']                
             if not self.teacher_validation_enabled():    
                 # peole get awarded points when voted by others only if teacher validation is off
-                if player_voted_answer_info:                     
-                    # give points only if answer is not the exact one (reader)
+                if player_voted_answer_info:                                         
                     for j in player_voted_answer_info['authors']:
-                        points_feedbacks[j]['POINTS'] += POINT_SYSTEM['RECEIVED_VOTE']
-                        points_feedbacks[j]['NUM_VOTES_RECEIVED'] += 1
+                        if j != reader_index:
+                            # don't give point to reader
+                            points_feedbacks[j]['POINTS'] += POINT_SYSTEM['RECEIVED_VOTE']
+                            points_feedbacks[j]['NUM_VOTES_RECEIVED'] += 1
             # if 'SELECTED_CORRECTLY' not in pfi:
             #     # either i) she previous answered correctly or ii) she didn't provide a selection (jump)
             #     pfi['SELECTED_CORRECTLY'] = False
         
-        for i in range(self.num_players):            
+        for i in range(self.num_players):  
             current_hand_points[str(i)] = points_feedbacks[i]['POINTS']
         
         # recalculate game points
