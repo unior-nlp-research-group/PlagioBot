@@ -127,12 +127,15 @@ class Game(Model):
         self.players_names = [p.get_name() for p in players]
         self.variables = {
             'HAND': 0, # 1 for the first hand
-            'INCOMPLETE_TEXTS': ['' for i in range(self.num_hands)],
-            'ORIGINAL_COMPLETION': ['' for i in range(self.num_hands)], # original completion from reader
-            'PLAYERS_ANSWERS': [{} for i in range(self.num_hands)], # one dict per hand
+            'COMPLETED_HANDS': [False for _ in range(self.num_hands)], # weather each hand has been completed
+            'CONFIRMED_CURRENT_HAND': [False for _ in range(self.num_players)], # weather each player has confirmed answer in current hand
+            'SELECTED_CURRENT_HAND': [False for _ in range(self.num_players)], # weather each player has made a selection in current hand
+            'INCOMPLETE_TEXTS': ['' for _ in range(self.num_hands)],
+            'ORIGINAL_COMPLETION': ['' for _ in range(self.num_hands)], # original completion from reader
+            'PLAYERS_ANSWERS': [{} for _ in range(self.num_hands)], # one dict per hand
                 # str(player_index) in key mapping to its answer
                 # we use str in keys because of firebase constraints
-            'ANSWERS_INFO': [{} for i in range(self.num_hands)], # one dict per hand
+            'ANSWERS_INFO': [{} for _ in range(self.num_hands)], # one dict per hand
                 # ANSWER (STRING) in key  (UPPER CASE)
                 # mapping to dictionary:
                 # {
@@ -173,6 +176,35 @@ class Game(Model):
         remaining_players_indexes = [i for i in range(self.num_players) if i not in voters_indexes and i not in exact_author_list]
         return len(remaining_players_indexes)
 
+    @transactional 
+    def set_confirm(self, user):
+        player_index = self.players_id.index(user.id)
+        if self.variables['CONFIRMED_CURRENT_HAND'][player_index]:
+            return False
+        self.variables['CONFIRMED_CURRENT_HAND'][player_index] = True
+        return True
+
+    @transactional 
+    def set_selected(self, user):
+        player_index = self.players_id.index(user.id)
+        if self.variables['SELECTED_CURRENT_HAND'][player_index]:
+            return False
+        self.variables['SELECTED_CURRENT_HAND'][player_index] = True
+        return True
+
+    @transactional
+    def setup_next_hand(self):
+        hand_index = self.variables['HAND']-1
+        if self.variables['COMPLETED_HANDS'][hand_index]:
+            # already setup next hand (double button press)
+            return False
+        self.variables['COMPLETED_HANDS'][hand_index] = True
+        self.variables['CONFIRMED_CURRENT_HAND']: [False for _ in range(self.num_players)]
+        self.variables['SELECTED_CURRENT_HAND']: [False for _ in range(self.num_players)]
+        self.variables['HAND'] += 1
+        return True
+
+
     ##########################################
     # END of TRANSACTIONAL FUNCTIONS
     ##########################################
@@ -193,10 +225,6 @@ class Game(Model):
     def get_creator_name(self):
         creator_name = self.players_names[0]
         return escape_markdown(creator_name)
-
-    def increment_hand_number(self, save=True):
-        self.variables['HAND'] += 1
-        if save: self.save()
 
     def is_last_hand(self):
         return self.variables['HAND'] == self.num_hands

@@ -743,7 +743,9 @@ def state_READER_CONFIRMS_INPUT(user, message_obj):
         text_input = message_obj.text
         kb = user.get_keyboard()
         if text_input in utility.flatten(kb):                
-            if text_input == ux.BUTTON_YES[lang]:                
+            if text_input == ux.BUTTON_YES[lang]:   
+                if not game.set_confirm(user):
+                    return #double press of the button
                 players = game.get_players()
                 redirect_to_state_multi(game, players, state_WRITERS_WRITE_ANSWERS)
             else:
@@ -843,6 +845,8 @@ def state_WRITER_CONFIRMS_INPUT(user, message_obj):
         kb = user.get_keyboard()
         if text_input in utility.flatten(kb):                
             if text_input == ux.BUTTON_YES[lang]:
+                if not game.set_confirm(user):
+                    return #double press of the button
                 remaining_players_num = game.set_player_text_answer_and_get_remaining(user, answer)
                 if remaining_players_num==0:       
                     players = game.get_players()
@@ -863,9 +867,8 @@ def state_WRITER_CONFIRMS_INPUT(user, message_obj):
             if text_input == '/status':       
                 remaining_names = game.get_remaining_answers_names()
                 remaining_names_str = ', '.join(remaining_names)     
-                msg_list = [ux.MSG_WAITING_FOR[lang].format(remaining_names_str)]
-                msg_list.append(ux.MSG_JUMP_TO_NEXT_PHASE[lang])
-                send_message(user, '\n'.join(msg_list))
+                msg_list = ux.MSG_WAITING_FOR[lang].format(remaining_names_str)
+                send_message(user, msg_list)
                 return
             else:
                 send_message(user, ux.MSG_WRONG_INPUT_USE_BUTTONS[lang])
@@ -972,10 +975,9 @@ def state_WRITERS_SELECT_BEST_ANSWER(user, message_obj):
         remaining_names = game.get_names_remaining_voters()
         remaining_names_str = ', '.join(remaining_names)
         if text_input == '/status':            
-            msg_list = [
-                ux.MSG_WAITING_FOR[lang].format(remaining_names_str),
-                ux.MSG_JUMP_TO_NEXT_PHASE[lang]
-            ]
+            msg_list = [ux.MSG_WAITING_FOR[lang].format(remaining_names_str)]
+            if user == reader:
+                msg_list.append(ux.MSG_JUMP_TO_NEXT_PHASE[lang])
             send_message(user, '\n'.join(msg_list))
             return
         if user == reader:
@@ -1003,6 +1005,8 @@ def state_WRITERS_SELECT_BEST_ANSWER(user, message_obj):
                 voted_shuffled_number = -1
             else:
                 voted_shuffled_number = int(text_input)
+            if not game.set_selected(user):
+                return # double press of the button
             remaining_players_num = game.set_voted_indexes_and_get_remaining(user, voted_shuffled_number)
             tx_msg = ux.MSG_THANKS_YOU_SELECTED_X[lang].format(text_input)
             if remaining_players_num==0:                        
@@ -1225,9 +1229,9 @@ def recap_votes(game, answer_received=True):
         
 
 def go_to_next_hand(game, players):
-    lang = game.language
-    
-    game.increment_hand_number()
+    if not game.setup_next_hand():        
+        return # double press of a button
+    lang = game.language    
     msg_round_num = ux.MSG_ROUND_NUM[lang].format(game.get_hand_number(), game.num_hands)
     send_message(players, msg_round_num, remove_keyboard=True)
 
