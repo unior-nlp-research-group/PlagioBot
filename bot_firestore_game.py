@@ -199,8 +199,8 @@ class Game(Model):
             # already setup next hand (double button press)
             return False
         self.variables['COMPLETED_HANDS'][hand_index] = True
-        self.variables['CONFIRMED_CURRENT_HAND']: [False for _ in range(self.num_players)]
-        self.variables['SELECTED_CURRENT_HAND']: [False for _ in range(self.num_players)]
+        self.variables['CONFIRMED_CURRENT_HAND'] = [False for _ in range(self.num_players)]
+        self.variables['SELECTED_CURRENT_HAND'] = [False for _ in range(self.num_players)]
         self.variables['HAND'] += 1
         return True
 
@@ -548,7 +548,6 @@ class Game(Model):
             count = len(games)
             id_list = [g.id for g in games]
             print("{}:{} {}".format(s, count, id_list))
-            
 
     @staticmethod
     def get_expired_games():
