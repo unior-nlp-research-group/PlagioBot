@@ -197,9 +197,6 @@ class Model:
         return db.collection(env_collection_name).document(self.id)
 
 
-    def __eq__(self, other):
-        return type(self) == type(other) and self.id == other.id
-
     @require_database
     def delete(self):
         """ Removes this model from Cloud Datastore
