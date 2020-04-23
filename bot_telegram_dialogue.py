@@ -39,13 +39,14 @@ def restart_user(user):
 # ================================
 # REDIRECT TO STATE
 # ================================
-def redirect_to_state_multi(game, users, new_function, message_obj=None, **kwargs):
+def redirect_to_state_multi(game, users, new_function, change_game_sub_state=True, message_obj=None, **kwargs):
     # last should be the reader (to prevent that resetting set would also reset other var (e.g., keyboard))
     reader_index = game.get_reader_index()
     ordered_users = [u for i,u in enumerate(users) if i!=reader_index] + [users[reader_index]]
     for u in ordered_users:
         redirect_to_state(u, new_function, message_obj, **kwargs)
-    game.set_sub_state(new_function.__name__)
+    if change_game_sub_state:
+        game.set_sub_state(new_function.__name__)
 
 def redirect_to_state(user, new_function, message_obj=None, **kwargs):
     new_state = new_function.__name__
@@ -609,7 +610,6 @@ def state_WAITING_FOR_START(user, message_obj, updated_settings=False):
     lang = game.language
     creator_name = creator.get_name()
     if message_obj is None:        
-
         players_names = [p.get_name() for p in players]        
         game_name = ux.MSG_GAME_NAME[lang].format(game.name)
         game_type_info = ux.MSG_GAME_TYPE_INFO[lang].format(
@@ -762,7 +762,7 @@ def state_READER_WRITES_INCOMPLETE_TEXT(user, message_obj, first_call=True):
                 else:
                     incomplete_text = text_input.upper()
                     game.set_current_incomplete_text(incomplete_text)
-                    redirect_to_state_multi(game, players, state_READER_WRITES_ANSWER)
+                    redirect_to_state_multi(game, players, state_READER_WRITES_ANSWER, change_game_sub_state=False)
             else:
                 send_message(user, ux.MSG_WRONG_INPUT_USE_TEXT[lang])
         else:
