@@ -1,5 +1,3 @@
-from time import time
-
 def flatten(L):
     ret = []
     for i in L:
@@ -92,10 +90,8 @@ def split_list(iterable, group_size):
     return list(([e for e in t if e != None] for t in zip_longest(*args)))
 
 def get_milliseconds():
-  """
-    @return Milliseconds since the epoch
-  """
-  return int(round(time() * 1000))
+    from time import time
+    return int(round(time() * 1000))    
 
 def clean_new_lines(s):
     return s.replace('\\n', '\n').strip()
