@@ -12,11 +12,10 @@
 # limitations under the License.
 
 import datetime
+import threading
 from time import sleep
 
 from google.cloud import firestore
-from google.cloud.firestore_v1beta1 import ArrayRemove, ArrayUnion
-import google.cloud.exceptions
 
 
 def quickstart_new_instance():
@@ -59,7 +58,7 @@ def quickstart_get_collection():
     db = firestore.Client()
     # [START quickstart_get_collection]
     users_ref = db.collection('users')
-    docs = users_ref.get()
+    docs = users_ref.stream()
 
     for doc in docs:
         print('{} => {}'.format(doc.id, doc.to_dict()))
@@ -160,6 +159,8 @@ def add_example_data():
     db = firestore.Client()
     # [START add_example_data]
     cities_ref = db.collection('cities')
+    cities_ref.document('BJ').set(
+        City('Beijing', None, 'China', True, 21500000, ['hebei']).to_dict())
     cities_ref.document('SF').set(
         City('San Francisco', 'CA', 'USA', False, 860000,
              ['west_coast', 'norcal']).to_dict())
@@ -171,9 +172,7 @@ def add_example_data():
              ['east_coast']).to_dict())
     cities_ref.document('TOK').set(
         City('Tokyo', None, 'Japan', True, 9000000,
-             ['kanto', 'honsh']).to_dict())
-    cities_ref.document('BJ').set(
-        City('Beijing', None, 'China', True, 21500000, ['hebei']).to_dict())
+             ['kanto', 'honshu']).to_dict())
     # [END add_example_data]
 
 
@@ -218,10 +217,10 @@ def get_check_exists():
     # [START get_check_exists]
     doc_ref = db.collection('cities').document('SF')
 
-    try:
-        doc = doc_ref.get()
+    doc = doc_ref.get()
+    if doc.exists:
         print('Document data: {}'.format(doc.to_dict()))
-    except google.cloud.exceptions.NotFound:
+    else:
         print('No such document!')
     # [END get_check_exists]
 
@@ -240,7 +239,7 @@ def get_custom_class():
 def get_simple_query():
     db = firestore.Client()
     # [START get_simple_query]
-    docs = db.collection('cities').where('capital', '==', True).get()
+    docs = db.collection('cities').where('capital', '==', True).stream()
 
     for doc in docs:
         print('{} => {}'.format(doc.id, doc.to_dict()))
@@ -254,7 +253,7 @@ def array_contains_filter():
 
     query = cities_ref.where('regions', 'array_contains', 'west_coast')
     # [END fs_array_contains_filter]
-    docs = query.get()
+    docs = query.stream()
     for doc in docs:
         print('{} => {}'.format(doc.id, doc.to_dict()))
 
@@ -262,7 +261,7 @@ def array_contains_filter():
 def get_full_collection():
     db = firestore.Client()
     # [START get_full_collection]
-    docs = db.collection('cities').get()
+    docs = db.collection('cities').stream()
 
     for doc in docs:
         print('{} => {}'.format(doc.id, doc.to_dict()))
@@ -305,6 +304,10 @@ def structure_subcollection_ref():
 
 def update_doc():
     db = firestore.Client()
+    db.collection('cities').document('DC').set(
+        City('Washington D.C.', None, 'USA', True, 680000,
+             ['east_coast']).to_dict())
+
     # [START update_doc]
     city_ref = db.collection('cities').document('DC')
 
@@ -315,14 +318,18 @@ def update_doc():
 
 def update_doc_array():
     db = firestore.Client()
+    db.collection('cities').document('DC').set(
+        City('Washington D.C.', None, 'USA', True, 680000,
+             ['east_coast']).to_dict())
+
     # [START fs_update_doc_array]
     city_ref = db.collection('cities').document('DC')
 
     # Atomically add a new region to the 'regions' array field.
-    city_ref.update({'regions': ArrayUnion(['greater_virginia'])})
+    city_ref.update({'regions': firestore.ArrayUnion(['greater_virginia'])})
 
     # // Atomically remove a region from the 'regions' array field.
-    city_ref.update({'regions': ArrayRemove(['east_coast'])})
+    city_ref.update({'regions': firestore.ArrayRemove(['east_coast'])})
     # [END fs_update_doc_array]
     city = city_ref.get()
     print('Updated the regions field of the DC. {}'.format(city.to_dict()))
@@ -330,6 +337,10 @@ def update_doc_array():
 
 def update_multiple():
     db = firestore.Client()
+    db.collection('cities').document('DC').set(
+        City('Washington D.C.', None, 'USA', True, 680000,
+             ['east_coast']).to_dict())
+
     # [START update_multiple]
     doc_ref = db.collection('cities').document('DC')
 
@@ -442,9 +453,9 @@ def update_data_batch():
     sf_ref = db.collection('cities').document('SF')
     batch.update(sf_ref, {'population': 1000000})
 
-    # Delete LA
-    la_ref = db.collection('cities').document('LA')
-    batch.delete(la_ref)
+    # Delete DEN
+    den_ref = db.collection('cities').document('DEN')
+    batch.delete(den_ref)
 
     # Commit the batch
     batch.commit()
@@ -491,12 +502,12 @@ def compound_query_valid_multi_clause():
     # [START compound_query_valid_multi_clause]
     cities_ref = db.collection('cities')
 
-    sydney_query = cities_ref.where(
+    denver_query = cities_ref.where(
         'state', '==', 'CO').where('name', '==', 'Denver')
     large_us_cities_query = cities_ref.where(
         'state', '==', 'CA').where('population', '>', 1000000)
     # [END compound_query_valid_multi_clause]
-    print(sydney_query)
+    print(denver_query)
     print(large_us_cities_query)
 
 
@@ -520,7 +531,7 @@ def compound_query_invalid_multi_field():
 def order_simple_limit():
     db = firestore.Client()
     # [START order_simple_limit]
-    db.collection('cities').order_by('name').limit(3).get()
+    db.collection('cities').order_by('name').limit(3).stream()
     # [END order_simple_limit]
 
 
@@ -530,7 +541,7 @@ def order_simple_limit_desc():
     cities_ref = db.collection('cities')
     query = cities_ref.order_by(
         'name', direction=firestore.Query.DESCENDING).limit(3)
-    results = query.get()
+    results = query.stream()
     # [END order_simple_limit_desc]
     print(results)
 
@@ -550,7 +561,7 @@ def order_where_limit():
     cities_ref = db.collection('cities')
     query = cities_ref.where(
         'population', '>', 2500000).order_by('population').limit(2)
-    results = query.get()
+    results = query.stream()
     # [END order_where_limit]
     print(results)
 
@@ -561,7 +572,7 @@ def order_where_valid():
     cities_ref = db.collection('cities')
     query = cities_ref.where(
         'population', '>', 2500000).order_by('population')
-    results = query.get()
+    results = query.stream()
     # [END order_where_valid]
     print(results)
 
@@ -571,7 +582,7 @@ def order_where_invalid():
     # [START order_where_invalid]
     cities_ref = db.collection('cities')
     query = cities_ref.where('population', '>', 2500000).order_by('country')
-    results = query.get()
+    results = query.stream()
     # [END order_where_invalid]
     print(results)
 
@@ -609,7 +620,7 @@ def snapshot_cursors():
     start_at_snapshot = db.collection(
         'cities').order_by('population').start_at(snapshot)
     # [END fs_start_at_snapshot_query_cursor]
-    results = start_at_snapshot.limit(10).get()
+    results = start_at_snapshot.limit(10).stream()
     for doc in results:
         print('{}'.format(doc.id))
 
@@ -623,7 +634,7 @@ def cursor_paginate():
     first_query = cities_ref.order_by('population').limit(3)
 
     # Get the last document from the results
-    docs = first_query.get()
+    docs = first_query.stream()
     last_doc = list(docs)[-1]
 
     # Construct a new query starting at this document
@@ -650,10 +661,14 @@ def listen_document():
     db = firestore.Client()
     # [START listen_document]
 
+    # Create an Event for notifying main thread.
+    callback_done = threading.Event()
+
     # Create a callback on_snapshot function to capture changes
     def on_snapshot(doc_snapshot, changes, read_time):
         for doc in doc_snapshot:
             print('Received document snapshot: {}'.format(doc.id))
+        callback_done.set()
 
     doc_ref = db.collection('cities').document('SF')
 
@@ -670,7 +685,8 @@ def listen_document():
         'population': 860000
     }
     doc_ref.set(data)
-    sleep(3)
+    # Wait for the callback.
+    callback_done.wait(timeout=60)
     # [START detach_listener]
     # Terminate watch on a document
     doc_watch.unsubscribe()
@@ -681,12 +697,16 @@ def listen_multiple():
     db = firestore.Client()
     # [START listen_multiple]
 
+    # Create an Event for notifying main thread.
+    callback_done = threading.Event()
+
     # Create a callback on_snapshot function to capture changes
     def on_snapshot(col_snapshot, changes, read_time):
         print('Callback received query snapshot.')
         print('Current cities in California:')
         for doc in col_snapshot:
             print('{}'.format(doc.id))
+        callback_done.set()
 
     col_query = db.collection('cities').where('state', '==', 'CA')
 
@@ -703,13 +723,17 @@ def listen_multiple():
         'population': 860000
     }
     db.collection('cities').document('SF').set(data)
-    sleep(1)
+    # Wait for the callback.
+    callback_done.wait(timeout=60)
     query_watch.unsubscribe()
 
 
 def listen_for_changes():
     db = firestore.Client()
     # [START listen_for_changes]
+
+    # Create an Event for notifying main thread.
+    delete_done = threading.Event()
 
     # Create a callback on_snapshot function to capture changes
     def on_snapshot(col_snapshot, changes, read_time):
@@ -722,6 +746,7 @@ def listen_for_changes():
                 print('Modified city: {}'.format(change.document.id))
             elif change.type.name == 'REMOVED':
                 print('Removed city: {}'.format(change.document.id))
+                delete_done.set()
 
     col_query = db.collection('cities').where('state', '==', 'CA')
 
@@ -738,6 +763,7 @@ def listen_for_changes():
         'capital': False,
         'population': 80000
     })
+    sleep(1)
 
     # Modifying document
     mtv_document.update({
@@ -747,10 +773,13 @@ def listen_for_changes():
         'capital': False,
         'population': 90000
     })
+    sleep(1)
 
     # Delete document
     mtv_document.delete()
-    sleep(1)
+
+    # Wait for the callback captures the deletion.
+    delete_done.wait(timeout=60)
     query_watch.unsubscribe()
 
 
@@ -802,7 +831,7 @@ def delete_full_collection():
 
     # [START delete_full_collection]
     def delete_collection(coll_ref, batch_size):
-        docs = coll_ref.limit(10).get()
+        docs = coll_ref.limit(batch_size).stream()
         deleted = 0
 
         for doc in docs:
@@ -815,3 +844,106 @@ def delete_full_collection():
     # [END delete_full_collection]
 
     delete_collection(db.collection('cities'), 10)
+    delete_collection(db.collection('data'), 10)
+    delete_collection(db.collection('objects'), 10)
+    delete_collection(db.collection('users'), 10)
+
+
+def collection_group_query(db):
+    # [START fs_collection_group_query_data_setup]
+    cities = db.collection('cities')
+
+    sf_landmarks = cities.document('SF').collection('landmarks')
+    sf_landmarks.document().set({
+        'name': 'Golden Gate Bridge',
+        'type': 'bridge'
+    })
+    sf_landmarks.document().set({
+        'name': 'Legion of Honor',
+        'type': 'museum'
+    })
+    la_landmarks = cities.document('LA').collection('landmarks')
+    la_landmarks.document().set({
+        'name': 'Griffith Park',
+        'type': 'park'
+    })
+    la_landmarks.document().set({
+        'name': 'The Getty',
+        'type': 'museum'
+    })
+    dc_landmarks = cities.document('DC').collection('landmarks')
+    dc_landmarks.document().set({
+        'name': 'Lincoln Memorial',
+        'type': 'memorial'
+    })
+    dc_landmarks.document().set({
+        'name': 'National Air and Space Museum',
+        'type': 'museum'
+    })
+    tok_landmarks = cities.document('TOK').collection('landmarks')
+    tok_landmarks.document().set({
+        'name': 'Ueno Park',
+        'type': 'park'
+    })
+    tok_landmarks.document().set({
+        'name': 'National Museum of Nature and Science',
+        'type': 'museum'
+    })
+    bj_landmarks = cities.document('BJ').collection('landmarks')
+    bj_landmarks.document().set({
+        'name': 'Jingshan Park',
+        'type': 'park'
+    })
+    bj_landmarks.document().set({
+        'name': 'Beijing Ancient Observatory',
+        'type': 'museum'
+    })
+    # [END fs_collection_group_query_data_setup]
+
+    # [START fs_collection_group_query]
+    museums = db.collection_group('landmarks')\
+        .where('type', '==', 'museum')
+    docs = museums.stream()
+    for doc in docs:
+        print('{} => {}'.format(doc.id, doc.to_dict()))
+    # [END fs_collection_group_query]
+    return docs
+
+
+def array_contains_any_queries(db):
+    # [START fs_query_filter_array_contains_any]
+    cities_ref = db.collection('cities')
+
+    query = cities_ref.where(
+        'regions', 'array_contains_any', ['west_coast', 'east_coast']
+    )
+    return query
+    # [END fs_query_filter_array_contains_any]
+
+
+def in_query_without_array(db):
+    # [START fs_query_filter_in]
+    cities_ref = db.collection('cities')
+
+    query = cities_ref.where('country', 'in', ['USA', 'Japan'])
+    return query
+    # [END fs_query_filter_in]
+
+
+def in_query_with_array(db):
+    # [START fs_query_filter_in_with_array]
+    cities_ref = db.collection('cities')
+
+    query = cities_ref.where(
+        'regions', 'in', [['west_coast'], ['east_coast']]
+    )
+    return query
+    # [END fs_query_filter_in_with_array]
+
+
+def update_document_increment(db):
+    # [START fs_update_document_increment]
+    washington_ref = db.collection('cities').document('DC')
+
+    washington_ref.update({"population": firestore.Increment(50)})
+    # [END fs_update_document_increment]
