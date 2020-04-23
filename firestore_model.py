@@ -165,7 +165,7 @@ class Model:
               )
         """
         id = id if id else str(uuid.uuid4())
-        created = datetime.datetime.now()
+        created = datetime.datetime.utcnow()
         m = cls(id, created, created, *args, **kwargs)
         if save:
             m.save()
@@ -229,12 +229,12 @@ class Model:
     @require_database
     def set(self, kvs):
         self.copy_from_dict(kvs)
-        self.modified = datetime.datetime.now()
+        self.modified = datetime.datetime.utcnow()
         self.ref().set(asdict(self))
 
     @require_database
     def update(self, kvs):
-        self.modified = kvs['modified'] = datetime.datetime.now()
+        self.modified = kvs['modified'] = datetime.datetime.utcnow()
         self.copy_from_dict(kvs)
         self.ref().update(kvs)
 
