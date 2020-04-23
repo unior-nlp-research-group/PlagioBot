@@ -4,10 +4,11 @@ import key
 import logging
 import uuid
 import functools
-from utility import get_milliseconds
 from dataclasses import dataclass, asdict
 
 from google.cloud import firestore
+
+import datetime
 
 # --------------------------------------------
 #
@@ -164,7 +165,7 @@ class Model:
               )
         """
         id_str = str(uuid.uuid4())
-        created = get_milliseconds()
+        created = datetime.datetime.now()
         m = cls(id_str, created, created, *args, **kwargs)
         if save:
             m.save()
@@ -183,11 +184,11 @@ class Model:
     #
     #  instance
     #
-    # -------------------------------------------
+    # -------------------------------------------    
 
     id: str
-    created: int
-    modified: int
+    created: datetime.datetime
+    modified: datetime.datetime
 
     @require_database
     def ref(self):
@@ -228,12 +229,12 @@ class Model:
     @require_database
     def set(self, kvs):
         self.copy_from_dict(kvs)
-        self.modified = get_milliseconds()
+        self.modified = datetime.datetime.now()
         self.ref().set(asdict(self))
 
     @require_database
     def update(self, kvs):
-        self.modified = kvs['modified'] = get_milliseconds()
+        self.modified = kvs['modified'] = datetime.datetime.now()
         self.copy_from_dict(kvs)
         self.ref().update(kvs)
 
