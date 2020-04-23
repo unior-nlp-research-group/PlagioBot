@@ -28,9 +28,6 @@ class User(Model):
     def make_id(application, serial_id):
         return '{}_{}'.format(application, serial_id)
 
-    def __eq__(self, other):
-        return type(self) == type(other) and self.serial_id == other.serial_id
-
     @staticmethod
     def create_user(application, serial_id, name, username, bot=False):
         user = User.make(

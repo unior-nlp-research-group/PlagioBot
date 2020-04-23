@@ -158,6 +158,10 @@ BUTTON_NEXT_ROUND = {
     'en': "🚦 NEXT ROUND",
     'it': "🚦 PROSSIMA MANO"
 }
+BUTTON_END_GAME = {
+    'en': "🏁 END GAME",
+    'it': "🏁 TERMINA GIOCO"
+}
 
 ####################
 # CONVERSATIONS
@@ -362,6 +366,10 @@ MSG_WAIT_FOR_X_TO_START_NEXT_ROUND = {
     'en': "🚦 Let's wait for {} to proceed to the next round.",
     'it': "🚦 Attendiamo che {} avvii la prossima mano."
 }
+MSG_WAIT_FOR_X_TO_END_GAME = {
+    'en': "🏁 Let's wait for {} to terminate the game.",
+    'it': "🏁 Attendiamo che {} termini il gioco."
+}
 MSG_ANNOUNCE_GAME_PUBLICLY = {
     'en': "📮 New game created by {}.\n*Messaggio*: {}\nJoin the game by clicking here: {}",
     'it': "📮 Nuovo gioco creato da {}.\n*Messaggio*: {}\nUnisciti premendo qua: {}"
@@ -531,6 +539,10 @@ MSG_SELECTION = {
 MSG_NEXT_ROUND = {
     'en': "🚦 Please press the button below to start next round.",
     'it': "🚦 Premi il pulsante qua sotto per avviare la prossima mano."
+}
+MSG_END_GAME = {
+    'en': "🏁 Please press the button below to end the game.",
+    'it': "🏁 Premi il pulsante qua sotto per terminare il gioco."
 }
 MSG_ORIGINAL_TEXT = {
     'en': "📝 This is the original sentence:\n{}",

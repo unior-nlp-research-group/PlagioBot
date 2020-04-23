@@ -45,6 +45,7 @@ def redirect_to_state_multi(game, users, new_function, message_obj=None, **kwarg
     ordered_users = [u for i,u in enumerate(users) if i!=reader_index] + [users[reader_index]]
     for u in ordered_users:
         redirect_to_state(u, new_function, message_obj, **kwargs)
+    game.set_sub_state(new_function.__name__)
 
 def redirect_to_state(user, new_function, message_obj=None, **kwargs):
     new_state = new_function.__name__
@@ -1131,6 +1132,7 @@ def state_TEACHER_VALIDATION(user, message_obj):
 # UTIL FUNCTION TO RECAP VOTES
 # ================================
 def recap_votes(game, answer_received=True):
+    game.set_sub_state('state_RECAP_VOTES')
     lang = game.language
     players, _, writers = game.get_current_hand_players_reader_writers()    
     
@@ -1214,18 +1216,7 @@ def recap_votes(game, answer_received=True):
         
         send_message(w, '\n'.join(msg_list))
     
-    if game.is_last_hand():
-        send_message(players, ux.MSG_POINT_GAME_SUMMARY[lang])
-        game.send_points_img_data(players, save=True)
-        winners_names = game.get_winner_names()
-        winner_msg = ux.MSG_WINNER_SINGULAR[lang] if len(winners_names)==1 else ux.MSG_WINNER_PLURAL[lang]
-        winner_msg = winner_msg.format(', '.join(winners_names))
-        send_message(players, winner_msg)
-        end_game(game, players)
-    else:
-        send_message(players, ux.MSG_POINT_GAME_PARTIAL_SUMMARY[lang])
-        game.send_points_img_data(players)
-        redirect_to_state_multi(game, players, state_NEXT_HAND)
+    redirect_to_state_multi(game, players, state_NEXT_HAND)        
         
 
 def go_to_next_hand(game, players):
@@ -1251,9 +1242,23 @@ def state_NEXT_HAND(user, message_obj):
     if message_obj is None:
         if user != reader:
             return
-        kb = [[ux.BUTTON_NEXT_ROUND[lang]]]
-        send_message(user, ux.MSG_NEXT_ROUND[lang], kb)                        
-        msg_writers = ux.MSG_WAIT_FOR_X_TO_START_NEXT_ROUND[lang].format(reader_name)
+        if game.is_last_hand():
+            send_message(players, ux.MSG_POINT_GAME_SUMMARY[lang])
+            game.send_points_img_data(players)
+            winners_names = game.get_winner_names()
+            winner_msg = ux.MSG_WINNER_SINGULAR[lang] if len(winners_names)==1 else ux.MSG_WINNER_PLURAL[lang]
+            winner_msg = winner_msg.format(', '.join(winners_names))
+            send_message(players, winner_msg)
+            kb = [[ux.BUTTON_END_GAME[lang]]]
+            reader_msg = ux.MSG_END_GAME[lang]
+            msg_writers = ux.MSG_WAIT_FOR_X_TO_END_GAME[lang].format(reader_name)
+        else:         
+            send_message(players, ux.MSG_POINT_GAME_PARTIAL_SUMMARY[lang])
+            game.send_points_img_data(players)
+            kb = [[ux.BUTTON_NEXT_ROUND[lang]]]
+            reader_msg = ux.MSG_NEXT_ROUND[lang]
+            msg_writers = ux.MSG_WAIT_FOR_X_TO_START_NEXT_ROUND[lang].format(reader_name)
+        send_message(user, reader_msg, kb)        
         send_message(writers, msg_writers)
     else:
         if user != reader:            
@@ -1262,8 +1267,11 @@ def state_NEXT_HAND(user, message_obj):
             text_input = message_obj.text
             kb = user.get_keyboard()
             if text_input in utility.flatten(kb):
-                assert text_input == ux.BUTTON_NEXT_ROUND[lang]                
-                go_to_next_hand(game, players)
+                if text_input == ux.BUTTON_NEXT_ROUND[lang]:                    
+                    go_to_next_hand(game, players)                                        
+                else:
+                    assert text_input == ux.BUTTON_END_GAME[lang]
+                    end_game(game, players)                    
             else:
                 send_message(user, ux.MSG_WRONG_INPUT_USE_BUTTONS[lang])
 
@@ -1300,7 +1308,7 @@ def deal_with_universal_commands(user, message_obj):
             send_message(user, ux.MSG_NO_START_COMMAND_AVAILABLE_DURING_GAME[lang])
             return True
         else:
-            send_message(user, ux.MSG_WELCOME[lang])
+            # send_message(user, ux.MSG_WELCOME[lang])
             restart_user(user)
             return True
     if text_input == '/state':

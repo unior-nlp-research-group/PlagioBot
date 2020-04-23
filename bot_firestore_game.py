@@ -20,12 +20,13 @@ class Game(Model):
     creator_id: str
     language: str
     players_id: List    
-    state: str = "INITIAL" # INITIAL, STARTED, ENDED, INTERRUPTED    
+    state: str = "INITIAL" # INITIAL, STARTED, ENDED, INTERRUPTED        
+    sub_state: str = "INITIAL"
     game_type: str = 'CONTINUATION' # 'CONTINUATION', 'FILL', 'SYNONYM'
-    game_control: str = 'DEFAULT' # 'DEFAULT', 'TEACHER'
+    game_control: str = 'DEFAULT' # 'DEFAULT', 'TEACHER'    
     num_hands: int = parameters.NUM_HANDS_IN_TEACHER_MODE
     players_names: List = None                
-    num_players: int = -1
+    num_players: int = 0
     announced: bool = False
     translate_help: bool = False    
     variables: Dict = field(default_factory=dict)
@@ -106,12 +107,18 @@ class Game(Model):
     @transactional
     def set_state(self, state):
         self.state = state
+        self.sub_state = state
+
+    @transactional
+    def set_sub_state(self, sub_state):
+        self.sub_state = sub_state
 
     @transactional
     def add_player(self, user): 
         if self.state != "INITIAL":
             return False
-        self.players_id.append(user.id)            
+        self.players_id.append(user.id)   
+        self.num_players += 1         
         user.set_current_game(self)  
         return True
 
@@ -120,13 +127,13 @@ class Game(Model):
         if self.state != 'INITIAL':
             return False
         players = self.get_players()
-        self.num_players = len(self.players_id)
         if self.game_control == 'DEFAULT':
             self.num_hands = self.num_players
             # otherwise set it manually
         self.players_names = [p.get_name() for p in players]
         self.variables = {
             'HAND': 0, # 1 for the first hand
+            'READER_INDEX': 0, # index of reader
             'COMPLETED_HANDS': [False for _ in range(self.num_hands)], # weather each hand has been completed
             'CONFIRMED_CURRENT_HAND': [False for _ in range(self.num_players)], # weather each player has confirmed answer in current hand
             'SELECTED_CURRENT_HAND': [False for _ in range(self.num_players)], # weather each player has made a selection in current hand
@@ -194,7 +201,7 @@ class Game(Model):
 
     @transactional
     def setup_next_hand(self):
-        hand_index = self.variables['HAND']-1
+        hand_index = self.variables['HAND']-1        
         if self.variables['COMPLETED_HANDS'][hand_index]:
             # already setup next hand (double button press)
             return False
@@ -202,6 +209,7 @@ class Game(Model):
         self.variables['CONFIRMED_CURRENT_HAND'] = [False for _ in range(self.num_players)]
         self.variables['SELECTED_CURRENT_HAND'] = [False for _ in range(self.num_players)]
         self.variables['HAND'] += 1
+        self.variables['READER_INDEX'] = self.get_reader_index()
         return True
 
 
@@ -483,7 +491,7 @@ class Game(Model):
         self.save()
         return points_feedbacks
 
-    def send_points_img_data(self, players, save=False):
+    def send_points_img_data(self, players):
         from render_leaderboard import get_image_data_from_hands_points
         from bot_telegram import send_photo_from_data_multi        
 

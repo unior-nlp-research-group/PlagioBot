@@ -65,7 +65,7 @@ def set_webhook():
     print("Attempting to set webhook to\n{}".format(key.WEBHOOK_TELEGRAM_BASE))
     s = BOT.setWebhook(key.WEBHOOK_TELEGRAM_BASE, allowed_updates=['message'])
     if s:
-        print("webhook setup ok: {}".format(key.WEBHOOK_TELEGRAM_BASE))
+        print("webhook setup ok!")
     else:
         print("webhook setup failed")
 
@@ -189,4 +189,4 @@ def report_master(message):
         send_message(key.TELEGRAM_BOT_MASTER_ID, message, markdown=False)
 
 if __name__ == "__main__":
-    set_webhook()
+    pass
