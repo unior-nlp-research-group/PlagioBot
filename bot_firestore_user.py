@@ -47,6 +47,9 @@ class User(Model):
         id_str = User.make_id(application, serial_id)
         return User.get(id_str)
 
+    def __eq__(self, other):
+        return type(self) == type(other) and self.id == other.id
+
     def update_user(self, name, username):
         self.username = username
         self.save()
