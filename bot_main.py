@@ -20,6 +20,8 @@ def root():
 
 @app.route('/tasks/interrupt_expired_games')
 def interrupt_expired_games():
+    if key.TEST:
+        return
     from bot_firestore_game import Game
     from bot_telegram_dialogue import interrupt_game
     expired_games = Game.get_expired_games()
