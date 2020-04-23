@@ -25,7 +25,7 @@ class Game(Model):
     game_type: str = 'CONTINUATION' # 'CONTINUATION', 'FILL', 'SYNONYM'
     game_control: str = 'DEFAULT' # 'DEFAULT', 'TEACHER'    
     num_hands: int = parameters.NUM_HANDS_IN_TEACHER_MODE
-    players_names: List = None                
+    players_names: List
     num_players: int = 0
     announced: bool = False
     translate_help: bool = False    
@@ -39,6 +39,8 @@ class Game(Model):
             creator_id = user.id,
             players_id = [user.id],   
             language = user.language,
+            num_players = 1,
+            players_names = [user.get_name()],
             save = True
         )
         return game
@@ -47,6 +49,9 @@ class Game(Model):
     def get_game(name, timestamp):
         id_str = "{}_{}".format(name, timestamp)
         return Game.get(id_str)
+
+    def __eq__(self, other):
+        return type(self) == type(other) and self.id == other.id
 
     def get_player_at_index(self,i):  
         from bot_firestore_user import User      
@@ -118,6 +123,7 @@ class Game(Model):
         if self.state != "INITIAL":
             return False
         self.players_id.append(user.id)   
+        self.players_names.append(user.get_name())
         self.num_players += 1         
         user.set_current_game(self)  
         return True
@@ -126,11 +132,9 @@ class Game(Model):
     def setup(self, user):
         if self.state != 'INITIAL':
             return False
-        players = self.get_players()
         if self.game_control == 'DEFAULT':
             self.num_hands = self.num_players
-            # otherwise set it manually
-        self.players_names = [p.get_name() for p in players]
+            # otherwise set it manually        
         self.variables = {
             'HAND': 0, # 1 for the first hand
             'READER_INDEX': 0, # index of reader
