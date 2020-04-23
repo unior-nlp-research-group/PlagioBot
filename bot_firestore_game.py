@@ -1,7 +1,7 @@
 import key
 import parameters
 from utility import escape_markdown, get_milliseconds
-
+from bot_telegram import exception_reporter
 import json
 import logging
 from random import shuffle
@@ -34,13 +34,13 @@ class Game(Model):
     @staticmethod
     def create_game(name, user):
         game = Game.make(
+            id = '{}_{}'.format(name, get_milliseconds()),        
             name = name,
             creator_id = user.id,
             players_id = [user.id],   
-            language = user.language
+            language = user.language,
+            save = True
         )
-        game.id = '{}_{}'.format(game.name, game.created)        
-        game.save()
         return game
 
     @staticmethod
@@ -558,11 +558,14 @@ class Game(Model):
             print("{}:{} {}".format(s, count, id_list))
 
     @staticmethod
+    @exception_reporter
     def get_expired_games():
-        from utility import get_milliseconds
+        import datetime
         from parameters import EXPIRATION_DELTA_MILLISECONDS
-        now = get_milliseconds()        
-        expiration = now - EXPIRATION_DELTA_MILLISECONDS
+        now = datetime.datetime.now()
+        delta = datetime.timedelta(milliseconds=EXPIRATION_DELTA_MILLISECONDS)
+        # expiration = now - EXPIRATION_DELTA_MILLISECONDS
+        expiration = now - delta
         games_generator = Game.query([
             ('state', 'in', ['INITIAL', 'STARTED']),
             ('modified', '<', expiration)

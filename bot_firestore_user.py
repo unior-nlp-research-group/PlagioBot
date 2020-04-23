@@ -31,15 +31,15 @@ class User(Model):
     @staticmethod
     def create_user(application, serial_id, name, username, bot=False):
         user = User.make(
+            id = User.make_id(application, serial_id),
             application = application,
             serial_id = str(serial_id),
             name = name,
             username = username,
             # language = language if language in ['en','it'] else 'en',
-            bot = bot
+            bot = bot,
+            save = True
         )
-        user.id = User.make_id(application, serial_id)
-        user.save()
         return user
 
     @staticmethod

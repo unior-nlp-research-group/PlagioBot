@@ -151,7 +151,7 @@ class Model:
             logging.error(e)
 
     @classmethod
-    def make(cls, save=False, *args, **kwargs):
+    def make(cls, id=None, save=False, *args, **kwargs):
         """ Create a new instance of a model class
           @param cls The class of the instance calling make
           @param save A flag indicating the model should be saved immediately after creation
@@ -164,9 +164,9 @@ class Model:
                 save = True
               )
         """
-        id_str = str(uuid.uuid4())
+        id = id if id else str(uuid.uuid4())
         created = datetime.datetime.now()
-        m = cls(id_str, created, created, *args, **kwargs)
+        m = cls(id, created, created, *args, **kwargs)
         if save:
             m.save()
         return m
