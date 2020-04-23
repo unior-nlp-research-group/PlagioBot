@@ -86,6 +86,10 @@ BUTTON_ANNOUNCE_GAME_PUBLICLY = {
     'en': "🔔 Announce Game",
     'it': "🔔 Annuncia Gioco"
 }
+BUTTON_USER_SETTINGS= {
+    'en': "⚙️ SETTINGS",
+    'it': "⚙️ IMPOSTAZIONI"
+}
 BUTTON_GAME_SETTINGS= {
     'en': "⚙️ Game Settings",
     'it': "⚙️ Impostazioni di Gioco"
@@ -101,6 +105,10 @@ BUTTON_DISABLE_NOTIFICATIONS = {
 BUTTON_CHANGE_LANGUAGE = {
     'en': '🇬🇧 → 🇮🇹',
     'it': '🇮🇹 → 🇬🇧'
+}
+BUTTON_CHANGE_NAME = {
+    'en': '🔀 CHANGE NAME',
+    'it': '🔀 CAMBIA NOME'
 }
 BUTTON_GAME_TYPE = {
     'en': "👣🕳🐡 EXERCISE TYPE",
@@ -172,13 +180,21 @@ MSG_DISCLAIMER = {
     'en': "⚖️ PlagioBot is a system developed for scientific research purposes. By using this bot you agree that the data you insert can be used for developing linguistic models. No personal information will be used in any of our studies or sent to third parties. For further information, please contact @kercos.",
     'it': "⚖️ PlagioBot è un sistema sviluppato a scopo di ricerca scientifica. Nell'utilizzare questo bot accetti che i dati che inserisci potranno essere usati per sviluppare modelli linguistici. Nessun dato personale verà utilizzato nei nostri studi o inviato a parti terze. Per maggiori informazioni ti invitiamo a contattare @kercos."
 }
-MSG_WELCOME = {
-    'en': "🤗 Welcome to PlagioBot!",
-    'it': "🤗 Benvenuto a PlagioBot!"
-}
 MSG_HOME = {
-    'en': "🏠 Home Screen",
-    'it': "🏠 Schermata Iniziale"
+    'en': "🤗 Hi {}!",
+    'it': "🤗 Ciao {}!"
+}
+MSG_CREATE_OR_ENTER_GAME = {
+    'en': "🎯 You can create a new game or enter to an exiting one if you know the name.",
+    'it': "🎯 Puoi creare un nuovo gioco o entrare in uno esistente se conosci il nome."
+}
+MSG_SETTINGS_INFO = {
+    'en': "⚙️ You can change your name, language and notification in the SETTINGS.",
+    'it': "⚙️ Puoi cambiare il tuo nome, lingua e notifiche nelle IMPOSTAZIONI."
+}
+MSG_USER_SETTINGS = {
+    'en': "⚙️ Settings Screen",
+    'it': "⚙️ Schermata Impostazioni"
 }
 MSG_NOTIFICATIONS_ON = {
     'en': "🔔 You have enabled notifications.",
@@ -211,6 +227,10 @@ MSG_FEATURE_NOT_YET_IMPLEMENTED = {
 MSG_CHANGE_LANGUAGE = {
     'en': "🇬🇧 ⇆ 🇮🇹 Change Language",
     'it': "🇬🇧 ⇆ 🇮🇹 Cambia Lingua"
+}
+MSG_CHANGE_NAME = {
+    'en': "🔀 Your name is currently set to *{}*.\nPlease insert the new name.",
+    'it': "🔀 Il tuo nome è *{}*.\nInserisci il tuo nuovo nome."
 }
 MSG_LANGUAGE_INFO = {
     'en': "🇬🇧 Language set for English",
@@ -744,6 +764,10 @@ MSG_EXIT_GAME_EXPIRED = {
     'en': "🚪 Game has terminated because nobody made a move for long time.",
     'it': "🚪 Gioco terminato perché nessuno ha giocato per troppo tempo."
 }
+MSG_INTERFACE_CHANGED = {
+    'en': "⛔️ The game interface has changed. I'll try to update it now.",
+    'it': "⛔️ L'interfaccia del gioco è cambiata. Ora provo ad aggiornarla."
+}
 MSG_NO_GAME_TO_EXIT = {
     'en': "⛔️ You are not in a game",
     'it': "⛔️ Non sei in un gioco"
@@ -844,6 +868,10 @@ MSG_WRONG_BUTTON_INPUT = {
 MSG_INPUT_TOO_SHORT = {
     'en': '⛔️ Input too short.',
     'it': '⛔️ Input troppo corto.'
+}
+MSG_NAME_TOO_LONG = {
+    'en': '⛔️ Input too long, please insert a text with max {} characters.',
+    'it': '⛔️ Input troppo lungo, inserisci un nome con al massimo {} caratteri.'
 }
 MSG_GAME_NAME_ERROR = {
     'en': '⛔️ Game name cannot contain spaces or the following characters: "{}".'.format(utility.escape_markdown(utility.MARKDOWN_CHARS_SLASH)),

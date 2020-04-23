@@ -48,7 +48,6 @@ class User(Model):
         return User.get(id_str)
 
     def update_user(self, name, username):
-        self.name = name
         self.username = username
         self.save()
 
@@ -84,10 +83,6 @@ class User(Model):
         if save: self.save()
 
     def switch_notifications(self):
-        if key.TEST:
-            # if we are in the test bot do not switch notification mode 
-            # (both test and production share the same db)
-            return
         self.notifications = not self.notifications
         self.save()
 

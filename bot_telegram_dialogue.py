@@ -91,6 +91,7 @@ def state_SET_LANGUAGE(user, message_obj):
                 user.language = 'en'
             else:
                 repeat_state(user) # interface must have changed in the meantime
+                send_message(user, ux.MSG_INTERFACE_CHANGED['en'])
                 return
             redirect_to_state(user, state_DISCLAIMER)
         else:
@@ -116,6 +117,7 @@ def state_DISCLAIMER(user, message_obj):
                 redirect_to_state(user, state_INITIAL)
             else:
                 repeat_state(user) # interface must have changed in the meantime  
+                send_message(user, ux.MSG_INTERFACE_CHANGED[lang])
                 return  
         else:
             send_message(user, ux.MSG_WRONG_INPUT_USE_BUTTONS[lang])
@@ -129,12 +131,14 @@ def state_INITIAL(user, message_obj):
     if message_obj is None:
         kb = [
             [ux.BUTTON_NEW_GAME[lang], ux.BUTTON_JOIN_GAME[lang]],
-            [ux.BUTTON_CHANGE_LANGUAGE[lang], ux.BUTTON_INFO[lang]]
+            [ux.BUTTON_USER_SETTINGS[lang]], 
+            [ux.BUTTON_INFO[lang]]
         ]
-        notifications_button = [ux.BUTTON_DISABLE_NOTIFICATIONS[lang]] if user.notifications else [ux.BUTTON_ENABLE_NOTIFICATIONS[lang]]
-        kb.append(notifications_button)
-        msg_notifications = ux.MSG_NOTIFICATIONS_ON[lang] if user.notifications else ux.MSG_NOTIFICATIONS_OFF[lang]
-        msg = '\n'.join([ux.MSG_HOME[lang],ux.MSG_LANGUAGE_INFO[lang],msg_notifications])
+        msg = '\n'.join([
+            ux.MSG_HOME[lang].format(user.get_name()),
+            ux.MSG_CREATE_OR_ENTER_GAME[lang],
+            ux.MSG_SETTINGS_INFO[lang]
+        ])
         send_message(user, msg, kb)
     else:
         text_input = message_obj.text
@@ -146,15 +150,83 @@ def state_INITIAL(user, message_obj):
                 redirect_to_state(user, state_JOIN_ROOM_NAME)
             elif text_input == ux.BUTTON_INFO[lang]:
                 send_message(user, ux.MSG_INFO[lang])
+            elif text_input == ux.BUTTON_USER_SETTINGS[lang]:
+                redirect_to_state(user, state_USER_SETTINGS)
+            else:
+                repeat_state(user) # interface must have changed in the meantime
+                send_message(user, ux.MSG_INTERFACE_CHANGED[lang])
+                return
+        else:
+            send_message(user, ux.MSG_WRONG_INPUT_USE_BUTTONS[lang])
+
+
+# ================================
+# USER SETTINGS
+# ================================
+def state_USER_SETTINGS(user, message_obj):
+    lang = user.language
+    if message_obj is None:
+        notifications_button = ux.BUTTON_DISABLE_NOTIFICATIONS[lang] \
+            if user.notifications else ux.BUTTON_ENABLE_NOTIFICATIONS[lang]
+        kb = [            
+            [ux.BUTTON_CHANGE_LANGUAGE[lang], notifications_button],
+            [ux.BUTTON_CHANGE_NAME[lang]],            
+            [ux.BUTTON_BACK[lang]],
+        ]        
+        msg = '\n'.join([
+            ux.MSG_USER_SETTINGS[lang],
+            ux.MSG_LANGUAGE_INFO[lang],
+            ux.MSG_NOTIFICATIONS_ON[lang] if user.notifications else ux.MSG_NOTIFICATIONS_OFF[lang]]
+        )
+        send_message(user, msg, kb)
+    else:
+        text_input = message_obj.text
+        kb = user.get_keyboard()
+        if text_input in utility.flatten(kb):
+            if text_input == ux.BUTTON_CHANGE_NAME[lang]:
+                redirect_to_state(user, state_CHANGE_NAME)
             elif text_input == ux.BUTTON_CHANGE_LANGUAGE[lang]:
                 user.switch_language()
                 repeat_state(user)
             elif text_input in [ux.BUTTON_DISABLE_NOTIFICATIONS[lang], ux.BUTTON_ENABLE_NOTIFICATIONS[lang]]:
                 user.switch_notifications()
                 repeat_state(user)
+            elif text_input == ux.BUTTON_BACK[lang]:
+                restart_user(user)
             else:
                 repeat_state(user) # interface must have changed in the meantime
+                send_message(user, ux.MSG_INTERFACE_CHANGED[lang])
                 return
+        else:
+            send_message(user, ux.MSG_WRONG_INPUT_USE_BUTTONS[lang])
+
+
+# ================================
+# CHANGE NAME
+# ================================
+def state_CHANGE_NAME(user, message_obj):
+    lang = user.language
+    if message_obj is None:
+        kb = [[ux.BUTTON_BACK[lang]]]        
+        send_message(user, ux.MSG_CHANGE_NAME[lang].format(user.get_name()), kb)
+    else:
+        text_input = message_obj.text
+        kb = user.get_keyboard()
+        if text_input: 
+            if text_input in utility.flatten(kb):
+                if text_input == ux.BUTTON_BACK[lang]:
+                    redirect_to_state(user, state_USER_SETTINGS)
+                else:
+                    repeat_state(user) # interface must have changed in the meantime
+                    send_message(user, ux.MSG_INTERFACE_CHANGED[lang])
+                    return        
+            elif ux.text_is_button_or_digit(text_input):
+                send_message(user, ux.MSG_WRONG_BUTTON_INPUT[lang])
+            elif len(text_input)>parameters.MAX_NAME_LENGTH:
+                send_message(user, ux.MSG_NAME_TOO_LONG[lang].format(parameters.MAX_NAME_LENGTH))
+            else:
+                user.name = text_input
+                restart_user(user)                
         else:
             send_message(user, ux.MSG_WRONG_INPUT_USE_BUTTONS[lang])
 
@@ -175,6 +247,7 @@ def state_NEW_ROOM_NAME(user, message_obj):
                     restart_user(user)
                 else:
                     repeat_state(user) # interface must have changed in the meantime
+                    send_message(user, ux.MSG_INTERFACE_CHANGED[lang])
                     return
             elif ux.text_is_button_or_digit(text_input):
                 send_message(user, ux.MSG_WRONG_BUTTON_INPUT[lang])
@@ -212,6 +285,7 @@ def state_JOIN_ROOM_NAME(user, message_obj):
                     restart_user(user)
                 else:
                     repeat_state(user) # interface must have changed in the meantime
+                    send_message(user, ux.MSG_INTERFACE_CHANGED[lang])
                     return
             elif ux.text_is_button_or_digit(text_input):
                 send_message(user, ux.MSG_WRONG_BUTTON_INPUT[lang])
@@ -512,6 +586,7 @@ def state_ANNOUNCE_GAME_PUBLICLY(user, message_obj):
                 redirect_to_state(user, state_WAITING_FOR_START)
             else:
                 repeat_state(user) # interface must have changed in the meantime
+                send_message(user, ux.MSG_INTERFACE_CHANGED[lang])
                 return               
         else:            
             command = utility.escape_markdown('/game_{}'.format(game.id))
@@ -615,6 +690,7 @@ def state_WAITING_FOR_START(user, message_obj, updated_settings=False):
                         send_message(user, ux.MSG_GAME_NOT_AVAILABLE[lang])
                 else:
                     repeat_state(user) # interface must have changed in the meantime
+                    send_message(user, ux.MSG_INTERFACE_CHANGED[lang])
                     return
             else:
                 send_message(user, ux.MSG_WRONG_INPUT_USE_BUTTONS[lang])
@@ -765,6 +841,7 @@ def state_READER_CONFIRMS_INPUT(user, message_obj):
                 redirect_to_state(user, state_READER_WRITES_INCOMPLETE_TEXT, first_call=False)
             else:
                 repeat_state(user) # interface must have changed in the meantime
+                send_message(user, ux.MSG_INTERFACE_CHANGED[lang])
                 return
         else:
             send_message(user, ux.MSG_WRONG_INPUT_USE_BUTTONS[lang])
@@ -879,6 +956,7 @@ def state_WRITER_CONFIRMS_INPUT(user, message_obj):
                 redirect_to_state(user, state_WRITERS_WRITE_ANSWERS, first_call=False)
             else:
                 repeat_state(user) # interface must have changed in the meantime
+                send_message(user, ux.MSG_INTERFACE_CHANGED[lang])
                 return
         else:
             if text_input == '/status':       
@@ -1289,6 +1367,7 @@ def state_NEXT_HAND(user, message_obj):
                     end_game(game, players)                    
                 else:
                     repeat_state(user) # interface must have changed in the meantime
+                    send_message(user, ux.MSG_INTERFACE_CHANGED[lang])
                     return
             else:
                 send_message(user, ux.MSG_WRONG_INPUT_USE_BUTTONS[lang])
@@ -1326,7 +1405,6 @@ def deal_with_universal_commands(user, message_obj):
             send_message(user, ux.MSG_NO_START_COMMAND_AVAILABLE_DURING_GAME[lang])
             return True
         else:
-            # send_message(user, ux.MSG_WELCOME[lang])
             restart_user(user)
             return True
     if text_input == '/state':
