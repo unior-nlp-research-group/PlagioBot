@@ -1,4 +1,5 @@
 # from https://gitlab.com/jeremyfromearth/firestore-model
+# consider switching to https://octabyte.io/FireO
 
 import key
 import logging
@@ -16,12 +17,6 @@ import datetime
 #
 # -------------------------------------------
 db = firestore.Client()
-
-def get_env_collection_name(c_name):
-    if key.TEST:
-        return '{}_{}'.format(key.VERSION, c_name)
-    return c_name
-
 
 def require_database(f, *args, **kwargs):
     """ Decorator for methods that access the database
@@ -94,8 +89,7 @@ class Query(object):
         """
         self.cls = cls
         self.result = None
-        env_collection_name = get_env_collection_name(cls.__name__)
-        self.q = db.collection(env_collection_name)
+        self.q = db.collection(cls.path())
 
         # parse the params
         for param in query_params:
@@ -127,11 +121,15 @@ class Model:
     # -------------------------------------------
 
     @classmethod
+    def path(cls):
+        return cls.__name__
+
+    @classmethod
     @require_database
     def delete_doc(cls, doc_id):
         try:
-            env_collection_name = get_env_collection_name(cls.__name__)
-            db.collection(env_collection_name).document(doc_id).delete()
+            doc_ref = db.document('{}/{}'.format(cls.path(), doc_id))
+            doc_ref.delete()
         except Exception as e:
             logging.error(e)
 
@@ -144,9 +142,9 @@ class Model:
           @return A model instance of type class hydrated w/ data from the database 
         """
         try:
-            env_collection_name = get_env_collection_name(cls.__name__)
-            doc_ref = db.collection(env_collection_name).document(doc_id).get()
-            return cls(**doc_ref.to_dict())
+            doc_ref = db.document('{}/{}'.format(cls.path(),doc_id))
+            doc_snapshot = doc_ref.get()
+            return cls(**doc_snapshot.to_dict())
         except Exception as e:
             logging.error(e)
 
@@ -164,7 +162,8 @@ class Model:
                 save = True
               )
         """
-        id = id if id else str(uuid.uuid4())
+        if id == None:
+            id = str(uuid.uuid4())
         created = datetime.datetime.utcnow()
         m = cls(id, created, created, *args, **kwargs)
         if save:
@@ -192,9 +191,7 @@ class Model:
 
     @require_database
     def ref(self):
-        env_collection_name = get_env_collection_name(self.__class__.__name__)
-        
-        return db.collection(env_collection_name).document(self.id)
+        return db.document('{}/{}'.format(self.__class__.path(), self.id))
 
 
     @require_database

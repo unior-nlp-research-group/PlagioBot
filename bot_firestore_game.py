@@ -20,16 +20,20 @@ class Game(Model):
     creator_id: str
     language: str
     players_id: List    
+    players_names: List
     state: str = "INITIAL" # INITIAL, STARTED, ENDED, INTERRUPTED        
     sub_state: str = "INITIAL"
     game_type: str = 'CONTINUATION' # 'CONTINUATION', 'FILL', 'SYNONYM'
     game_control: str = 'DEFAULT' # 'DEFAULT', 'TEACHER'    
-    num_hands: int = parameters.NUM_HANDS_IN_TEACHER_MODE
-    players_names: List
+    num_hands: int = parameters.NUM_HANDS_IN_TEACHER_MODE    
     num_players: int = 0
     announced: bool = False
     translate_help: bool = False    
     variables: Dict = field(default_factory=dict)
+
+    @classmethod
+    def path(cls):        
+        return 'test_{}'.format(cls.__name__) if key.TEST else cls.__name__
 
     @staticmethod
     def create_game(name, user):

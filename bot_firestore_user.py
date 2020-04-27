@@ -24,6 +24,10 @@ class User(Model):
     current_game_id: str = None
     variables: Dict = field(default_factory=dict)
 
+    @classmethod
+    def path(cls):        
+        return 'test_{}'.format(cls.__name__) if key.TEST else cls.__name__
+
     @staticmethod
     def make_id(application, serial_id):
         return '{}_{}'.format(application, serial_id)
