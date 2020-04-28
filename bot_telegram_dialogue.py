@@ -12,8 +12,6 @@ from bot_firestore_game import Game
 import utility
 import time
 import parameters
-import re
-import exercise_data_utils
 
 # ================================
 # CONFIG
@@ -354,6 +352,7 @@ def state_GAME_SETTINGS(user, message_obj):
         }
     }
     if message_obj is None:
+        import re
         kb = ux.make_keyboard_from_keyboard_action(kb_action)
         msg = '\n'.join(
             [ux.MSG_SETTINGS_RECAP[lang]] +
@@ -707,6 +706,7 @@ def state_TEACHER_EXERCISE_SETUP(user, message_obj):
     players, reader, writers = game.get_current_hand_players_reader_writers()
     lang = game.language
     if message_obj is None:
+        import exercise_data_utils
         if user != reader:
             return
         send_message(writers, ux.MSG_WAIT_FOR_TEACHER_TO_SELECT_EXERCISE_BATCH[lang], remove_keyboard=True)        
