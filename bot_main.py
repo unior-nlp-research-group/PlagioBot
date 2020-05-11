@@ -69,9 +69,38 @@ def add_user():
             if User.get_user(application, serial_id):
                 return ('User exists',400)
             u = User.create_user(application, serial_id, user_name)   
-            u.state = 'state_INITIAL'
+            u.set_state('state_INITIAL')
             report_master('New user: {}'.format(user_id))            
             return ('ok',200)
         else:
             return ('`id` must conform to string pattern <web_serial>', 400)
     return ('Both `id` and `name` params need to be specified',400)
+
+@app.route('/join_game', methods=['POST'])
+@cross_origin()
+def join_game():
+    from bot_firestore_user import User
+    from bot_firestore_game import Game
+    user_id = request.form.get('id')
+    game_name = request.form.get('game_name')
+    logging.debug('ENDOPOINT: join_game id={} game_name={}'.format(user_id, game_name))
+    if user_id and game_name:
+        if user_id.startswith('web_') and len(user_id)>4:
+            application, serial_id = user_id.split('_')        
+            u = User.get_user(application, serial_id)
+            if u.state != 'state_INITIAL':
+                return ('user {} not in state_INITIAL'.format(user_id), 400)
+            room_name = game_name.upper()
+            game = Game.get_game_in_initial_state(room_name)
+            if game:
+                if Game.add_player(game, u):
+                    u.set_state('state_WAITING_FOR_START')
+                    return ('ok',200)
+                else:
+                    return ('Game {} no longer available'.format(room_name),400)
+            else:
+                return ('Game {} does not exist'.format(room_name),400)
+        else:
+            return ('`id` must conform to string pattern <web_serial>', 400)
+    else:
+        return ('Both `id` and `game_name` params need to be specified',400)
