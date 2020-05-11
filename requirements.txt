@@ -1,5 +1,6 @@
 pylint
 Flask
+flask-cors
 # google-cloud
 google-cloud-firestore
 google-cloud-logging

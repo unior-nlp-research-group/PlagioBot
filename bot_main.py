@@ -1,4 +1,5 @@
 from flask import Flask, Response, request, jsonify
+from flask_cors import CORS, cross_origin
 import key
 
 import logging
@@ -10,7 +11,8 @@ client.setup_logging(log_level=logging.DEBUG) # INFO DEBUG WARNING
 # If `entrypoint` is not defined in app.yaml, App Engine will look for an app
 # called `app` in `main.py`.
 app = Flask(__name__)
-
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 @app.route('/')
 def root():
@@ -54,6 +56,7 @@ def telegram_webhook_handler():
     return ('',200)
 
 @app.route('/add_user', methods=['POST'])
+@cross_origin()
 def add_user():
     from bot_firestore_user import User
     user_id = request.form.get('id')
