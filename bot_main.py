@@ -59,6 +59,7 @@ def telegram_webhook_handler():
 @cross_origin()
 def add_user():
     from bot_firestore_user import User
+    from bot_telegram import report_master
     user_id = request.form.get('id')
     user_name = request.form.get('name')
     logging.debug('ENDOPOINT: add_user id={} name={}'.format(user_id, user_name))
@@ -67,7 +68,9 @@ def add_user():
             application, serial_id = user_id.split('_')
             if User.get_user(application, serial_id):
                 return ('User exists',400)
-            User.create_user(application, serial_id, user_name)            
+            u = User.create_user(application, serial_id, user_name)   
+            u.state = 'state_INITIAL'
+            report_master('New user: {}'.format(user_id))            
             return ('ok',200)
         else:
             return ('`id` must conform to string pattern <web_serial>', 400)
