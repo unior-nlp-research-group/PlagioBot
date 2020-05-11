@@ -1,16 +1,18 @@
 from flask import Flask, Response, request, jsonify
+from flask_cors import CORS, cross_origin
 import key
 
 import logging
 import google.cloud.logging
 client = google.cloud.logging.Client()
-client.setup_logging(log_level=logging.WARNING) # INFO DEBUG
+client.setup_logging(log_level=logging.DEBUG) # INFO DEBUG WARNING
 
 
 # If `entrypoint` is not defined in app.yaml, App Engine will look for an app
 # called `app` in `main.py`.
 app = Flask(__name__)
-
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 @app.route('/')
 def root():
@@ -52,3 +54,24 @@ def telegram_webhook_handler():
     threading.Thread(target=deal_with_request, args=[request_json]).start()
 
     return ('',200)
+
+@app.route('/add_user', methods=['POST'])
+@cross_origin()
+def add_user():
+    from bot_firestore_user import User
+    from bot_telegram import report_master
+    user_id = request.form.get('id')
+    user_name = request.form.get('name')
+    logging.debug('ENDOPOINT: add_user id={} name={}'.format(user_id, user_name))
+    if user_id and user_name:
+        if user_id.startswith('web_') and len(user_id)>4:
+            application, serial_id = user_id.split('_')
+            if User.get_user(application, serial_id):
+                return ('User exists',400)
+            u = User.create_user(application, serial_id, user_name)   
+            u.state = 'state_INITIAL'
+            report_master('New user: {}'.format(user_id))            
+            return ('ok',200)
+        else:
+            return ('`id` must conform to string pattern <web_serial>', 400)
+    return ('Both `id` and `name` params need to be specified',400)

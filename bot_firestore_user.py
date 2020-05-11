@@ -33,7 +33,7 @@ class User(Model):
         return '{}_{}'.format(application, serial_id)
 
     @staticmethod
-    def create_user(application, serial_id, name, username, bot=False):
+    def create_user(application, serial_id, name, username=None, bot=False):
         user = User.make(
             id = User.make_id(application, serial_id),
             application = application,
