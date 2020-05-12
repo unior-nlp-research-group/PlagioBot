@@ -93,9 +93,9 @@ class User(Model):
         self.notifications = not self.notifications
         self.save()
 
-    def set_current_game(self, game):
+    def set_current_game(self, game, save=True):
         self.current_game_id = game.id
-        self.save()
+        if save: self.save()
 
     def get_current_game(self):
         from bot_firestore_game import Game

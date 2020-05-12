@@ -100,7 +100,10 @@ def send_message(user, text, kb=None, markdown=True, remove_keyboard=False, slee
         for u in user:
             send_message(u, text, kb=kb, markdown=markdown, remove_keyboard=remove_keyboard, sleep=True, **kwargs)
         return
+    
     is_user = type(user) is User
+    if is_user and user.application != 'telegram':
+        return
     chat_id = user.serial_id if is_user else user
 
     if kb!=None or remove_keyboard:

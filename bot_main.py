@@ -88,6 +88,8 @@ def join_game():
         if user_id.startswith('web_') and len(user_id)>4:
             application, serial_id = user_id.split('_')        
             u = User.get_user(application, serial_id)
+            if u is None:
+                return ('user {} does not exist'.format(user_id), 400)
             if u.state != 'state_INITIAL':
                 return ('user {} not in state_INITIAL'.format(user_id), 400)
             room_name = game_name.upper()
@@ -104,3 +106,56 @@ def join_game():
             return ('`id` must conform to string pattern <web_serial>', 400)
     else:
         return ('Both `id` and `game_name` params need to be specified',400)
+
+@app.route('/create_game', methods=['POST'])
+@cross_origin()
+def create_game():
+    from bot_firestore_user import User
+    from bot_firestore_game import Game
+    user_id = request.form.get('id')
+    game_name = request.form.get('game_name')
+    logging.debug('ENDOPOINT: create_game id={} game_name={}'.format(user_id, game_name))
+    if user_id and game_name:
+        if user_id.startswith('web_') and len(user_id)>4:
+            application, serial_id = user_id.split('_')        
+            u = User.get_user(application, serial_id)
+            if u is None:
+                return ('user {} does not exist'.format(user_id), 400)
+            if u.state != 'state_INITIAL':
+                return ('user {} not in state_INITIAL'.format(user_id), 400)
+            room_name = game_name.upper()
+            game = Game.get_game_in_initial_state(room_name)
+            if game:
+                return ('There is already an active game with name `{}`'.format(room_name),400)
+            game = Game.create_game(room_name, u)
+            u.set_current_game(game, save=False)
+            u.set_state('state_WAITING_FOR_START')
+            return ('ok',200)
+        else:
+            return ('`id` must conform to string pattern <web_serial>', 400)
+    else:
+        return ('Both `id` and `game_name` params need to be specified',400)
+
+@app.route('/user_reply', methods=['POST'])
+@cross_origin()
+def user_reply():
+    from bot_firestore_user import User    
+    from bot_telegram_dialogue import repeat_state
+    import telegram
+    user_id = request.form.get('id')
+    user_reply = request.form.get('reply')
+    logging.debug('ENDOPOINT: user_reply id={} reply={}'.format(user_id, user_reply))
+    if user_id and user_reply:
+        if user_id.startswith('web_') and len(user_id)>4:
+            application, serial_id = user_id.split('_')        
+            u = User.get_user(application, serial_id)
+            if u is None:
+                return ('user {} does not exist'.format(user_id), 400)
+            message_obj = telegram.Message(message_id=-1, from_user=None, date=None, chat=None, text=user_reply)
+            repeat_state(u, message_obj=message_obj) 
+            return ('ok',200)
+        else:
+            return ('`id` must conform to string pattern <web_serial>', 400)
+    else:
+        return ('Both `id` and `reply` params need to be specified',400)    
+    
