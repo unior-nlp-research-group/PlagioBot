@@ -1438,21 +1438,18 @@ def deal_with_universal_commands(user, message_obj):
     if text_input.startswith('/chat '):
         game = user.get_current_game()
         if game == None:
-            send_message(user, ux.MSG_ERROR_CHAT_NO_GAME[lang])
+            send_message(user, ux.MSG_NO_GAME_NO_CHAT[lang])
             return True
         lang = game.language
         chat_msg = ' '.join(text_input.split()[1:])
-        if game:
-            if len(text_input)>500:
-                send_message(user, ux.MSG_CHAT_MSG_TOO_LONG[lang])
-            if utility.contains_markdown(text_input):
-                send_message(user, ux.MSG_CHAT_MSG_NO_MARKDOWN[lang])
-            else:
-                players = game.get_players()                
-                message_obj.delete()
-                send_message(players, "📩 *{}*: {}".format(user.get_name(), chat_msg))
+        if len(text_input)>500:
+            send_message(user, ux.MSG_CHAT_MSG_TOO_LONG[lang])
+        if utility.contains_markdown(text_input):
+            send_message(user, ux.MSG_CHAT_MSG_NO_MARKDOWN[lang])
         else:
-            send_message(user, ux.MSG_NO_GAME_NO_CHAT[lang])
+            players = game.get_players()                
+            message_obj.delete()
+            send_message(players, "📩 *{}*: {}".format(user.get_name(), chat_msg))
         return True
     if text_input.startswith('/game_'):
         if user.current_game_id:
@@ -1516,6 +1513,25 @@ def deal_with_universal_commands(user, message_obj):
             return True
     return False
 
+def deal_with_voice(user, message_obj):
+    import time
+    game = user.get_current_game()    
+    if game == None:
+        lang = user.language if user.language else 'en'
+        send_message(user, ux.MSG_NO_GAME_NO_VOICE[lang])
+        return True
+    lang = game.language
+    message_obj.delete()
+    players = game.get_players()    
+    for p in players:
+        BOT.sendVoice(
+            chat_id = p.serial_id,
+            voice = message_obj.voice,
+            caption = "🗣 {}".format(user.get_name(escape_md=False))
+        )
+        time.sleep(0.1)
+    return True
+
 # ================================
 # DEAL WITH REQUEST
 # ================================
@@ -1546,7 +1562,9 @@ def deal_with_request(request_json):
     if message_obj.forward_from:
         send_message(user, ux.MSG_WRONG_INPUT_DO_NOT_FORWARD[user.language])
         return
-    if message_obj.text:
+    if message_obj.voice:
+        deal_with_voice(user, message_obj)
+    elif message_obj.text:
         text_input = message_obj.text
         logging.debug(
             'Message from {} in state {} with text {}'.format(
