@@ -96,10 +96,12 @@ def get_milliseconds():
 def clean_new_lines(s):
     return s.replace('\\n', '\n').strip()
 
-def import_url_csv_to_dict_list(url_csv, remove_new_line_escape=True): #escapeMarkdown=True
+# if spreadsheet has header
+def import_url_csv_to_dict_list(spreadsheed_id, gid, remove_new_line_escape=True): #escapeMarkdown=True
     import csv
     import requests
-    r = requests.get(url_csv)
+    url = 'https://docs.google.com/spreadsheets/d/{}/export?gid={}&format=csv'.format(spreadsheed_id, gid)
+    r = requests.get(url)
     r.encoding = "utf-8"
     spreadsheet_csv = r.text.split('\n')
     reader = csv.DictReader(spreadsheet_csv)
@@ -112,6 +114,15 @@ def import_url_csv_to_dict_list(url_csv, remove_new_line_escape=True): #escapeMa
         ]
     return [dict for dict in reader]
 
-def get_google_spreadsheet_dict_list(spreadsheed_id, gid):
+# if spreadsheet has no header
+def import_url_csv_to_list_list(spreadsheed_id, gid, remove_new_line_escape=True): #escapeMarkdown=True
+    import csv
+    import requests
     url = 'https://docs.google.com/spreadsheets/d/{}/export?gid={}&format=csv'.format(spreadsheed_id, gid)
-    return import_url_csv_to_dict_list(url)
+    r = requests.get(url)
+    r.encoding = "utf-8"
+    spreadsheet_csv = r.text.split('\n') 
+    reader = csv.reader(spreadsheet_csv)
+    result = list(reader)
+    result = [[clean_new_lines(x) for x in l] for l in result ]
+    return result

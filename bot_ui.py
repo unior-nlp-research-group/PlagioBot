@@ -118,12 +118,16 @@ BUTTON_GAME_TYPE_CONTINUATION = {
     'en': "👣 CONTINUATION",
     'it': "👣 CONTINUAZIONE"
 }
+BUTTON_AUTO_EXERCISE_MODE = {
+    'en': "📚 AUTO TEXT",
+    'it': "📚 TESTO AUTOMATICO"
+}
 BUTTON_GAME_TYPE_FILL = {
     'en': "🕳 FILL",
     'it': "🕳 RIEMPI"
 }
 BUTTON_GAME_TYPE_SYNONYM = {
-    'en': "🐡 SYNONYM",
+    'en': "🐡 REPLACEMENT",
     'it': "🐡 SINONIMO"
 }
 BUTTON_GAME_TRANSLATE_HELP = {
@@ -305,8 +309,8 @@ MSG_INSTRUCTIONS = {
         'en': "ℹ️ *Instructions*: The game is set to *FILL* mode.",
         'it': "ℹ️ *Istruzioni*: Il gioco è impostato in modalità *RIEMPIMENTO*."
     },
-    'SYNONYM': {
-        'en': "ℹ️ *Instructions*: The game is set to *SYNONYM* mode. In this game, you are presented with a sentence containing a part (one or more words) *highlighted in boldface*. Firstly you have to come up with a synonym of the highlighted part. It can be a *single word* or *multiple words* that will retain the meaning of the sentence, once substituted for the boldfaced part. In the next phase, all answers are listed in random order; you will be asked to select one answer (from another player) that you think is also correct. If no other answer is correct, you can select *NONE*. Finally, the *teacher will validate all answers*: you will get 2 points if you answered correctly, 1 point if you chose correctly and -1 point if you chose incorrectly.",
+    'REPLACEMENT': {
+        'en': "ℹ️ *Instructions*: The game is set to *REPLACEMENT* mode. In this game, you are presented with a sentence containing a part (one or more words) *highlighted in boldface*. Firstly you have to come up with a synonym of the highlighted part. It can be a *single word* or *multiple words* that will retain the meaning of the sentence, once substituted for the boldfaced part. In the next phase, all answers are listed in random order; you will be asked to select one answer (from another player) that you think is also correct. If no other answer is correct, you can select *NONE*. Finally, the *teacher will validate all answers*: you will get 2 points if you answered correctly, 1 point if you chose correctly and -1 point if you chose incorrectly.",
         'it': "ℹ️ *Istruzioni*: Il gioco è impostato in modalità *SINONIMI*."
     }
 }
@@ -431,7 +435,7 @@ MSG_WRITE_INCOMPLETE = {
         'en': '✍️ Please write down a sentence with the missing gap indicated with 3 question marks (\'???\' with no spaces).',
         'it': "✍️ Scrivi una frase con una parte da completare indicata da 3 punti di domanda (\'???\' senza spazi)."
     },
-    'SYNONYM': {
+    'REPLACEMENT': {
         'en': '✍️ Please write down a sentence containing a part to substitute.',
         'it': "✍️ Scrivi una frase con una parte da sostituire."
     }
@@ -445,7 +449,7 @@ MSG_WAIT_READER_WRITE_INCOMPLETE = {
         'en': "😴 Let's wait for {} to write down the sentence with a missing gap and its completion.",
         'it': "😴 Aspettiamo che {} scriva una frase con una parte mancante da completare e il suo corretto completamento."
     },
-    'SYNONYM': {
+    'REPLACEMENT': {
         'en': "😴 Let's wait for {} to write down the sentence and indicate the part to be substituted .",
         'it': "😴 Aspettiamo che {} scriva una frase e indichi la parte da sostituire."
     }
@@ -459,7 +463,7 @@ MSG_WRITE_CORRECT_ANSWER = {
         'en': "✍️ Please, write down the original text in the gap.",
         'it': "✍️ Scrivi la parte mancante della frase."
     },
-    'SYNONYM': {
+    'REPLACEMENT': {
         'en': "✍️ Please, write down the part of the sentence to substitute.",
         'it': "✍️ Scrivi la parte della frase da sostituire."
     }
@@ -473,7 +477,7 @@ MSG_WAIT_WRITERS_WRITE_ANSWERS = {
         'en': "😴 Please wait for the other players to complete the sentence.",
         'it': "😴 Aspettiamo che gli altri giocatori completino la frase."
     },
-    'SYNONYM': {
+    'REPLACEMENT': {
         'en': "😴 Please wait for the other players to write down their substitution proposals.",
         'it': "😴 Aspettiamo che gli altri giocatori scrivano le loro proposte di sostituzione."
     }    
@@ -487,7 +491,7 @@ MSG_WRITERS_WRITE_ANSWER = {
         'en': "✍️ Please, write down some text that fits the gap.",
         'it': "✍️ Scrivi una possibile riempimento dello spazio della frase."
     },
-    'SYNONYM': {
+    'REPLACEMENT': {
         'en': "✍️ Please write down a synonym for the boldfaced word/s in the sentence (*{}*). Your suggestion can be one or more words. Type only your suggested synonym; there is no need to retype the whole sentence.",
         'it': "✍️ Scrivi un sinonimo della parte del testo in grassetto (*{}*). Può essere una o più parole. Non inserire la frase intera ma solo la parte da sostituire."
     }
@@ -550,7 +554,7 @@ MSG_SELECTION = {
         'en': "🔢 Select the number of the completion you think is the original one.",
         'it': "🔢 Seleziona il numero associato al completamento che ritieni essere quello originale."
     },
-    'SYNONYM': {
+    'REPLACEMENT': {
         'en': "🔢 *Choice selection*: please select the number associated to one of the other answers you think is correct, or select NONE if there is no correct answer. You cannot vote for your own answer.",
         'it': "🔢 *Selezione*: seleziona il numero associato a una delle altre risposte che ritieni essere corretta, o scegli NESSUNA se non ce n'è nessuna di corretta. Non puoi votare per la tua risposta."
     }    
@@ -588,13 +592,9 @@ MSG_TEACHER_SELECT_OR_SUBMIT = {
     'en': "🧑‍🏫 Please select another correct response{} or press *{}* to confirm.".format('{}',BUTTON_SUBMIT['en']),
     'it': "🧑‍🏫 Seleziona un'altra risposta corretta{} o premi *{}* per confermare.".format('{}',BUTTON_SUBMIT['it'])
 }
-MSG_TEACHER_SELECT_EXERCISE_BATCH = {
+MSG_SELECT_EXERCISE_BATCH = {
     'en': "🧑‍🏫 Please select the exercise batch number you want to use:",
     'it': "🧑‍🏫 Seleziona il set di esercizi da usare."
-}
-MSG_WAIT_FOR_TEACHER_TO_SELECT_EXERCISE_BATCH = {
-    'en': "🧑‍🏫 Let's wait for the teacher to setup the exercise.",
-    'it': "🧑‍🏫 Attendiamo che l'insegnate imposti l'esercizio."
 }
 MSG_EXERCISE_SETUP_SUCCESSFULLY = {
     'en': "🧑‍🏫 Exercise setup completed.",
@@ -764,6 +764,10 @@ MSG_EXIT_GAME_EXPIRED = {
     'en': "🚪 Game has terminated because nobody made a move for long time.",
     'it': "🚪 Gioco terminato perché nessuno ha giocato per troppo tempo."
 }
+MSG_NO_EXERCISE_FOR_GIVEN_SETTINGS = {
+    'en': "⛔️ There are no exercises for the given settings.",
+    'it': "⛔️ Non ci sono esercizi disponibili per le impostazioni correnti."
+}
 MSG_INTERFACE_CHANGED = {
     'en': "⛔️ The game interface has changed. I'll try to update it now.",
     'it': "⛔️ L'interfaccia del gioco è cambiata. Ora provo ad aggiornarla."
@@ -920,7 +924,7 @@ GAME_TYPE_DICT = lambda lang: \
     {
         'CONTINUATION': BUTTON_GAME_TYPE_CONTINUATION[lang],
         'FILL': BUTTON_GAME_TYPE_FILL[lang],
-        'SYNONYM': BUTTON_GAME_TYPE_SYNONYM[lang],
+        'REPLACEMENT': BUTTON_GAME_TYPE_SYNONYM[lang],
     }
 
 GAME_CONTROL_DICT = lambda lang: \
@@ -953,7 +957,7 @@ def render_incomplete_text(game):
             incomplete_text = '*{}*{}*{}*'.format(pre_gap, gap, post_gap)
         msg_incomplete_sentence = MSG_PLAYERS_INCOMPLETE_SENTENCE[lang].format(incomplete_text)
     else:
-        assert game.game_type == 'SYNONYM'
+        assert game.game_type == 'REPLACEMENT'
         incomplete_text = incomplete_text.replace(original_completion, '*{}*'.format(original_completion))
         msg_incomplete_sentence = MSG_PLAYERS_SENTENCE_WITH_HIGHLITED_SYNONYM[lang].format(incomplete_text)
     if game.translate_help:
@@ -972,7 +976,7 @@ def render_complete_text(game, answer):
         pre_gap, post_gap = game.get_incomplete_text_pre_post_gap()
         completed_text = '{}*{}*{}'.format(pre_gap, answer, post_gap)
     else:
-        assert game.game_type == 'SYNONYM'
+        assert game.game_type == 'REPLACEMENT'
         original_answer = game.get_current_completion_text()
         completed_text = incomplete_text.replace(original_answer, '*{}*'.format(answer))
     return completed_text

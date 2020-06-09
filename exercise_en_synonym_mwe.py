@@ -3,7 +3,7 @@ import utility
 import json
 from collections import defaultdict
 
-data_file = './data/mwe_en_exercises.json'
+synonym_data_file = './data/exercises_en_synonym_mwe.json'
 
 def generate_data_file_from_spreadsheet():
     
@@ -13,8 +13,8 @@ def generate_data_file_from_spreadsheet():
     # 'Synonyms']
     
     H_MWE_VARIATION = 'Text to be highlighted/replaced (if it differs from the string in column A)'
-    spreadsheet_id_gid = key.TEACHER_EXPERIMNET_SPREADSHEET_ID_GID
-    spread_dict_list = utility.get_google_spreadsheet_dict_list(*spreadsheet_id_gid)
+    spreadsheet_id_gid = key.MWE_DATA_SPREADSHEET_ID_GID
+    spread_dict_list = utility.import_url_csv_to_dict_list(*spreadsheet_id_gid)
     
     mwe_type_sentences_dict = defaultdict(list)
     accepted_mwe_types = []
@@ -42,31 +42,32 @@ def generate_data_file_from_spreadsheet():
 
     batch_mwe_type_sentences_dict = {}
     for batch_num, mwe_batch in enumerate(batches,1):
-        print("Batch {}: {}".format(batch_num, mwe_batch))
-        batch_mwe_type_sentences_dict[batch_num] = {
+        print("MWE Batch {}: {}".format(batch_num, mwe_batch))
+        batch_title = "MWE {}".format(batch_num)
+        batch_mwe_type_sentences_dict[batch_title] = {
             k:v for k,v in mwe_type_sentences_dict.items()
             if k in mwe_batch
         }
 
-    with open(data_file, 'w') as f_out:
+    with open(synonym_data_file, 'w') as f_out:
         json.dump(batch_mwe_type_sentences_dict, f_out, indent=3, ensure_ascii=False)
 
-def get_exercise_batch_and_description():
-    result = {}
-    with open(data_file) as f_in:
+
+def get_exercise_batch_title_and_description():
+    with open(synonym_data_file) as f_in:
         batch_exercise_dict = json.load(f_in)
     return [
-        "{}: {}".format(num, ', '.join(sorted(ex.keys())))  
-        for num, ex in batch_exercise_dict.items()
+        {batch_title: ', '.join(sorted(ex.keys()))}
+        for batch_title, ex in batch_exercise_dict.items()
     ]
 
 
-def extract_random_exercises(batch_num, num_samples):
+def extract_random_exercises(batch_title, num_samples):
     import itertools
     import random
-    with open(data_file) as f_in:
+    with open(synonym_data_file) as f_in:
         mwe_dict = json.load(f_in)
-    batch_mwe_dict = mwe_dict[str(batch_num)]
+    batch_mwe_dict = mwe_dict[batch_title]
     result = []
     round_robin_mwe_types = itertools.cycle(batch_mwe_dict.values())
     while len(result) != num_samples:

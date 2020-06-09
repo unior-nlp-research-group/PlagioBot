@@ -26,7 +26,7 @@ POINTS = {
         'NO_SELECTION': -1,
         'RECEIVED_VOTE': 1,
     },
-    'SYNONYM': {
+    'REPLACEMENT': {
         'CORRECT_ANSWER': 2,
         'INCORRECT_ANSWER': 0,
         'NO_ANSWER': -1,

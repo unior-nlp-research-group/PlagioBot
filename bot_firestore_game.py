@@ -23,8 +23,9 @@ class Game(Model):
     players_names: List
     state: str = "INITIAL" # INITIAL, STARTED, ENDED, INTERRUPTED        
     sub_state: str = "INITIAL"
-    game_type: str = 'CONTINUATION' # 'CONTINUATION', 'FILL', 'SYNONYM'
+    game_type: str = 'CONTINUATION' # 'CONTINUATION', 'FILL', 'REPLACEMENT'
     game_control: str = 'DEFAULT' # 'DEFAULT', 'TEACHER'    
+    auto_exercise_mode: bool = False
     num_hands: int = parameters.NUM_HANDS_IN_TEACHER_MODE    
     num_players: int = 0
     announced: bool = False
@@ -82,10 +83,10 @@ class Game(Model):
         return init_value
 
     def is_voting_no_or_multiple_answers_allowed(self):
-        return self.game_type == 'SYNONYM'
+        return self.game_type == 'REPLACEMENT'
 
     def teacher_validation_enabled(self):
-        return self.game_control == 'TEACHER' and self.game_type == 'SYNONYM'
+        return self.game_control == 'TEACHER' and self.game_type == 'REPLACEMENT'
 
     ##########################################
     # START of TRANSACTIONAL FUNCTIONS
@@ -101,8 +102,12 @@ class Game(Model):
 
     @transactional
     def set_game_type(self, t):
-        assert t in ['CONTINUATION', 'FILL', 'SYNONYM']
+        assert t in ['CONTINUATION', 'FILL', 'REPLACEMENT']
         self.game_type = t
+
+    @transactional
+    def set_auto_exercise_mode(self, b):
+        self.auto_exercise_mode = b
     
     @transactional
     def set_game_control(self, m):
@@ -225,13 +230,13 @@ class Game(Model):
     # END of TRANSACTIONAL FUNCTIONS
     ##########################################
 
-    def auto_exercise_mode(self):
-        False
-        # return self.game_type=='SYNONYM' and self.language == 'en' and self.game_control == 'TEACHER'
+    def set_exercise_data(self, exercise_data, save=True):
+        self.variables['EXERCISE_DATA'] = exercise_data
+        if save: self.save()
 
     def fill_exercises_automatically(self, batch_number, save=True):
-        import exercise_data_utils
-        exercises = exercise_data_utils.extract_random_exercises(batch_number, self.num_hands)
+        import exercise_en_synonym_mwe
+        exercises = exercise_en_synonym_mwe.extract_random_exercises(batch_number, self.num_hands)
         # list of dict {"SENTENCE": <str>, "MWE": <str>}
         for e in exercises:
             self.variables['INCOMPLETE_TEXTS'].append(e['SENTENCE'].upper())
@@ -343,7 +348,7 @@ class Game(Model):
                 'voted_by': []
             }
         if self.is_voting_no_or_multiple_answers_allowed():
-            # for collecting the NO CORRECT ANSWERS votes (applicabole e.g., in SYNONYM)
+            # for collecting the NO CORRECT ANSWERS votes (applicabole e.g., in REPLACEMENT)
             # -1 is used for shuffled_number
             answers_info[parameters.NO_ANSWER_KEY] = {
                 'answer': parameters.NO_ANSWER_KEY,
