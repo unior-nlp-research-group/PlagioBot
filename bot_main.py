@@ -8,8 +8,8 @@ client = google.cloud.logging.Client()
 client.setup_logging(log_level=logging.DEBUG) # INFO DEBUG WARNING
 
 
-# If `entrypoint` is not defined in app.yaml, App Engine will look for an app
-# called `app` in `main.py`.
+# If entrypoint is not defined in app.yaml, App Engine will look for an app
+# called app in main.py.
 app = Flask(__name__)
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
@@ -67,14 +67,17 @@ def add_user():
         if user_id.startswith('web_') and len(user_id)>4:
             application, serial_id = user_id.split('_')
             if User.get_user(application, serial_id):
-                return ('User exists',400)
-            u = User.create_user(application, serial_id, user_name)   
+                return jsonify({'success': False, 'error': 'User exists'}), 400
+            u = User.create_user(application, serial_id, user_name)
             u.set_state('state_INITIAL')
-            report_master('New user: {}'.format(user_id))            
-            return ('ok',200)
+            report_master('New user: {}'.format(user_id))
+            return jsonify({'success': True, 'error': None}), 200
         else:
-            return ('`id` must conform to string pattern <web_serial>', 400)
-    return ('Both `id` and `name` params need to be specified',400)
+            error_msg = 'id must conform to string pattern <web_serial>'
+            return jsonify({'success': False, 'error': error_msg}), 400
+    error_msg = 'Both id and name params need to be specified'
+    return jsonify({'success': False, 'error': error_msg}), 400
+
 
 @app.route('/join_game', methods=['POST'])
 @cross_origin()
@@ -86,26 +89,32 @@ def join_game():
     logging.debug('ENDOPOINT: join_game id={} game_name={}'.format(user_id, game_name))
     if user_id and game_name:
         if user_id.startswith('web_') and len(user_id)>4:
-            application, serial_id = user_id.split('_')        
+            application, serial_id = user_id.split('_')
             u = User.get_user(application, serial_id)
             if u is None:
-                return ('user {} does not exist'.format(user_id), 400)
+                error_msg = 'user does not exist'
+                return jsonify({'success': False, 'error': error_msg}), 400
             if u.state != 'state_INITIAL':
-                return ('user {} not in state_INITIAL'.format(user_id), 400)
+                error_msg = 'user not in state_INITIAL'
+                return jsonify({'success': False, 'error': error_msg}), 400
             room_name = game_name.upper()
             game = Game.get_game_in_initial_state(room_name)
             if game:
                 if Game.add_player(game, u):
                     u.set_state('state_WAITING_FOR_START')
-                    return ('ok',200)
+                    return jsonify({'success': True, 'error': None}), 200
                 else:
-                    return ('Game {} no longer available'.format(room_name),400)
+                    error_msg = 'Game no longer available'
+                    return jsonify({'success': False, 'error': error_msg}), 400
             else:
-                return ('Game {} does not exist'.format(room_name),400)
+                error_msg = 'Game does not exist'
+                return jsonify({'success': False, 'error': error_msg}), 400
         else:
-            return ('`id` must conform to string pattern <web_serial>', 400)
+            error_msg = 'id must conform to string pattern <web_serial>'
+            return jsonify({'success': False, 'error': error_msg}), 400
     else:
-        return ('Both `id` and `game_name` params need to be specified',400)
+        error_msg = 'Both id and game_name params need to be specified'
+        return jsonify({'success': False, 'error': error_msg}), 400
 
 @app.route('/create_game', methods=['POST'])
 @cross_origin()
@@ -117,29 +126,35 @@ def create_game():
     logging.debug('ENDOPOINT: create_game id={} game_name={}'.format(user_id, game_name))
     if user_id and game_name:
         if user_id.startswith('web_') and len(user_id)>4:
-            application, serial_id = user_id.split('_')        
+            application, serial_id = user_id.split('_')
             u = User.get_user(application, serial_id)
             if u is None:
-                return ('user {} does not exist'.format(user_id), 400)
+                error_msg = 'user does not exist'
+                return jsonify({'success': False, 'error': error_msg}), 400
             if u.state != 'state_INITIAL':
-                return ('user {} not in state_INITIAL'.format(user_id), 400)
+                error_msg = 'user not in state_INITIAL'
+                return jsonify({'success': False, 'error': error_msg}), 400
             room_name = game_name.upper()
             game = Game.get_game_in_initial_state(room_name)
             if game:
-                return ('There is already an active game with name `{}`'.format(room_name),400)
+                error_msg = 'There is already an active game with the same name'
+                return jsonify({'success': False, 'error': error_msg}), 400
             game = Game.create_game(room_name, u)
             u.set_current_game(game, save=False)
             u.set_state('state_WAITING_FOR_START')
-            return ('ok',200)
+            return jsonify({'success': True, 'error': None}), 200
         else:
-            return ('`id` must conform to string pattern <web_serial>', 400)
+            error_msg = 'id must conform to string pattern <web_serial>'
+            return jsonify({'success': False, 'error': error_msg}), 400
     else:
-        return ('Both `id` and `game_name` params need to be specified',400)
+        error_msg = 'Both id and game_name params need to be specified'
+        return jsonify({'success': False, 'error': error_msg}), 400
+
 
 @app.route('/user_reply', methods=['POST'])
 @cross_origin()
 def user_reply():
-    from bot_firestore_user import User    
+    from bot_firestore_user import User
     from bot_telegram_dialogue import repeat_state
     import telegram
     user_id = request.form.get('id')
@@ -147,15 +162,17 @@ def user_reply():
     logging.debug('ENDOPOINT: user_reply id={} reply={}'.format(user_id, user_reply))
     if user_id and user_reply:
         if user_id.startswith('web_') and len(user_id)>4:
-            application, serial_id = user_id.split('_')        
+            application, serial_id = user_id.split('_')
             u = User.get_user(application, serial_id)
             if u is None:
-                return ('user {} does not exist'.format(user_id), 400)
+                error_msg = 'user does not exist'
+                return jsonify({'success': False, 'error': error_msg}), 400
             message_obj = telegram.Message(message_id=-1, from_user=None, date=None, chat=None, text=user_reply)
-            repeat_state(u, message_obj=message_obj) 
-            return ('ok',200)
+            repeat_state(u, message_obj=message_obj)
+            return jsonify({'success': True, 'error': None}), 200
         else:
-            return ('`id` must conform to string pattern <web_serial>', 400)
+            error_msg = 'id must conform to string pattern <web_serial>'
+            return jsonify({'success': False, 'error': error_msg}), 400
     else:
-        return ('Both `id` and `reply` params need to be specified',400)    
-    
+        error_msg = 'Both id and reply params need to be specified'
+        return jsonify({'success': False, 'error': error_msg}), 400
