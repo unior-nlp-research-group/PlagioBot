@@ -24,7 +24,7 @@ class Game(Model):
     state: str = "INITIAL" # INITIAL, STARTED, ENDED, INTERRUPTED        
     sub_state: str = "INITIAL"
     game_type: str = 'CONTINUATION' # 'CONTINUATION', 'FILL', 'REPLACEMENT'
-    game_control: str = 'DEFAULT' # 'DEFAULT', 'TEACHER'    
+    teacher_mode: bool = False
     auto_exercise_mode: bool = False
     num_hands: int = parameters.NUM_HANDS_IN_TEACHER_MODE    
     num_players: int = 0
@@ -32,9 +32,12 @@ class Game(Model):
     translate_help: bool = False    
     variables: Dict = field(default_factory=dict)
 
+    # def __init__(self, *args, **kvargs):
+    #     print("In dummy initi")
+
     @classmethod
     def path(cls):        
-        return 'test_{}'.format(cls.__name__) if key.TEST else cls.__name__
+        return 'test_{}'.format(cls.__name__) if key.TEST else cls.__name__  
 
     @staticmethod
     def create_game(name, user):
@@ -68,6 +71,12 @@ class Game(Model):
         players = [User.get(p_id) for p_id in self.players_id]
         return players
     
+    def dealer_is_reader_or_teacher(self):
+        return self.teacher_mode or not self.auto_exercise_mode
+
+    def is_dealer_a_writer(self):
+        return self.auto_exercise_mode and not self.teacher_mode
+
     def reset_variables(self, save=True):
         self.variables = {}
         if save: self.save()
@@ -86,7 +95,7 @@ class Game(Model):
         return self.game_type == 'REPLACEMENT'
 
     def teacher_validation_enabled(self):
-        return self.game_control == 'TEACHER' and self.game_type == 'REPLACEMENT'
+        return self.teacher_mode and self.game_type == 'REPLACEMENT'
 
     ##########################################
     # START of TRANSACTIONAL FUNCTIONS
@@ -110,9 +119,10 @@ class Game(Model):
         self.auto_exercise_mode = b
     
     @transactional
-    def set_game_control(self, m):
-        assert m in ['DEFAULT', 'TEACHER']
-        self.game_control = m
+    def set_teacher_mode(self, value):
+        changed = self.teacher_mode != value
+        self.teacher_mode = value
+        return changed
 
     @transactional
     def set_num_hands(self, h):
@@ -141,17 +151,17 @@ class Game(Model):
     def setup(self, user):
         if self.state != 'INITIAL':
             return False
-        if self.game_control == 'DEFAULT':
-            self.num_hands = self.num_players
-            # otherwise set it manually        
-        self.variables = {
+        if self.variables == None:
+            self.variables == {}
+        # we could have set some vars before setups (e.g., exercise data)
+        self.variables.update({
             'HAND': 0, # 1 for the first hand
-            'READER_INDEX': 0, # index of reader
+            'DEALER_INDEX': 0, # index of dealer
             'COMPLETED_HANDS': [False for _ in range(self.num_hands)], # weather each hand has been completed
             'CONFIRMED_CURRENT_HAND': [False for _ in range(self.num_players)], # weather each player has confirmed answer in current hand
             'SELECTED_CURRENT_HAND': [False for _ in range(self.num_players)], # weather each player has made a selection in current hand
             'INCOMPLETE_TEXTS': ['' for _ in range(self.num_hands)],
-            'ORIGINAL_COMPLETION': ['' for _ in range(self.num_hands)], # original completion from reader
+            'ORIGINAL_COMPLETION': ['' for _ in range(self.num_hands)], # original completion from dealer
             'PLAYERS_ANSWERS': [{} for _ in range(self.num_hands)], # one dict per hand
                 # str(player_index) in key mapping to its answer
                 # we use str in keys because of firebase constraints
@@ -168,7 +178,7 @@ class Game(Model):
             'HAND_POINTS': [{str(i):0 for i in range(self.num_players)} for i in range(self.num_hands)], # we can't have list of list in firestore
             'GAME_POINTS': [], # list of points (int) for each player
             'WINNERS_NAMES': []
-        }
+        })
         self.state = 'STARTED'
         return True
 
@@ -179,20 +189,22 @@ class Game(Model):
         current_players_answers = self.variables['PLAYERS_ANSWERS'][hand_index]
         current_players_answers[str(player_index)] = text
         remaining_players_indexes = [i for i in range(self.num_players) if str(i) not in current_players_answers]
-        remaining_players_indexes.remove(self.get_reader_index())
+        if not self.is_dealer_a_writer():
+            remaining_players_indexes.remove(self.get_dealer_index())
         return len(remaining_players_indexes)
 
     @transactional
     def set_voted_indexes_and_get_remaining(self, user, voted_shuffled_number): 
         answers_info = self.get_current_hand_answers_info()
         player_index = self.players_id.index(user.id)
-        reader_index = self.get_reader_index()
-        assert player_index != reader_index # reader doesn't vote                    
+        dealer_index = self.get_dealer_index()        
+        if player_index == dealer_index:
+            assert self.is_dealer_a_writer() # dealer votes only in auto_text mode
         voted_answer_info = next(info for c,info in answers_info.items() if info['shuffled_number']==voted_shuffled_number)
         voted_answer_info['voted_by'].append(player_index)   
         voted_by_list = [info['voted_by'] for info in answers_info.values()] 
         voters_indexes = list(itertools.chain(*voted_by_list))        
-        exact_author_list = next((info['authors'] for info in answers_info.values() if info['correct']),[reader_index])
+        exact_author_list = next((info['authors'] for info in answers_info.values() if info['correct']),[dealer_index])
         remaining_players_indexes = [i for i in range(self.num_players) if i not in voters_indexes and i not in exact_author_list]
         return len(remaining_players_indexes)
 
@@ -222,7 +234,7 @@ class Game(Model):
         self.variables['CONFIRMED_CURRENT_HAND'] = [False for _ in range(self.num_players)]
         self.variables['SELECTED_CURRENT_HAND'] = [False for _ in range(self.num_players)]
         self.variables['HAND'] += 1
-        self.variables['READER_INDEX'] = self.get_reader_index()
+        self.variables['DEALER_INDEX'] = self.get_dealer_index()
         return True
 
 
@@ -230,17 +242,35 @@ class Game(Model):
     # END of TRANSACTIONAL FUNCTIONS
     ##########################################
 
-    def set_exercise_data(self, exercise_data, save=True):
-        self.variables['EXERCISE_DATA'] = exercise_data
+    def set_auto_text_info(self, exercise_title, ex_exec, ex_eval, save=True):
+        self.auto_exercise_mode = True
+        changed = not self.auto_exercise_mode or self.get_var('EXERCISE_TITLE') != exercise_title
+        self.variables['EXERCISE_TITLE'] = exercise_title
+        self.variables['EXERCISE_EXEC_CMD'] = ex_exec
+        self.variables['EXERCISE_EVAL_CMD'] = ex_eval
+        if save: self.save()
+        return changed
+
+    def unset_exercise_data(self, save=True):
+        self.auto_exercise_mode = False
+        self.variables['EXERCISE_TITLE'] = None
+        self.variables['EXERCISE_EXEC_CMD'] = None        
+        self.variables['EXERCISE_EVAL_CMD'] = None        
         if save: self.save()
 
-    def fill_exercises_automatically(self, batch_number, save=True):
-        import exercise_en_synonym_mwe
-        exercises = exercise_en_synonym_mwe.extract_random_exercises(batch_number, self.num_hands)
-        # list of dict {"SENTENCE": <str>, "MWE": <str>}
-        for e in exercises:
-            self.variables['INCOMPLETE_TEXTS'].append(e['SENTENCE'].upper())
-            self.variables['ORIGINAL_COMPLETION'].append(e['MWE'].upper())
+    def fill_exercises_automatically(self, save=True):
+        assert self.auto_exercise_mode
+        exec(self.variables['EXERCISE_EXEC_CMD']) # import libraries
+        EX_DATA = eval(self.variables['EXERCISE_EVAL_CMD']) # get exercise data
+        if self.game_type == 'CONTINUATION':
+            # ID, INCIPIT, CONTINUATION, SOURCE
+            self.variables['INCOMPLETE_TEXTS'] = [e['INCIPIT'].upper() for e in EX_DATA]
+            self.variables['ORIGINAL_COMPLETION'] = [e['CONTINUATION'].upper() for e in EX_DATA]
+        else:
+            assert self.game_type == 'REPLACEMENT'    
+            # ID, SENTENCE, REPLACEMENT    
+            self.variables['INCOMPLETE_TEXTS'] = [e['SENTENCE'].upper() for e in EX_DATA]
+            self.variables['ORIGINAL_COMPLETION'] = [e['REPLACEMENT'].upper() for e in EX_DATA]
         if save: self.save()
 
     def get_creator_name(self):
@@ -250,19 +280,24 @@ class Game(Model):
     def is_last_hand(self):
         return self.variables['HAND'] == self.num_hands
 
-    def get_reader_index(self):
-        if self.game_control == 'TEACHER':
+    def get_dealer_index(self):
+        if self.teacher_mode:
             return 0
         return (self.variables['HAND'] - 1 ) % self.num_players
+
+    def get_dealer_id(self):
+        return self.players_id[self.get_dealer_index()]
 
     def get_hand_number(self):
         return self.variables['HAND']
 
-    def get_current_hand_players_reader_writers(self):
+    def get_current_hand_players_dealer_writers(self):
         players = self.get_players()
-        reader = players[self.get_reader_index()]
-        writers = [p for p in players if p != reader]
-        return players, reader, writers
+        dealer = players[self.get_dealer_index()]
+        writers = [p for p in players if p != dealer]
+        if self.is_dealer_a_writer():
+            writers.append(dealer)
+        return players, dealer, writers
 
     def set_current_incomplete_text(self, text, save=True):        
         hand_index = self.variables['HAND']-1
@@ -317,7 +352,7 @@ class Game(Model):
         hand_index = self.variables['HAND']-1
         current_players_answers = self.variables['PLAYERS_ANSWERS'][hand_index]
         remaining_players_indexes = [i for i in range(self.num_players) if str(i) not in current_players_answers]
-        remaining_players_indexes.remove(self.get_reader_index())
+        remaining_players_indexes.remove(self.get_dealer_index())
         remaining_names = [self.players_names[i] for i in remaining_players_indexes]            
         return remaining_names
 
@@ -358,20 +393,21 @@ class Game(Model):
                 'voted_by': []
             }
         else:
-            reader_index = self.get_reader_index()
+            dealer_index = self.get_dealer_index()
             if original_in_players_answers:
-                correct_answer = answers_info[original_completion]
-                correct_answer['authors'].append(reader_index)
+                correct_answer = answers_info[original_completion]                
                 correct_answer['correct'] = True
             else:
                 # add correct answer
-                answers_info[original_completion] = {
+                correct_answer = answers_info[original_completion] = {
                     'answer': original_completion,
                     'shuffled_number': next(iter_shuffled_numbers),
-                    'authors': [reader_index],
+                    'authors': [],
                     'correct': True,
                     'voted_by': []
                 }   
+            if self.dealer_is_reader_or_teacher():
+                correct_answer['authors'].append(dealer_index)
         
         # selection is enabled only if there are at least 2 unique answers
         # we should not count the answer given by the same person
@@ -384,7 +420,7 @@ class Game(Model):
         answer_correct_info = next((info for c,info in answers_info.items() if info['correct']), None)
         if answer_correct_info is None:
             return []
-        return [i for i in answer_correct_info['authors'] if i!=self.get_reader_index()]
+        return [i for i in answer_correct_info['authors'] if i!=self.get_dealer_index()]
 
     def has_user_already_voted(self, user):
         player_index = self.players_id.index(user.id)        
@@ -396,8 +432,8 @@ class Game(Model):
         names = self.players_names        
         voted_by_list = [info['voted_by'] for info in answers_info.values()] 
         voters_indexes = list(itertools.chain(*voted_by_list))
-        reader_index = self.get_reader_index()
-        exact_author_list = next((info['authors'] for info in answers_info.values() if info['correct']),[reader_index])
+        dealer_index = self.get_dealer_index()
+        exact_author_list = next((info['authors'] for info in answers_info.values() if info['correct']),[dealer_index])
         remaining_names = [n for i,n in enumerate(names) if i not in voters_indexes and i not in exact_author_list] 
         return remaining_names   
 
@@ -420,7 +456,7 @@ class Game(Model):
         hand_index = self.variables['HAND']-1
         answers_info = self.variables['ANSWERS_INFO'][hand_index]
         current_hand_points = self.variables['HAND_POINTS'][hand_index]
-        reader_index = self.get_reader_index()
+        dealer_index = self.get_dealer_index()
         
         points_feedbacks = [{} for i in range(self.num_players)]         
             # one dict per player
@@ -439,8 +475,8 @@ class Game(Model):
             pfi['POINTS'] = 0            
 
         for i in range(self.num_players):            
-            if i==reader_index:
-                continue # reader doesn't give/receive points
+            if i==dealer_index and not self.is_dealer_a_writer():
+                continue # reader/teacher doesn't give/receive points
             pfi = points_feedbacks[i]
             player_answer_info = next((info for info in answers_info.values() if i in info['authors']),None)
             player_voted_answer_info = next((info for info in answers_info.values() if i in info['voted_by']),None)            
@@ -482,7 +518,7 @@ class Game(Model):
                 # peole get awarded points when voted by others only if teacher validation is off
                 if player_voted_answer_info:                                         
                     for j in player_voted_answer_info['authors']:
-                        if j != reader_index:
+                        if j != dealer_index or self.is_dealer_a_writer():
                             # don't give point to reader
                             points_feedbacks[j]['POINTS'] += POINT_SYSTEM['RECEIVED_VOTE']
                             points_feedbacks[j]['NUM_VOTES_RECEIVED'] += 1
@@ -517,7 +553,7 @@ class Game(Model):
             for hp in hands_points[:hand_number]
         ]          
 
-        if self.game_control == 'TEACHER':
+        if self.teacher_mode:
             del(players_names[0])            
             del(game_points[0])  
             for hp in hands_points_list:
@@ -530,7 +566,7 @@ class Game(Model):
         players_names = list(self.players_names)
         game_points = copy.deepcopy(self.variables['GAME_POINTS'])
         
-        if self.game_control == 'TEACHER':
+        if self.teacher_mode:
             del(players_names[0])            
             del(game_points[0])  
 
@@ -589,4 +625,4 @@ class Game(Model):
         return games_generator
 
 if __name__ == "__main__":
-    Game.get_game_state_stats()
+    g = Game.get('TEST_1592221902235')

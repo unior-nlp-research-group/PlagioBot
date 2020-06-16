@@ -5,7 +5,7 @@ import key
 import logging
 import uuid
 import functools
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, fields
 
 from google.cloud import firestore
 
@@ -118,7 +118,7 @@ class Model:
     #
     #  static
     #
-    # -------------------------------------------
+    # -------------------------------------------    
 
     @classmethod
     def path(cls):
@@ -134,6 +134,12 @@ class Model:
             logging.error(e)
 
     @classmethod
+    def from_dict(cls, d):
+        valid_fields = set([f.name for f in fields(cls)])
+        d = {k:v for k, v in d.items() if k in valid_fields}
+        return cls(**d)
+
+    @classmethod
     @require_database
     def get(cls, doc_id):
         """ Get a single model instance
@@ -144,7 +150,7 @@ class Model:
         try:
             doc_ref = db.document('{}/{}'.format(cls.path(),doc_id))
             doc_snapshot = doc_ref.get()
-            return cls(**doc_snapshot.to_dict())
+            return cls.from_dict(doc_snapshot.to_dict())
         except Exception as e:
             logging.error(e)
 

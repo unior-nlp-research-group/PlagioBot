@@ -38,9 +38,9 @@ def restart_user(user):
 # REDIRECT TO STATE
 # ================================
 def redirect_to_state_multi(game, users, new_function, change_game_sub_state=True, message_obj=None, **kwargs):
-    # last should be the reader (to prevent that resetting set would also reset other var (e.g., keyboard))
-    reader_index = game.get_reader_index()
-    ordered_users = [u for i,u in enumerate(users) if i!=reader_index] + [users[reader_index]]
+    # last should be the dealer (to prevent that resetting set would also reset other var (e.g., keyboard))
+    dealer_index = game.get_dealer_index()
+    ordered_users = [u for i,u in enumerate(users) if i!=dealer_index] + [users[dealer_index]]
     for u in ordered_users:
         redirect_to_state(u, new_function, message_obj, **kwargs)
     if change_game_sub_state:
@@ -86,7 +86,7 @@ def state_SET_LANGUAGE(user, message_obj):
         if text_input in utility.flatten(kb):
             if text_input == ux.INT_BUTTON_ITALIAN:
                 user.language = 'it'
-            elif text_input == ux.INT_BUTTON_ENGLISH: 
+            elif text_input == ux.INT_BUTTON_ENGLISH:
                 user.language = 'en'
             else:
                 repeat_state(user) # interface must have changed in the meantime
@@ -110,14 +110,14 @@ def state_DISCLAIMER(user, message_obj):
     else:
         text_input = message_obj.text
         kb = user.get_keyboard()
-        if text_input in utility.flatten(kb):            
+        if text_input in utility.flatten(kb):
             if text_input == ux.BUTTON_AGREE[lang]:
                 user.set_var('ACCEPTED_DISCLAIMER', True)
                 redirect_to_state(user, state_INITIAL)
             else:
-                repeat_state(user) # interface must have changed in the meantime  
+                repeat_state(user) # interface must have changed in the meantime
                 send_message(user, ux.MSG_INTERFACE_CHANGED[lang])
-                return  
+                return
         else:
             send_message(user, ux.MSG_WRONG_INPUT_USE_BUTTONS[lang])
 
@@ -130,7 +130,7 @@ def state_INITIAL(user, message_obj):
     if message_obj is None:
         kb = [
             [ux.BUTTON_NEW_GAME[lang], ux.BUTTON_JOIN_GAME[lang]],
-            [ux.BUTTON_USER_SETTINGS[lang]], 
+            [ux.BUTTON_USER_SETTINGS[lang]],
             [ux.BUTTON_INFO[lang]]
         ]
         msg = '\n'.join([
@@ -167,11 +167,11 @@ def state_USER_SETTINGS(user, message_obj):
     if message_obj is None:
         notifications_button = ux.BUTTON_DISABLE_NOTIFICATIONS[lang] \
             if user.notifications else ux.BUTTON_ENABLE_NOTIFICATIONS[lang]
-        kb = [            
+        kb = [
             [ux.BUTTON_CHANGE_LANGUAGE[lang], notifications_button],
-            [ux.BUTTON_CHANGE_NAME[lang]],            
+            [ux.BUTTON_CHANGE_NAME[lang]],
             [ux.BUTTON_BACK[lang]],
-        ]        
+        ]
         msg = '\n'.join([
             ux.MSG_USER_SETTINGS[lang],
             ux.MSG_LANGUAGE_INFO[lang],
@@ -206,26 +206,26 @@ def state_USER_SETTINGS(user, message_obj):
 def state_CHANGE_NAME(user, message_obj):
     lang = user.language
     if message_obj is None:
-        kb = [[ux.BUTTON_BACK[lang]]]        
+        kb = [[ux.BUTTON_BACK[lang]]]
         send_message(user, ux.MSG_CHANGE_NAME[lang].format(user.get_name()), kb)
     else:
         text_input = message_obj.text
         kb = user.get_keyboard()
-        if text_input: 
+        if text_input:
             if text_input in utility.flatten(kb):
                 if text_input == ux.BUTTON_BACK[lang]:
                     redirect_to_state(user, state_USER_SETTINGS)
                 else:
                     repeat_state(user) # interface must have changed in the meantime
                     send_message(user, ux.MSG_INTERFACE_CHANGED[lang])
-                    return        
+                    return
             elif ux.text_is_button_or_digit(text_input):
                 send_message(user, ux.MSG_WRONG_BUTTON_INPUT[lang])
             elif len(text_input)>parameters.MAX_NAME_LENGTH:
                 send_message(user, ux.MSG_NAME_TOO_LONG[lang].format(parameters.MAX_NAME_LENGTH))
             else:
                 user.name = text_input
-                restart_user(user)                
+                restart_user(user)
         else:
             send_message(user, ux.MSG_WRONG_INPUT_USE_BUTTONS[lang])
 
@@ -313,54 +313,49 @@ def state_JOIN_ROOM_NAME(user, message_obj):
 # ================================
 def state_GAME_SETTINGS(user, message_obj):
     lang = user.language
-    game = user.get_current_game()
+    game = user.get_current_game()    
     kb_action = {
         ux.BUTTON_GAME_TYPE[lang]: {
             'row': 0, 'col': 0,
             'info': game.game_type,
             'action': 'redirect_to_state(user, state_SETTINGS_GAME_TYPE)' ,
             'show_button': True,
-            'show_info': True,
+            'show_info': True
+        },
+        ux.BUTTON_TEACHER_MODE[lang]: {
+            'row': 1, 'col': 0,
+            'info': game.teacher_mode,
+            'action': 'redirect_to_state(user, state_SETTINGS_TEACHER_MODE)',
+            'show_button': True,
+            'show_info': True
         },
         ux.BUTTON_AUTO_EXERCISE_MODE[lang]: {
-            'row': 1, 'col': 0,
-            'info': '✅' if game.auto_exercise_mode else '❌',
+            'row': 2, 'col': 0,
+            'info': '✅ {}'.format(game.get_var('EXERCISE_TITLE')) if game.auto_exercise_mode else '❌',
             'action': 'redirect_to_state(user, state_SETTINGS_AUTO_EXERCISE_SETUP)',
             'show_button': True,
-            'show_info': True,
-        },
-        ux.BUTTON_GAME_CONTROL[lang]: {
-            'row': 2, 'col': 0,
-            'info': game.game_control,
-            'action': 'redirect_to_state(user, state_SETTINGS_GAME_CONTROL)',
-            'show_button': True,
-            'show_info': True,
+            'show_info': True
         },
         ux.BUTTON_ROUNDS_NUMBER[lang]: {
             'row': 3, 'col': 0,
-            'info': ux.MSG_NUM_PLAYERS[lang] if game.game_control=='DEFAULT' else game.num_hands,
+            'info': game.num_hands if game.teacher_mode or game.auto_exercise_mode else ux.MSG_NUM_PLAYERS[lang],
             'action': 'redirect_to_state(user, state_SETTINGS_NUMBER_OF_HANDS)',
-            'show_button': game.game_control!='DEFAULT',
-            'show_info': True,
+            'show_button': game.teacher_mode or game.auto_exercise_mode,
+            'show_info': True
         },
         ux.BUTTON_GAME_TRANSLATE_HELP[lang]: {
             'row': 4, 'col': 0,
             'info': game.translate_help,
             'action': 'redirect_to_state(user, state_SETTINGS_GAME_TRANSLATE_HELP)' ,
-            'show_button': user.is_tester(),
-            'show_info': True,
-        },
-        ux.BUTTON_BACK[lang]: {
-            'row': 5, 'col': 0,
-            'info': '',
-            'action': 'redirect_to_state(user, state_WAITING_FOR_START, updated_settings=True)',
-            'show_button': True,
-            'show_info': False,
+            'show_button': False, #user.is_tester(),
+            'show_info': True
         }
     }
     if message_obj is None:
         import re
         kb = ux.make_keyboard_from_keyboard_action(kb_action)
+        kb.insert(0, [ux.BUTTON_BACK[lang]])
+        kb.append([ux.BUTTON_BACK[lang]])
         msg = '\n'.join(
             [ux.MSG_SETTINGS_RECAP[lang]] +
             [
@@ -379,7 +374,12 @@ def state_GAME_SETTINGS(user, message_obj):
         kb = user.get_keyboard()
         if text_input:
             if text_input in utility.flatten(kb):
-                exec(kb_action[text_input]['action'])
+                if text_input == ux.BUTTON_BACK[lang]:
+                    redirect_to_state(
+                        user, state_WAITING_FOR_START, 
+                        updated_settings=user.get_var('UPDATED_SETTINGS'))
+                else:
+                    exec(kb_action[text_input]['action'])
             elif ux.text_is_button_or_digit(text_input):
                 send_message(user, ux.MSG_WRONG_BUTTON_INPUT[lang])
         else:
@@ -388,7 +388,7 @@ def state_GAME_SETTINGS(user, message_obj):
 # ================================
 # SETTINGS GAME TYPE
 # ================================
-def state_SETTINGS_GAME_TYPE(user, message_obj):    
+def state_SETTINGS_GAME_TYPE(user, message_obj):
     game = user.get_current_game()
     game_type = game.game_type
     lang = game.language
@@ -412,7 +412,7 @@ def state_SETTINGS_GAME_TYPE(user, message_obj):
     }
     if message_obj is None:
         kb = [
-            ux.check_multi_button(buttons_value_description, game_type, multi_line=False),
+            ux.check_multi_button(buttons_value_description, game_type),
             [ux.BUTTON_BACK[lang]]
         ]
         msg = '\n'.join([
@@ -425,7 +425,7 @@ def state_SETTINGS_GAME_TYPE(user, message_obj):
         kb = user.get_keyboard()
         if text_input:
             if text_input in utility.flatten(kb):
-                if text_input.startswith(ux.BUTTON_BACK[lang]):
+                if text_input.startswith(ux.BUTTON_BACK[lang]):                    
                     redirect_to_state(user, state_GAME_SETTINGS)
                 else:
                     new_game_type = next(
@@ -434,10 +434,11 @@ def state_SETTINGS_GAME_TYPE(user, message_obj):
                     )
                     changed = game.game_type != new_game_type
                     if changed:
-                        game.set_auto_exercise_mode(False)
                         game.set_game_type(new_game_type)
-                    # msg = ux.MSG_X_CHANGED_GAME_TYPE_TO_Y[lang].format(user.get_name(), new_game_type)
-                    # send_message(writers, msg)
+                        game.unset_exercise_data()
+                        user.set_var('UPDATED_SETTINGS', True)
+                    msg = ux.MSG_CHANGED_GAME_TYPE_TO_Y[lang].format(text_input)
+                    send_message(user, msg)
                     redirect_to_state(user, state_GAME_SETTINGS)
             elif ux.text_is_button_or_digit(text_input):
                 send_message(user, ux.MSG_WRONG_BUTTON_INPUT[lang])
@@ -447,43 +448,54 @@ def state_SETTINGS_GAME_TYPE(user, message_obj):
 # ================================
 # AUTO EXERCISE MODE
 # ================================
-def state_SETTINGS_AUTO_EXERCISE_SETUP(user, message_obj):    
+def state_SETTINGS_AUTO_EXERCISE_SETUP(user, message_obj):
     game = user.get_current_game()
     lang = game.language
     synonym_mode = lang=='en' and game.game_type == 'REPLACEMENT'
     nature_mode = game.game_type == 'CONTINUATION'
-    if message_obj is None:        
+    if message_obj is None:
         if synonym_mode:
             from exercise_en_synonym_mwe import get_exercise_batch_title_and_description
-            # send_message(writers, ux.MSG_WAIT_FOR_TEACHER_TO_SELECT_EXERCISE_BATCH[lang], remove_keyboard=True)        
             batch_title_descr = get_exercise_batch_title_and_description()
             batch_title_descr_str = ['{}: {}'.format(k,v) for k,v in batch_title_descr.items()]
-            msg_reader = [ux.MSG_SELECT_EXERCISE_BATCH[lang]] + batch_title_descr_str
-            kb = [sorted(batch_title_descr.keys())]
-            send_message(user, '\n'.join(msg_reader), kb)
+            msg_dealer = [ux.MSG_SELECT_EXERCISE_BATCH[lang], ''] + batch_title_descr_str
+            kb = [[sorted(batch_title_descr.keys())]]
         elif nature_mode:
-            import exercise_continuation_nature
-
+            msg_dealer = [ux.MSG_SELECT_EXERCISE_BATCH[lang]]
+            kb = [[ux.BUTTON_NATURE_EXERCISE[lang]]]
         else:
-            send_message(user, ux.MSG_NO_EXERCISE_FOR_GIVEN_SETTINGS[lang])
+            msg_dealer = [ux.MSG_NO_EXERCISE_FOR_GIVEN_SETTINGS[lang]]
             kb = []
-        kb.append(ux.BUTTON_BACK[lang])
+        if game.auto_exercise_mode:
+            kb.append([ux.BUTTON_OFF[lang]])
+        kb.append([ux.BUTTON_BACK[lang]])
+        send_message(user, '\n'.join(msg_dealer), kb)
     else:
         text_input = message_obj.text
         kb = user.get_keyboard()
-        if text_input in utility.flatten(kb):    
+        if text_input in utility.flatten(kb):
             if text_input.startswith(ux.BUTTON_BACK[lang]):
                 redirect_to_state(user, state_GAME_SETTINGS)
-            elif synonym_mode:   
-                from exercise_en_synonym_mwe import extract_random_exercises                         
+            elif text_input.startswith(ux.BUTTON_OFF[lang]):
+                game.unset_exercise_data()
+                redirect_to_state(user, state_GAME_SETTINGS)
+            elif synonym_mode:                
                 batch_title = text_input
-                exercise_data = extract_random_exercises(batch_num, game.num_hands)
-                game.set_exercise_data(exercise_data)
-                # game.fill_exercises_automatically(batch_num)
-                # send_message(players, ux.MSG_EXERCISE_SETUP_SUCCESSFULLY[lang], remove_keyboad=True)
-                # go_to_next_hand(game, players)
+                ex_exec = 'import exercise_en_synonym_mwe as ex_syn'
+                ex_eval = 'ex_syn.extract_random_exercises({}, self.num_hands).format(batch_title)'
+                if game.set_auto_text_info(batch_title, ex_exec, ex_eval):
+                    user.set_var('UPDATED_SETTINGS', True)
+                send_message(user, ux.MSG_EXERCISE_SETUP_SUCCESSFULLY[lang], remove_keyboard=True)
+                redirect_to_state(user, state_GAME_SETTINGS)
             else:
                 assert nature_mode
+                ex_title = text_input                
+                ex_exec = 'import exercise_continuation_nature as ex_nat'
+                ex_eval = 'ex_nat.extract_random_exercises(self.language, self.num_hands)'
+                if game.set_auto_text_info(ex_title, ex_exec, ex_eval):
+                    user.set_var('UPDATED_SETTINGS', True)
+                send_message(user, ux.MSG_EXERCISE_SETUP_SUCCESSFULLY[lang], remove_keyboard=True)
+                redirect_to_state(user, state_GAME_SETTINGS)
         else:
             send_message(user, ux.MSG_WRONG_INPUT_USE_BUTTONS[lang])
 
@@ -494,19 +506,19 @@ def state_SETTINGS_GAME_TRANSLATE_HELP(user, message_obj):
     game = user.get_current_game()
     lang = game.language
     translate_help = game.translate_help
-    buttons_value_description = {
-        ux.BUTTON_YES[lang]: {
+    buttons_value = {
+        ux.BUTTON_YES_NO_EMOJI[lang]: {
             'order': 1,
             'value': True,
         },
-        ux.BUTTON_NO[lang]: {
+        ux.BUTTON_NO_NO_EMOJI[lang]: {
             'order': 2,
             'value': False,
         }
     }
     if message_obj is None:
         kb = [
-            ux.check_multi_button(buttons_value_description, translate_help, multi_line=False),
+            ux.check_multi_button(buttons_value, translate_help),
             [ux.BUTTON_BACK[lang]]
         ]
         msg = ux.MSG_GAME_TRANSLATE[lang]
@@ -520,7 +532,7 @@ def state_SETTINGS_GAME_TRANSLATE_HELP(user, message_obj):
                     redirect_to_state(user, state_GAME_SETTINGS)
                 else:
                     new_translate_help = next(
-                        v['value'] for b,v in buttons_value_description.items()
+                        v['value'] for b,v in buttons_value.items()
                         if text_input.startswith(b)
                     )
                     game.set_translate_help(new_translate_help)
@@ -533,32 +545,26 @@ def state_SETTINGS_GAME_TRANSLATE_HELP(user, message_obj):
 # ================================
 # SETTINGS GAME CONTROL
 # ================================
-def state_SETTINGS_GAME_CONTROL(user, message_obj):
+def state_SETTINGS_TEACHER_MODE(user, message_obj):
     game = user.get_current_game()
     lang = game.language
-    game_control = game.game_control
-    buttons_value_description = {
-        ux.BUTTON_GAME_CONTROL_DEFAULT[lang]: {
+    teacher_mode = game.teacher_mode
+    buttons_value = {
+        ux.BUTTON_YES_NO_EMOJI[lang]: {
             'order': 1,
-            'value': 'DEFAULT',
-            'description': ux.MSG_GAME_CONTROL_DEFAULT_DESCR[lang]
+            'value': True,
         },
-        ux.BUTTON_GAME_CONTROL_TEACHER[lang]: {
+        ux.BUTTON_NO_NO_EMOJI[lang]: {
             'order': 2,
-            'value': 'TEACHER',
-            'description': ux.MSG_GAME_CONTROL_TEACHER_DESCR[lang]
+            'value': False,
         }
     }
     if message_obj is None:
         kb = [
-            ux.check_multi_button(buttons_value_description, game_control, multi_line=False),
+            ux.check_multi_button(buttons_value, teacher_mode),
             [ux.BUTTON_BACK[lang]]
         ]
-        msg = '\n'.join([
-            ux.MSG_SELECT_GAME_CONTROL[lang],
-            ux.check_multi_description(buttons_value_description, game_control)
-        ])
-        send_message(user, msg, kb)
+        send_message(user, ux.MSG_SELECT_TEACHER_MODE[lang], kb)
     else:
         text_input = message_obj.text
         kb = user.get_keyboard()
@@ -567,11 +573,12 @@ def state_SETTINGS_GAME_CONTROL(user, message_obj):
                 if text_input == ux.BUTTON_BACK[lang]:
                     redirect_to_state(user, state_GAME_SETTINGS)
                 else:
-                    new_game_control = next(
-                        v['value'] for b,v in buttons_value_description.items()
+                    new_teacher_mode = next(
+                        v['value'] for b,v in buttons_value.items()
                         if text_input.startswith(b)
                     )
-                    game.set_game_control(new_game_control)
+                    if game.set_teacher_mode(new_teacher_mode):
+                        user.set_var('UPDATED_SETTINGS', True)
                     redirect_to_state(user, state_GAME_SETTINGS)
             elif ux.text_is_button_or_digit(text_input):
                 send_message(user, ux.MSG_WRONG_BUTTON_INPUT[lang])
@@ -599,7 +606,7 @@ def state_SETTINGS_NUMBER_OF_HANDS(user, message_obj):
             for b in default_values_str
         }
         kb = [
-            ux.check_multi_button(buttons_value_description, str(num_hands), multi_line=False),
+            ux.check_multi_button(buttons_value_description, str(num_hands)),
             [ux.BUTTON_BACK[lang]]
         ]
         msg = ux.MSG_INSERT_NUMBER_OF_ROUNDS[lang].format(num_hands)
@@ -611,7 +618,10 @@ def state_SETTINGS_NUMBER_OF_HANDS(user, message_obj):
             redirect_to_state(user, state_GAME_SETTINGS)
         elif utility.represents_int_between(text_input,1,parameters.MAX_NUM_HANDS):
             number_of_hands = int(text_input)
-            game.set_num_hands(number_of_hands)
+            change = game.num_hands != number_of_hands
+            if change:
+                user.set_var('UPDATED_SETTINGS', True)
+                game.set_num_hands(number_of_hands)
             redirect_to_state(user, state_GAME_SETTINGS)
         else:
             msg = ux.MSG_WRONG_INPUT_INSRT_NUMBER_BETWEEN[lang].format(1,parameters.MAX_NUM_HANDS)
@@ -624,7 +634,7 @@ def state_SETTINGS_NUMBER_OF_HANDS(user, message_obj):
 def state_ANNOUNCE_GAME_PUBLICLY(user, message_obj):
     game = user.get_current_game()
     lang = game.language
-    if message_obj is None:        
+    if message_obj is None:
         kb = [
             [ux.BUTTON_ABORT[lang]]
         ]
@@ -639,8 +649,8 @@ def state_ANNOUNCE_GAME_PUBLICLY(user, message_obj):
             else:
                 repeat_state(user) # interface must have changed in the meantime
                 send_message(user, ux.MSG_INTERFACE_CHANGED[lang])
-                return               
-        else:            
+                return
+        else:
             command = utility.escape_markdown('/game_{}'.format(game.id))
             announce_msg = ux.MSG_ANNOUNCE_GAME_PUBLICLY[lang].format(user.get_name(), text_input, command)
             users = User.get_user_lang_state_notification_on(lang, 'state_INITIAL')
@@ -657,54 +667,68 @@ def state_ANNOUNCE_GAME_PUBLICLY(user, message_obj):
 def state_WAITING_FOR_START(user, message_obj, updated_settings=False):
     game = user.get_current_game()
     players = game.get_players()
-    creator, writers = players[0], players[1:]
+    dealer, writers = players[0], players[1:]
     lang = game.language
-    creator_name = creator.get_name()
-    if message_obj is None:        
-        players_names = [p.get_name() for p in players]        
+    dealer_name = dealer.get_name()
+    if message_obj is None:
+        players_names = [p.get_name() for p in players]
         game_name = ux.MSG_GAME_NAME[lang].format(game.name)
         game_type_info = ux.MSG_GAME_TYPE_INFO[lang].format(
             ux.MSG_GAME_TYPE(game.game_type, lang),
         )
-        game_control_info = ux.MSG_GAME_CONTROL_INFO[lang].format(
-            ux.MSG_GAME_CONTROL(game.game_control, lang)
-        )
-        num_players_msg = (ux.MSG_CURRENT_PLAYERS if len(players)>1
+        teacher_mode_info = ux.MSG_TEACHER_MODE_INFO[lang] if game.teacher_mode else None
+        game_auto_text_info = \
+            ux.MSG_GAME_AUTO_TEXT_INFO[lang].format(game.get_var('EXERCISE_TITLE')) \
+            if game.auto_exercise_mode else None
+        num_players_names = (ux.MSG_CURRENT_PLAYERS if len(players)>1
             else ux.MSG_CURRENT_PLAYER)[lang].format(
                 len(players),', '.join(players_names))
-
+        num_hands_info = ux.MSG_ROUNDS_NUMBER_INFO[lang].format(
+            game.num_hands if game.teacher_mode or game.auto_exercise_mode else ux.MSG_NUM_PLAYERS[lang])
         def send_message_to_writers():
             msg_list = [
-                game_name,
-                game_type_info,
-                game_control_info,
-                num_players_msg,
-                ux.MSG_WAITING_FOR_START_GAME[lang].format(creator_name, game.name),
-                ux.MSG_CHAT_INFO[lang]
+                game_name, '',
+                num_players_names, '',
+                game_type_info                
             ]
+            if game_auto_text_info:
+                msg_list.append(game_auto_text_info)
+            if teacher_mode_info:
+                msg_list.append(teacher_mode_info)
+            msg_list.append(num_hands_info)
+
+            msg_list.extend([
+                '',
+                ux.MSG_WAITING_FOR_START_GAME[lang].format(dealer_name, game.name),
+                ux.MSG_CHAT_INFO[lang]
+            ])
             send_message(writers, '\n'.join(msg_list), remove_keyboard=True)
 
-        if user == creator:
+        if user == dealer:
             msg_list = [
-                game_name,
-                game_type_info,
-                game_control_info,
-                num_players_msg
+                game_name, '',
+                num_players_names, '',
+                game_type_info,                
             ]
+            if game_auto_text_info:
+                msg_list.append(game_auto_text_info)
+            if teacher_mode_info:
+                msg_list.append(teacher_mode_info)
+            msg_list.append(num_hands_info)
             kb = [
                 [ux.BUTTON_GAME_SETTINGS[lang]]
-            ]            
+            ]
             if len(players) > 1:
-                msg_list.append(ux.MSG_CHAT_INFO[lang])
+                msg_list.extend(['', ux.MSG_CHAT_INFO[lang]])
             if len(players) >= parameters.MIN_NUM_OF_PLAYERS:
-                msg_list.append(ux.MSG_YOU_CAN_START_GAME[lang])
+                msg_list.extend(['',ux.MSG_YOU_CAN_START_GAME[lang]])
                 kb.insert(0, [ux.BUTTON_START_GAME[lang]])
             else:
-                msg_list.append(ux.MSG_WAIT_FOR_MORE_PEOPLE_TO_START[lang])
+                msg_list.extend(['',ux.MSG_WAIT_FOR_MORE_PEOPLE_TO_START[lang]])
             if not game.announced:
                 kb.append([ux.BUTTON_ANNOUNCE_GAME_PUBLICLY[lang]])
-                msg_list.append(ux.MSG_INVITE_OTHER_PLAYERS_ANNOUNCE[lang])
-            send_message(creator, '\n'.join(msg_list), kb)
+                msg_list.extend(['',ux.MSG_INVITE_OTHER_PLAYERS_ANNOUNCE[lang]])
+            send_message(dealer, '\n'.join(msg_list), kb)
             if updated_settings:
                 send_message_to_writers()
         else:
@@ -713,19 +737,20 @@ def state_WAITING_FOR_START(user, message_obj, updated_settings=False):
             send_message(others_players, msg_others)
 
             send_message_to_writers()
-            if creator.state == 'state_WAITING_FOR_START':
-                repeat_state(creator)
+            if dealer.state == 'state_WAITING_FOR_START':
+                repeat_state(dealer)
             else:
                 pass
-                # game creator is changing setting of the game
+                # game dealer is changing setting of the game
     else:
-        if user == creator:
+        if user == dealer:
             text_input = message_obj.text
             kb = user.get_keyboard()
             if text_input in utility.flatten(kb):
-                if text_input == ux.BUTTON_ANNOUNCE_GAME_PUBLICLY[lang]:         
-                    redirect_to_state(user, state_ANNOUNCE_GAME_PUBLICLY)           
+                if text_input == ux.BUTTON_ANNOUNCE_GAME_PUBLICLY[lang]:
+                    redirect_to_state(user, state_ANNOUNCE_GAME_PUBLICLY)
                 elif text_input == ux.BUTTON_GAME_SETTINGS[lang]:
+                    user.set_var('UPDATED_SETTINGS', False)
                     redirect_to_state(user, state_GAME_SETTINGS)
                 elif text_input == ux.BUTTON_START_GAME[lang]:
                     assert len(players) >= parameters.MIN_NUM_OF_PLAYERS
@@ -734,9 +759,8 @@ def state_WAITING_FOR_START(user, message_obj, updated_settings=False):
                         send_message(players, msg_all, remove_keyboard=True)
                         send_message(players, ux.MSG_INSTRUCTIONS[game.game_type][lang])
                         if game.auto_exercise_mode:
-                            redirect_to_state_multi(game, players, state_AUTO_EXERCISE_SETUP)                            
-                        else:
-                            go_to_next_hand(game, players)
+                            game.fill_exercises_automatically()
+                        go_to_next_hand(game, players)
                     else:
                         send_message(user, ux.MSG_GAME_NOT_AVAILABLE[lang])
                 else:
@@ -746,7 +770,7 @@ def state_WAITING_FOR_START(user, message_obj, updated_settings=False):
             else:
                 send_message(user, ux.MSG_WRONG_INPUT_USE_BUTTONS[lang])
         else:
-            msg = ux.MSG_WAITING_FOR_START_GAME[lang].format(creator_name, game.name)
+            msg = ux.MSG_WAITING_FOR_START_GAME[lang].format(dealer_name, game.name)
             send_message(user, msg)
 
 
@@ -756,19 +780,19 @@ def state_WAITING_FOR_START(user, message_obj, updated_settings=False):
 # ================================
 def state_READER_WRITES_INCOMPLETE_TEXT(user, message_obj, first_call=True):
     game = user.get_current_game()
-    players, reader, writers = game.get_current_hand_players_reader_writers()
+    players, dealer, writers = game.get_current_hand_players_dealer_writers()
     lang = game.language
     if message_obj is None:
-        if user != reader:
+        if user != dealer:
             return
-        msg_reader = ux.MSG_WRITE_INCOMPLETE[game.game_type][lang]        
-        send_message(reader, msg_reader, remove_keyboard=True)        
+        msg_dealer = ux.MSG_WRITE_INCOMPLETE[game.game_type][lang]
+        send_message(dealer, msg_dealer, remove_keyboard=True)
         if first_call:
-            reader_name = ux.MSG_THE_TEACHER[lang] if game.game_control=='TEACHER' else reader.get_name()            
+            reader_name = ux.MSG_THE_TEACHER[lang] if game.teacher_mode else dealer.get_name()
             msg_writers = ux.MSG_WAIT_READER_WRITE_INCOMPLETE[game.game_type][lang].format(reader_name)
             send_message(writers, msg_writers)
     else:
-        if user == reader:
+        if user == dealer:
             text_input = message_obj.text
             if text_input:
                 if ux.text_is_button_or_digit(text_input):
@@ -788,7 +812,7 @@ def state_READER_WRITES_INCOMPLETE_TEXT(user, message_obj, first_call=True):
             else:
                 send_message(user, ux.MSG_WRONG_INPUT_USE_TEXT[lang])
         else:
-            reader_name = ux.MSG_THE_TEACHER[lang] if game.game_control=='TEACHER' else reader.get_name()
+            reader_name = ux.MSG_THE_TEACHER[lang] if game.teacher_mode else dealer.get_name()
             msg = ux.MSG_WRONG_INPUT_WAIT_FOR_READER[lang].format(reader_name)
             send_message(user, msg)
 
@@ -797,16 +821,16 @@ def state_READER_WRITES_INCOMPLETE_TEXT(user, message_obj, first_call=True):
 # ================================
 def state_READER_WRITES_ANSWER(user, message_obj):
     game = user.get_current_game()
-    _, reader, _ = game.get_current_hand_players_reader_writers()
+    _, dealer, _ = game.get_current_hand_players_dealer_writers()
     lang = game.language
-    reader_name = ux.MSG_THE_TEACHER[lang] if game.game_control=='TEACHER' else reader.get_name()
+    reader_name = ux.MSG_THE_TEACHER[lang] if game.teacher_mode else dealer.get_name()
     if message_obj is None:
-        if user != reader:
+        if user != dealer:
             return
-        msg_reader = ux.MSG_WRITE_CORRECT_ANSWER[game.game_type][lang]
-        send_message(reader, msg_reader, remove_keyboard=True)
+        msg_dealer = ux.MSG_WRITE_CORRECT_ANSWER[game.game_type][lang]
+        send_message(dealer, msg_dealer, remove_keyboard=True)
     else:
-        if user == reader:
+        if user == dealer:
             text_input = message_obj.text
             if text_input:
                 if utility.contains_markdown(text_input):
@@ -853,8 +877,8 @@ def state_READER_CONFIRMS_INPUT(user, message_obj):
     else:
         text_input = message_obj.text
         kb = user.get_keyboard()
-        if text_input in utility.flatten(kb):                
-            if text_input == ux.BUTTON_YES[lang]:   
+        if text_input in utility.flatten(kb):
+            if text_input == ux.BUTTON_YES[lang]:
                 if not game.set_confirm(user):
                     return #double press of the button
                 players = game.get_players()
@@ -871,55 +895,57 @@ def state_READER_CONFIRMS_INPUT(user, message_obj):
 # ================================
 # GAME_WRITERS_WRITE_ANSWERS
 # ================================
-def state_WRITERS_WRITE_ANSWERS(user, message_obj, first_call=True):
+def state_WRITERS_WRITE_ANSWERS(user, message_obj):
     game = user.get_current_game()
-    players, reader, _ = game.get_current_hand_players_reader_writers()
+    players, dealer, _ = game.get_current_hand_players_dealer_writers()
     incomplete_text, original_completion = game.get_current_incomplete_text_and_original_completion()
     lang = game.language
-    if message_obj is None:        
-        if user == reader:
-            if first_call:            
-                msg_reader_list = [                    
-                    ux.MSG_WAIT_WRITERS_WRITE_ANSWERS[game.game_type][lang],                    
-                    ux.MSG_STATUS_INSTRUCTIONS[lang],
-                    ux.MSG_CHAT_INFO[lang],
-                    ux.MSG_JUMP_TO_NEXT_PHASE[lang]
-                ]
-                send_message(user, '\n'.join(msg_reader_list), remove_keyboard=True)                            
-
+    if message_obj is None:
+        if game.dealer_is_reader_or_teacher():
+            msg_reader_list = [
+                ux.MSG_WAIT_WRITERS_WRITE_ANSWERS[game.game_type][lang],
+                ux.MSG_STATUS_INSTRUCTIONS[lang],
+                ux.MSG_CHAT_INFO[lang],
+                ux.MSG_JUMP_TO_NEXT_PHASE[lang]
+            ]
+            send_message(user, '\n'.join(msg_reader_list), remove_keyboard=True)        
         else:
             msg_incomplete_sentence = ux.render_incomplete_text(game)
             msg_writers = [
                 msg_incomplete_sentence, '',
                 ux.MSG_WRITERS_WRITE_ANSWER[game.game_type][lang]
             ]
-            send_message(user, '\n'.join(msg_writers), remove_keyboard=True)                            
+            if user == dealer:
+                msg_writers.extend([
+                    ux.MSG_JUMP_TO_NEXT_PHASE[lang]
+                ])
+            send_message(user, '\n'.join(msg_writers), remove_keyboard=True)
     else:
         text_input = message_obj.text
-        if user == reader:
-            if text_input == '/status':
-                remaining_names = game.get_remaining_answers_names()
-                remaining_names_str = ', '.join(remaining_names)
-                msg_list = [ux.MSG_WAITING_FOR[lang].format(remaining_names_str)]
-                msg_list.append(ux.MSG_JUMP_TO_NEXT_PHASE[lang])
-                send_message(user, '\n'.join(msg_list))
-            elif text_input=='/jump':
-                if game.game_control == 'TEACHER':
-                    send_message(players, ux.msg_reader_HAS_JUMPED_TO_NEXT_PHASE[lang], remove_keyboard=True)
+        if text_input == '/status':
+            remaining_names = game.get_remaining_answers_names()
+            remaining_names_str = ', '.join(remaining_names)
+            msg_list = [ux.MSG_WAITING_FOR[lang].format(remaining_names_str)]
+            msg_list.append(ux.MSG_JUMP_TO_NEXT_PHASE[lang])
+            send_message(user, '\n'.join(msg_list))
+        if user == dealer:
+            if text_input=='/jump':
+                if game.teacher_mode:
+                    send_message(players, ux.MSG_TEACHER_HAS_JUMPED_TO_NEXT_PHASE[lang], remove_keyboard=True)
                     redirect_to_state_multi(game, players, state_WRITERS_SELECT_BEST_ANSWER)
                 else:
                     send_message(players, ux.MSG_READER_HAS_JUMPED_TO_NEXT_PHASE[lang], remove_keyboard=True)
                     redirect_to_state_multi(game, players, state_WRITERS_SELECT_BEST_ANSWER)
-            else:
+            if game.dealer_is_reader_or_teacher():            
                 send_message(user, ux.MSG_WRONG_INPUT_WAIT_FOR_PLAYERS_TO_ANSWER[lang])
-            return        
+                return
         if game.has_player_already_written_answer(user):
             send_message(user, ux.MSG_ALREADY_SENT_ANSWER[lang])
             return
         if text_input:
             if ux.text_is_button_or_digit(text_input):
                 send_message(user, ux.MSG_WRONG_BUTTON_INPUT[lang])
-            else:                
+            else:
                 answer = text_input.upper()
                 if utility.contains_markdown(answer):
                     send_message(user, ux.MSG_INPUT_NO_MARKDOWN[lang])
@@ -934,7 +960,7 @@ def state_WRITERS_WRITE_ANSWERS(user, message_obj, first_call=True):
                             send_message(user, ux.MSG_INPUT_SYNONYM_MATCHED_PREFIX_SUFFIX[lang])
                             pass
                     user.set_var('ANSWER', answer)
-                    redirect_to_state(user, state_WRITER_CONFIRMS_INPUT)                    
+                    redirect_to_state(user, state_WRITER_CONFIRMS_INPUT)
         else:
             send_message(user, ux.MSG_WRONG_INPUT_USE_TEXT[lang])
 
@@ -942,7 +968,7 @@ def state_WRITERS_WRITE_ANSWERS(user, message_obj, first_call=True):
 # GAME_WRITER_CONFIRMS_INPUT
 # ================================
 def state_WRITER_CONFIRMS_INPUT(user, message_obj):
-    game = user.get_current_game()    
+    game = user.get_current_game()
     lang = game.language
     answer = user.get_var('ANSWER')
     if message_obj is None:
@@ -957,33 +983,33 @@ def state_WRITER_CONFIRMS_INPUT(user, message_obj):
     else:
         text_input = message_obj.text
         kb = user.get_keyboard()
-        if text_input in utility.flatten(kb):                
+        if text_input in utility.flatten(kb):
             if text_input == ux.BUTTON_YES[lang]:
                 if not game.set_confirm(user):
                     return #double press of the button
                 remaining_players_num = game.set_player_text_answer_and_get_remaining(user, answer)
-                if remaining_players_num==0:       
+                if remaining_players_num==0:
                     players = game.get_players()
                     send_message(user, ux.MSG_THANKS[lang])
                     send_message(players, ux.MSG_ALL_ANSWERS_RECEIVED[lang], remove_keyboard=True)
                     redirect_to_state_multi(game, players, state_WRITERS_SELECT_BEST_ANSWER)
                 else:
                     msg_list = [
-                        ux.MSG_THANKS[lang], 
-                        ux.MSG_WAIT_TILL_YOUR_TURN[lang], 
+                        ux.MSG_THANKS[lang],
+                        ux.MSG_WAIT_TILL_YOUR_TURN[lang],
                         ux.MSG_STATUS_INSTRUCTIONS[lang]
                     ]
-                    send_message(user, '\n'.join(msg_list), remove_keyboard=True)                                        
+                    send_message(user, '\n'.join(msg_list), remove_keyboard=True)
             elif text_input == ux.BUTTON_NO[lang]:
-                redirect_to_state(user, state_WRITERS_WRITE_ANSWERS, first_call=False)
+                redirect_to_state(user, state_WRITERS_WRITE_ANSWERS)
             else:
                 repeat_state(user) # interface must have changed in the meantime
                 send_message(user, ux.MSG_INTERFACE_CHANGED[lang])
                 return
         else:
-            if text_input == '/status':       
+            if text_input == '/status':
                 remaining_names = game.get_remaining_answers_names()
-                remaining_names_str = ', '.join(remaining_names)     
+                remaining_names_str = ', '.join(remaining_names)
                 msg_list = ux.MSG_WAITING_FOR[lang].format(remaining_names_str)
                 send_message(user, msg_list)
                 return
@@ -1005,20 +1031,20 @@ def get_all_num_completed_answers_str(game, shuffled_answers_info):
 # ================================
 def state_WRITERS_SELECT_BEST_ANSWER(user, message_obj):
     game = user.get_current_game()
-    players, reader, writers = game.get_current_hand_players_reader_writers()
+    players, dealer, writers = game.get_current_hand_players_dealer_writers()
     lang = game.language
 
     if message_obj is None:
-        if user != reader:
+        if user != dealer:
             return
         game.prepare_voting() # setup variables
-        shuffled_answers_info = game.get_shuffled_answers_info(include_no_vote=False) 
+        shuffled_answers_info = game.get_shuffled_answers_info(include_no_vote=False)
         number_unique_answers = len(shuffled_answers_info)
         correct_author_indexes = game.get_correct_answers_authors_indexes()
         correct_players = [players[i] for i in correct_author_indexes]
         correct_players_names = [p.get_name() for p in correct_players]
-        all_answered_correctly = len(correct_author_indexes) == len(players) - 1        
-        
+        all_answered_correctly = len(correct_author_indexes) == len(players) - 1
+
         if number_unique_answers == 0:
             msg = ux.MSG_NO_ANSWER_RECEIVED[lang]
             send_message(players, msg)
@@ -1042,41 +1068,41 @@ def state_WRITERS_SELECT_BEST_ANSWER(user, message_obj):
             if game.teacher_validation_enabled():
                 redirect_to_state_multi(game, players, state_TEACHER_VALIDATION)
             else:
-                recap_votes(game)            
-            return        
+                recap_votes(game)
+            return
         if game.game_type == 'REPLACEMENT':
             incomplete_text, original_completion = game.get_current_incomplete_text_and_original_completion()
             completed_text = incomplete_text.replace(original_completion, '*{}*'.format(original_completion))
             msg = ux.MSG_ORIGINAL_TEXT[lang].format(completed_text)
             send_message(players, msg)
         intro_msg = ux.MSG_INTRO_NUMBERED_TEXT[lang]
-        send_message(players, intro_msg)      
+        send_message(players, intro_msg)
         all_num_completed_answers_str = get_all_num_completed_answers_str(game, shuffled_answers_info)
         send_message(players, all_num_completed_answers_str)
         game.set_var('ALL_NUM_COMPLETED_ANSWERS', all_num_completed_answers_str)
         msg_reader_list = [
-            ux.MSG_WAIT_FOR_PLAYERS_TO_SELECT_PL[lang], 
+            ux.MSG_WAIT_FOR_PLAYERS_TO_SELECT_PL[lang],
             ux.MSG_STATUS_INSTRUCTIONS[lang],
             ux.MSG_JUMP_TO_NEXT_PHASE[lang]
-        ]        
-        send_message(reader, '\n'.join(msg_reader_list))
+        ]
+        send_message(dealer, '\n'.join(msg_reader_list))
         numbers_list = list(range(1,number_unique_answers+1)) # 1, 2, 3, 4, 5 (if there were 5 answers, including original if it applies)
 
         for w in writers:
             p_index = players.index(w)
             player_answer_info = next(
-                (a for a in shuffled_answers_info if p_index in a['authors']), 
+                (a for a in shuffled_answers_info if p_index in a['authors']),
                 None # None if w didn't answer
             )
             if not game.teacher_validation_enabled() and p_index in correct_author_indexes:
-                w.set_var('NO_VOTE', True, save=False)                
+                w.set_var('NO_VOTE', True, save=False)
                 msg_list = [
-                    ux.MSG_CORRECT_ANSWER_NO_SELECTION[lang], 
-                    ux.MSG_WAIT_TILL_YOUR_TURN[lang], 
+                    ux.MSG_CORRECT_ANSWER_NO_SELECTION[lang],
+                    ux.MSG_WAIT_TILL_YOUR_TURN[lang],
                     ux.MSG_STATUS_INSTRUCTIONS[lang]
                 ]
                 send_message(w, '\n'.join(msg_list), remove_keyboard=True)
-            else:                                
+            else:
                 player_voting_options = [
                     str(i) for i in numbers_list
                     if player_answer_info==None or i != player_answer_info['shuffled_number']
@@ -1091,23 +1117,23 @@ def state_WRITERS_SELECT_BEST_ANSWER(user, message_obj):
         text_input = message_obj.text
         remaining_names = game.get_names_remaining_voters()
         remaining_names_str = ', '.join(remaining_names)
-        if text_input == '/status':            
+        if text_input == '/status':
             msg_list = [ux.MSG_WAITING_FOR[lang].format(remaining_names_str)]
-            if user == reader:
+            if user == dealer:
                 msg_list.append(ux.MSG_JUMP_TO_NEXT_PHASE[lang])
             send_message(user, '\n'.join(msg_list))
             return
-        if user == reader:
+        if user == dealer:
             if text_input=='/jump':
-                if game.game_control == 'TEACHER':
-                    send_message(players, ux.msg_reader_HAS_JUMPED_TO_NEXT_PHASE[lang], remove_keyboard=True)
+                if game.teacher_mode:
+                    send_message(players, ux.MSG_TEACHER_HAS_JUMPED_TO_NEXT_PHASE[lang], remove_keyboard=True)
                     redirect_to_state_multi(game, players, state_TEACHER_VALIDATION)
                 else:
                     send_message(players, ux.MSG_READER_HAS_JUMPED_TO_NEXT_PHASE[lang], remove_keyboard=True)
                     recap_votes(game)
-            else:
+            elif game.dealer_is_reader_or_teacher():
                 send_message(user, ux.MSG_WRONG_INPUT_WAIT_FOR_PLAYERS_TO_SELECT[lang])
-            return        
+                return
         if user.get_var('NO_VOTE'):
             msg = ux.MSG_WRONG_INPUT_WAIT_FOR_PLAYERS_TO_SELECT[lang]
             send_message(user, msg)
@@ -1126,7 +1152,7 @@ def state_WRITERS_SELECT_BEST_ANSWER(user, message_obj):
                 return # double press of the button
             remaining_players_num = game.set_voted_indexes_and_get_remaining(user, voted_shuffled_number)
             tx_msg = ux.MSG_THANKS_YOU_SELECTED_X[lang].format(text_input)
-            if remaining_players_num==0:                        
+            if remaining_players_num==0:
                 send_message(user, tx_msg, remove_keyboard=True, sleep=True)
                 send_message(players, ux.MSG_ALL_ANSWERS_RECEIVED[lang])
                 if game.teacher_validation_enabled():
@@ -1137,14 +1163,14 @@ def state_WRITERS_SELECT_BEST_ANSWER(user, message_obj):
                 msg_list = [tx_msg, ux.MSG_WAIT_TILL_YOUR_TURN[lang], ux.MSG_STATUS_INSTRUCTIONS[lang]]
                 send_message(user, '\n'.join(msg_list), remove_keyboard=True)
         else:
-            send_message(user, ux.MSG_WRONG_INPUT_USE_BUTTONS[lang])            
+            send_message(user, ux.MSG_WRONG_INPUT_USE_BUTTONS[lang])
 
 # ================================
 # GAME_TEACHER_VALIDATION
 # ================================
 def state_TEACHER_VALIDATION(user, message_obj):
     game = user.get_current_game()
-    _, reader, writers = game.get_current_hand_players_reader_writers()
+    _, dealer, writers = game.get_current_hand_players_dealer_writers()
     lang = game.language
     shuffled_answers_info = game.get_shuffled_answers_info(include_no_vote=False)
     number_unique_answers = len(shuffled_answers_info)
@@ -1152,7 +1178,7 @@ def state_TEACHER_VALIDATION(user, message_obj):
         if game.is_voting_no_or_multiple_answers_allowed() \
         else ''
     if message_obj is None:
-        if user != reader:
+        if user != dealer:
             return
         # teacher
         user.set_var('CORRECT_ANSWERS_NUMBERS', [])
@@ -1171,16 +1197,16 @@ def state_TEACHER_VALIDATION(user, message_obj):
             all_num_completed_answers_str = get_all_num_completed_answers_str(game, shuffled_answers_info)
 
         msg_list = [
-            ux.MSG_RECAP_STUDENTS_ANSWERS[lang], 
+            ux.MSG_RECAP_STUDENTS_ANSWERS[lang],
             '',
             all_num_completed_answers_str,
             '',
-            ux.msg_reader_SELECT[lang].format(msg_or_none)
+            ux.MSG_TEACHER_SELECT[lang].format(msg_or_none)
         ]
         send_message(user, '\n'.join(msg_list), kb, sleep=True)
         send_message(writers, ux.MSG_WAIT_FOR_TEACHER_EVALUATION[lang], remove_keyboard=True)
     else:
-        if user != reader:
+        if user != dealer:
             send_message(user, ux.MSG_WRONG_INPUT_WAIT_FOR_TEACHER_TO_SELECT[lang])
         else:
             text_input = message_obj.text
@@ -1225,17 +1251,17 @@ def state_TEACHER_VALIDATION(user, message_obj):
                             else:
                                 pass
                             kb.append([NONE_BUTTON])
-                        kb.append([ux.BUTTON_SUBMIT[lang]])                        
+                        kb.append([ux.BUTTON_SUBMIT[lang]])
                         seleced = ', '.join([
                             str(x) if x!=-1 else ux.MSG_NO_ANSWER[lang]
                             for x in sorted(CORRECT_ANSWERS_NUMBERS)
                         ])
-                        msg_selected = ux.msg_reader_YOU_SELECTED[lang].format(seleced)
-                        msg_select_or_submit = ux.msg_reader_SELECT_OR_SUBMIT[lang].format(msg_or_none)
+                        msg_selected = ux.MSG_TEACHER_YOU_SELECTED[lang].format(seleced)
+                        msg_select_or_submit = ux.MSG_TEACHER_SELECT_OR_SUBMIT[lang].format(msg_or_none)
                         msg_list = [msg_selected, msg_select_or_submit, ux.MSG_RECAP_INSTRUCTION[lang]]
                     else:
                         msg_list = [
-                            ux.msg_reader_SELECT[lang].format(msg_or_none), 
+                            ux.MSG_TEACHER_SELECT[lang].format(msg_or_none),
                             ux.MSG_RECAP_INSTRUCTION[lang]
                         ]
                         if game.is_voting_no_or_multiple_answers_allowed():
@@ -1250,8 +1276,8 @@ def state_TEACHER_VALIDATION(user, message_obj):
 def recap_votes(game, answer_received=True):
     game.set_sub_state('state_RECAP_VOTES')
     lang = game.language
-    players, _, writers = game.get_current_hand_players_reader_writers()    
-    
+    players, _, writers = game.get_current_hand_players_dealer_writers()
+
     if answer_received:
 
         if game.game_type == 'REPLACEMENT':
@@ -1288,7 +1314,7 @@ def recap_votes(game, answer_received=True):
             answer_report += '\n' + ux.MSG_SELECTED_BY[lang].format(num_voters_and_names)
             msg_list.append(answer_report)
         send_message(players, '\n\n'.join(msg_list), remove_keyboard=True)
-    
+
     # send points feedback
     points_feedbacks = game.prepare_hand_poins_and_get_points_feedbacks()
     POINT_SYSTEM = parameters.POINTS[game.game_type]
@@ -1297,52 +1323,52 @@ def recap_votes(game, answer_received=True):
         p_feedback = points_feedbacks[p_index]
         msg_points_no_answer = ux.MSG_POINT_SG_PL(POINT_SYSTEM['NO_ANSWER'])[lang]
         msg_points_correct_answer = ux.MSG_POINT_SG_PL(POINT_SYSTEM['CORRECT_ANSWER'])[lang]
-        msg_points_incorrect_answer = ux.MSG_POINT_SG_PL(POINT_SYSTEM['INCORRECT_ANSWER'])[lang]        
+        msg_points_incorrect_answer = ux.MSG_POINT_SG_PL(POINT_SYSTEM['INCORRECT_ANSWER'])[lang]
         msg_points_no_selection = ux.MSG_POINT_SG_PL(POINT_SYSTEM['NO_SELECTION'])[lang]
-        msg_points_correct_selection = ux.MSG_POINT_SG_PL(POINT_SYSTEM['CORRECT_SELECTION'])[lang]        
-        msg_points_incorrect_selection = ux.MSG_POINT_SG_PL(POINT_SYSTEM['INCORRECT_SELECTION'])[lang]        
+        msg_points_correct_selection = ux.MSG_POINT_SG_PL(POINT_SYSTEM['CORRECT_SELECTION'])[lang]
+        msg_points_incorrect_selection = ux.MSG_POINT_SG_PL(POINT_SYSTEM['INCORRECT_SELECTION'])[lang]
 
         msg_list = [ux.MSG_YOUR_ROUND_POINTS[lang].format(p_feedback['POINTS'])]
-        
+
         if p_feedback['NO_ANSWER']:
             msg_list.append(ux.MSG_NO_GIVEN_ANSWER[lang].format(msg_points_no_answer))
         elif game.teacher_validation_enabled():
             if p_feedback['ANSWERED_CORRECTLY']:
-                msg_list.append(ux.MSG_CORRECT_ANSWER[lang].format(msg_points_correct_answer))        
+                msg_list.append(ux.MSG_CORRECT_ANSWER[lang].format(msg_points_correct_answer))
             else:
                 msg_list.append(ux.MSG_WRONG_ANSWER[lang].format(msg_points_incorrect_answer))
-        
+
         if game.get_var('SELECTION_ENABLED'):
             if p_feedback['ANSWERED_CORRECTLY']:
                 msg_list.append(ux.MSG_CORRECT_ANSWER[lang].format(msg_points_correct_answer))
-            elif p_feedback['NO_SELECTION']: 
+            elif p_feedback['NO_SELECTION']:
                 msg_list.append(ux.MSG_NO_GIVEN_SELECTION[lang].format(msg_points_no_selection))
             elif p_feedback['SELECTED_CORRECTLY']:
                 msg_list.append(ux.MSG_CORRECT_SELECTION[lang].format(msg_points_correct_selection))
-            elif game.teacher_validation_enabled():            
+            elif game.teacher_validation_enabled():
                 msg_list.append(ux.MSG_WRONG_SELECTION_PENALTY[lang].format(msg_points_incorrect_selection))
             else:
                 msg_list.append(ux.MSG_WRONG_SELECTION_NO_PENALTY[lang])
-            
+
         if not game.teacher_validation_enabled():
             received_votes = p_feedback['NUM_VOTES_RECEIVED']
-            received_votes_total_points = received_votes * POINT_SYSTEM['RECEIVED_VOTE']            
+            received_votes_total_points = received_votes * POINT_SYSTEM['RECEIVED_VOTE']
             msg_received_votes_total_points = ux.MSG_POINT_SG_PL(received_votes_total_points)[lang]
             msg_list.append(ux.MSG_RECEIVED_VOTES_SG_PL(received_votes)[lang].format(msg_received_votes_total_points))
-        
+
         send_message(w, '\n'.join(msg_list))
-    
-    redirect_to_state_multi(game, players, state_NEXT_HAND)        
-        
+
+    redirect_to_state_multi(game, players, state_NEXT_HAND)
+
 
 def go_to_next_hand(game, players):
-    if not game.setup_next_hand():        
+    if not game.setup_next_hand():
         return # double press of a button
-    lang = game.language    
+    lang = game.language
     msg_round_num = ux.MSG_ROUND_NUM[lang].format(game.get_hand_number(), game.num_hands)
     send_message(players, msg_round_num, remove_keyboard=True)
 
-    if game.auto_exercise_mode():
+    if game.auto_exercise_mode:
         redirect_to_state_multi(game, players, state_WRITERS_WRITE_ANSWERS)
     else:
         redirect_to_state_multi(game, players, state_READER_WRITES_INCOMPLETE_TEXT)
@@ -1352,11 +1378,12 @@ def go_to_next_hand(game, players):
 # ================================
 def state_NEXT_HAND(user, message_obj):
     game = user.get_current_game()
-    players, reader, writers = game.get_current_hand_players_reader_writers()
+    players, dealer, writers = game.get_current_hand_players_dealer_writers()
     lang = game.language
-    reader_name = ux.MSG_THE_TEACHER[lang] if game.game_control=='TEACHER' else reader.get_name()
+    controller = players[0] if game.teacher_mode or game.auto_exercise_mode else dealer
+    controller_name = ux.MSG_THE_TEACHER[lang] if game.teacher_mode else controller.get_name()    
     if message_obj is None:
-        if user != reader:
+        if user != controller:
             return
         if game.is_last_hand():
             send_message(players, ux.MSG_POINT_GAME_SUMMARY[lang])
@@ -1367,26 +1394,27 @@ def state_NEXT_HAND(user, message_obj):
             send_message(players, winner_msg)
             kb = [[ux.BUTTON_END_GAME[lang]]]
             reader_msg = ux.MSG_END_GAME[lang]
-            msg_writers = ux.MSG_WAIT_FOR_X_TO_END_GAME[lang].format(reader_name)
-        else:         
+            msg_writers = ux.MSG_WAIT_FOR_X_TO_END_GAME[lang].format(controller_name)
+        else:
             send_message(players, ux.MSG_POINT_GAME_PARTIAL_SUMMARY[lang])
             game.send_points_img_data(players)
             kb = [[ux.BUTTON_NEXT_ROUND[lang]]]
             reader_msg = ux.MSG_NEXT_ROUND[lang]
-            msg_writers = ux.MSG_WAIT_FOR_X_TO_START_NEXT_ROUND[lang].format(reader_name)
-        send_message(user, reader_msg, kb)        
-        send_message(writers, msg_writers)
+            msg_writers = ux.MSG_WAIT_FOR_X_TO_START_NEXT_ROUND[lang].format(controller_name)
+        send_message(user, reader_msg, kb)
+        writers_no_dealer = [u for u in writers if u!=controller]
+        send_message(writers_no_dealer, msg_writers)
     else:
-        if user != reader:            
-            send_message(user, ux.MSG_WRONG_INPUT_WAIT_FOR_X_TO_START_NEXT_ROUND[lang].format(reader_name))
+        if user != controller:
+            send_message(user, ux.MSG_WRONG_INPUT_WAIT_FOR_X_TO_START_NEXT_ROUND[lang].format(controller_name))
         else:
             text_input = message_obj.text
             kb = user.get_keyboard()
             if text_input in utility.flatten(kb):
-                if text_input == ux.BUTTON_NEXT_ROUND[lang]:                    
-                    go_to_next_hand(game, players)                                        
+                if text_input == ux.BUTTON_NEXT_ROUND[lang]:
+                    go_to_next_hand(game, players)
                 elif text_input == ux.BUTTON_END_GAME[lang]:
-                    end_game(game, players)                    
+                    end_game(game, players)
                 else:
                     repeat_state(user) # interface must have changed in the meantime
                     send_message(user, ux.MSG_INTERFACE_CHANGED[lang])
@@ -1441,7 +1469,7 @@ def deal_with_universal_commands(user, message_obj):
             players = game.get_players()
             if parameters.ONLY_GAME_CREATOR_CAN_TERMINATE_GAME:
                 if user == players[0]:
-                    # only game creator can terminate it
+                    # only game dealer can terminate it
                     interrupt_game(game, user)
                 else:
                     send_message(user, ux.MSG_ONLY_CREATOR_CAN_TERMINATE_GAME[lang])
@@ -1469,7 +1497,7 @@ def deal_with_universal_commands(user, message_obj):
         if utility.contains_markdown(text_input):
             send_message(user, ux.MSG_CHAT_MSG_NO_MARKDOWN[lang])
         else:
-            players = game.get_players()                
+            players = game.get_players()
             message_obj.delete()
             send_message(players, "📩 *{}*: {}".format(user.get_name(), chat_msg))
         return True
@@ -1481,7 +1509,7 @@ def deal_with_universal_commands(user, message_obj):
             send_message(user, ux.MSG_CANT_JOIN_GAME[lang])
             return True
         game_id = text_input.split('/game_')[1]
-        game = Game.get(game_id)                
+        game = Game.get(game_id)
         if game:
             if game.add_player(user):
                 redirect_to_state(user, state_WAITING_FOR_START)
@@ -1495,7 +1523,7 @@ def deal_with_universal_commands(user, message_obj):
         return True
     if text_input == '/info':
         msg = ux.MSG_NO_INFO[lang] if user.current_game_id else ux.MSG_INFO[lang]
-        send_message(user, msg)            
+        send_message(user, msg)
         return True
     if user.is_master():
         if text_input == '/debug':
@@ -1537,14 +1565,14 @@ def deal_with_universal_commands(user, message_obj):
 
 def deal_with_voice(user, message_obj):
     import time
-    game = user.get_current_game()    
+    game = user.get_current_game()
     if game == None:
         lang = user.language if user.language else 'en'
         send_message(user, ux.MSG_NO_GAME_NO_VOICE[lang])
         return True
     lang = game.language
     message_obj.delete()
-    players = game.get_players()    
+    players = game.get_players()
     for p in players:
         BOT.sendVoice(
             chat_id = p.serial_id,
@@ -1578,7 +1606,7 @@ def deal_with_request(request_json):
         report_master('New user: {}'.format(user.get_name_at_username()))
         restart_user(user)
         return
-    
+
     user.update_user(name, username)
 
     if message_obj.forward_from:

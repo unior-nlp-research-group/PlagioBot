@@ -2,6 +2,7 @@ import key
 import utility
 import json
 from collections import defaultdict
+from uuid import uuid4
 
 nature_it_continuation_data_file = './data/exercise_it_continuation_natura.json'
 nature_en_continuation_data_file = './data/exercise_en_continuation_natura.json'
@@ -26,11 +27,13 @@ def generate_data_file_from_spreadsheet():
         incipit_en, cont_en = row[4], row[5]
         source = row[6]
         it_data.append({
+            'ID': str(uuid4()),
             'INCIPIT': incipit_it,
             'CONTINUATION': cont_in,
             'SOURCE': source
         })
         en_data.append({
+            'ID': str(uuid4()),
             'INCIPIT': incipit_en,
             'CONTINUATION': cont_en,
             'SOURCE': source

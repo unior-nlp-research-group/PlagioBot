@@ -2,6 +2,7 @@ import key
 import utility
 import json
 from collections import defaultdict
+from uuid import uuid4
 
 synonym_data_file = './data/exercises_en_synonym_mwe.json'
 
@@ -29,7 +30,13 @@ def generate_data_file_from_spreadsheet():
         if sentence.count(mwe_text) != 1:
             print("'{}' not in '{}'".format(mwe_text, sentence))
             continue
-        mwe_type_sentences_dict[mwe_type].append({'SENTENCE': sentence, 'MWE': mwe_text})        
+        mwe_type_sentences_dict[mwe_type].append(
+            {
+                'ID': str(uuid4()),
+                'SENTENCE': sentence, 
+                'REPLACEMENT': mwe_text
+            }
+        )        
         if mwe_type not in accepted_mwe_types:
             accepted_mwe_types.append(mwe_type)
     

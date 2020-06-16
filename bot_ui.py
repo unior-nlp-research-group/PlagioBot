@@ -38,6 +38,18 @@ BUTTON_NO = {
     'en': '❌ NO',
     'it': '❌ NO'
 }
+BUTTON_YES_NO_EMOJI = {
+    'en': 'YES',
+    'it': 'SI'
+}
+BUTTON_NO_NO_EMOJI = {
+    'en': 'NO',
+    'it': 'NO'
+}
+BUTTON_OFF = {
+    'en': '❌ TURN OFF',
+    'it': '❌ DISABILITA'
+}
 BUTTON_BACK = {
     'en': "🔙 BACK",
     'it': "🔙 INDIETRO"
@@ -134,17 +146,9 @@ BUTTON_GAME_TRANSLATE_HELP = {
     'en': "👁️‍🗨️ AUTOMATIC TRANSLATE",
     'it': "👁️‍🗨️ TRADUZIONE AUTOMATICA"
 }
-BUTTON_GAME_CONTROL = {
-    'en': "⚛️🧑‍🏫 CONTROL",
-    'it': "⚛️🧑‍🏫 CONTROLLO"
-}
-BUTTON_GAME_CONTROL_DEFAULT = {
-    'en': "⚛️ DEFAULT",
-    'it': "⚛️ DEFAULT"
-}
-BUTTON_GAME_CONTROL_TEACHER = {
-    'en': "🧑‍🏫 TEACHER",
-    'it': "🧑‍🏫 INSEGNANTE"
+BUTTON_TEACHER_MODE = {
+    'en': "🧑‍🏫 TEACHER CONTROL",
+    'it': "🧑‍🏫 CONTROLLO INSEGNANTE"
 }
 MSG_THE_TEACHER = {
     'en': "the *teacher*",
@@ -173,6 +177,10 @@ BUTTON_NEXT_ROUND = {
 BUTTON_END_GAME = {
     'en': "🏁 END GAME",
     'it': "🏁 TERMINA GIOCO"
+}
+BUTTON_NATURE_EXERCISE = {
+    'en': "🍃 NATURE",
+    'it': "🍃 NATURA"
 }
 
 ####################
@@ -260,9 +268,9 @@ MSG_INSERT_INVITATION = {
     'en': "📮 Please insert a *message to invite other players to this game*. Your invitation, together with a direct command to join this game, will be sent to *all users* that are not in game and have the *English* interface anabled.",
     'it': "📮Inserisci un messaggio per *invitare altri giocatori a questo gioco*. L'invito verrà inoltratao, assieme ad un comando diretto per unirsi al gioco, a *tutti gli utenti* che non sono atualmente in un gioco e hanno l'interfaccia impostata sull'*italiano*."
 }
-MSG_X_CHANGED_GAME_TYPE_TO_Y = {
-    'en': "🕹️ {} changed the game type to {}.",
-    'it': "🕹️ {} ha impostato la modalità di gioco su {}."
+MSG_CHANGED_GAME_TYPE_TO_Y = {
+    'en': "🕹️ Changed the game type to {}.",
+    'it': "🕹️ Modalità di gioco impostata su {}."
 }
 MSG_SELECT_GAME_TYPE = {
     'en': "Please select the game type:",
@@ -284,15 +292,15 @@ MSG_GAME_TRANSLATE = {
     'en': "Please select if you want to provide the *automatic translation* of the sentence to be completed.",
     'it': "Indica se vuoi fornire la *traduzione automatica* della frase da completare."
 }
-MSG_SELECT_GAME_CONTROL = {
-    'en': "Please select the game mode:",
-    'it': "Seleziona la modalità di gioco:"
+MSG_SELECT_TEACHER_MODE = {
+    'en': "Do you want to activate the TEACHER MODE? (Teachers only observes/controls the game)",
+    'it': "Vuoi attivare la modalità insegnante? (Gli insegnanti possono solo osservare e controllare il gioco)"
 }
-MSG_GAME_CONTROL_DEFAULT_DESCR = {
+MSG_TEACHER_MODE_DEFAULT_DESCR = {
     'en': "every player chooses a sentence to be completed",
     'it': "ogni giocatore sceglie una frase da completare"
 }
-MSG_GAME_CONTROL_TEACHER_DESCR = {
+MSG_TEACHER_MODE_TEACHER_DESCR = {
     'en': "you (the teacher) will choose all the sentences",
     'it': "tu (l'insegnante) sceglierai tutte le frasi"
 }
@@ -370,9 +378,17 @@ MSG_GAME_TYPE_INFO = {
     'en': '⚙️ Mode: *{}*',
     'it': '⚙️ Modalità: *{}*'
 }
-MSG_GAME_CONTROL_INFO = {
-    'en': '📡 Control: *{}*',
-    'it': '📡 Controllo: *{}*'
+MSG_TEACHER_MODE_INFO = {
+    'en': "🧑‍🏫 TEACHER CONTROL",
+    'it': "🧑‍🏫 CONTROLLO INSEGNANTE"
+}
+MSG_ROUNDS_NUMBER_INFO = {
+    'en': "🔢⭕️ ROUNDS NUMBER: {}",
+    'it': "🔢🖐️ NUMERO MANI: {}"
+}
+MSG_GAME_AUTO_TEXT_INFO = {
+    'en': '📚 Auto Text: *{}*',
+    'it': '📚 Testo Automatico: *{}*'
 }
 MSG_CURRENT_PLAYERS = {
     'en': '👥 *{} players*: {}',
@@ -593,12 +609,12 @@ MSG_TEACHER_SELECT_OR_SUBMIT = {
     'it': "🧑‍🏫 Seleziona un'altra risposta corretta{} o premi *{}* per confermare.".format('{}',BUTTON_SUBMIT['it'])
 }
 MSG_SELECT_EXERCISE_BATCH = {
-    'en': "🧑‍🏫 Please select the exercise batch number you want to use:",
-    'it': "🧑‍🏫 Seleziona il set di esercizi da usare."
+    'en': "📚 Please select the collection you want to use.",
+    'it': "📚 Seleziona la collezioni di testi da utilizzare."
 }
 MSG_EXERCISE_SETUP_SUCCESSFULLY = {
-    'en': "🧑‍🏫 Exercise setup completed.",
-    'it': "🧑‍🏫 Impostazione esercizio completato."
+    'en': "📚 Exercise setup completed.",
+    'it': "📚 Impostazione esercizio completato."
 }
 MSG_RECAP_INSTRUCTION = {
     'en': "📜 Use the command /recap\\_answers if you want to see the students' answers again.",
@@ -927,23 +943,19 @@ GAME_TYPE_DICT = lambda lang: \
         'REPLACEMENT': BUTTON_GAME_TYPE_SYNONYM[lang],
     }
 
-GAME_CONTROL_DICT = lambda lang: \
-    {
-        'DEFAULT': BUTTON_GAME_CONTROL_DEFAULT[lang],
-        'TEACHER': BUTTON_GAME_CONTROL_TEACHER[lang]
+BUTTON_YES_NO = lambda lang: {
+        True: BUTTON_YES[lang],
+        False: BUTTON_NO[lang]
     }
 
 GAME_SETTINGS_BUTTON_VALUE_UX_MAPPING = lambda lang: {
     BUTTON_GAME_TYPE[lang]: GAME_TYPE_DICT(lang),
-    BUTTON_GAME_CONTROL[lang]: GAME_CONTROL_DICT(lang),
-    BUTTON_GAME_TRANSLATE_HELP[lang]: {
-        True: BUTTON_YES[lang],
-        False: BUTTON_NO[lang]
-    }
+    BUTTON_TEACHER_MODE[lang]: BUTTON_YES_NO(lang),
+    BUTTON_GAME_TRANSLATE_HELP[lang]: BUTTON_YES_NO(lang)
 }
 
 MSG_GAME_TYPE = lambda type,lang: GAME_TYPE_DICT(lang)[type]
-MSG_GAME_CONTROL = lambda type,lang: GAME_CONTROL_DICT(lang)[type]
+MSG_TEACHER_MODE = lambda value,lang: BUTTON_YES_NO(lang)[value]
 
 def render_incomplete_text(game):    
     incomplete_text, original_completion = game.get_current_incomplete_text_and_original_completion()
@@ -985,13 +997,13 @@ def text_is_button_or_digit(text):
     import utility
     return text in ALL_BUTTONS_TEXT_LIST or utility.represents_int(text)
 
-def check_multi_button(buttons_value_description, selected_value, multi_line=False):
+def check_multi_button(buttons_value, selected_value, multi_line=False):
     buttons = [
         '{}{}'.format(
             b,
             ' ' + CHECK_SYMBOL if v['value']==selected_value else ''
         )
-        for b,v in sorted(buttons_value_description.items(), key=lambda i: i[1]['order'])
+        for b,v in sorted(buttons_value.items(), key=lambda i: i[1]['order'])
     ]
     if multi_line:
         buttons = [[b] for b in buttons]

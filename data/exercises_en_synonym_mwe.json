@@ -2,212 +2,256 @@
    "MWE 1": {
       "break down": [
          {
+            "ID": "437d605b-12a8-4fd6-acd0-af87b2a87a66",
             "SENTENCE": "Val broke down sobbing.",
-            "MWE": "broke down"
+            "REPLACEMENT": "broke down"
          },
          {
+            "ID": "2d7b2235-9fb1-401d-a90a-67e31dc99cb0",
             "SENTENCE": "My health broke down in the end.",
-            "MWE": "broke down"
+            "REPLACEMENT": "broke down"
          }
       ],
       "break in": [
          {
+            "ID": "0aadfc49-ecb3-4fd4-be73-57005838a7a4",
             "SENTENCE": "He mostly walks around the roof trying to keep people from breaking in.",
-            "MWE": "breaking in"
+            "REPLACEMENT": "breaking in"
          },
          {
+            "ID": "e7c77276-9514-446b-9402-9fc5edb40941",
             "SENTENCE": "All at once the clear voice of Reepicheep broke in upon the silence.",
-            "MWE": "broke in"
+            "REPLACEMENT": "broke in"
          }
       ],
       "break up": [
          {
+            "ID": "912c8023-01c8-41fa-a579-449cd11656a6",
             "SENTENCE": "The pellets buried themselves in the wall of the barn and the meeting broke up hurriedly.",
-            "MWE": "broke up"
+            "REPLACEMENT": "broke up"
          },
          {
+            "ID": "8eb50000-e7a0-4c58-99b8-0c329cc5c1d9",
             "SENTENCE": "The problem the animals could not at first solve was how to break up the stone into pieces of suitable size.",
-            "MWE": "break up"
+            "REPLACEMENT": "break up"
          },
          {
+            "ID": "eb10d890-f763-4a3a-9709-08a271be7f93",
             "SENTENCE": "Last night, Craig and Sam broke up.",
-            "MWE": "broke up"
+            "REPLACEMENT": "broke up"
          }
       ],
       "check out": [
          {
+            "ID": "08acd283-1755-4220-b40f-f263f37edffa",
             "SENTENCE": "I went to the library and checked out a book because I was getting scared.",
-            "MWE": "checked out"
+            "REPLACEMENT": "checked out"
          },
          {
+            "ID": "500bd392-8597-4064-adad-0b56940fe22c",
             "SENTENCE": "This part wasn't a lie: that Via was checking out her new school today.",
-            "MWE": "checking out"
+            "REPLACEMENT": "checking out"
          },
          {
+            "ID": "6176e366-1988-4edc-8072-888e5cc9bff6",
             "SENTENCE": "He rubbed his bruises, he checked out his contusions.",
-            "MWE": "checked out"
+            "REPLACEMENT": "checked out"
          }
       ],
       "come along": [
          {
+            "ID": "a0808f86-dfb5-4486-ba38-00d9727040c0",
             "SENTENCE": "These young heroes wait stoically and without complaint for their one true wish to come along.",
-            "MWE": "come along"
+            "REPLACEMENT": "come along"
          },
          {
+            "ID": "4d9ae7bb-cc9c-4269-bc5a-e45e364fa38c",
             "SENTENCE": "Nights like this one didn’t come along often, and I wanted to remember it.",
-            "MWE": "come along"
+            "REPLACEMENT": "come along"
          },
          {
+            "ID": "3b2fc636-8857-493d-bbeb-4c9582a8fd98",
             "SENTENCE": "That's one reason why I suggested you should come along here as soon as possible.",
-            "MWE": "come along"
+            "REPLACEMENT": "come along"
          }
       ]
    },
    "MWE 2": {
       "come out": [
          {
+            "ID": "2e6d7505-17e1-4fcd-a821-51435b60186d",
             "SENTENCE": "Finally, the clouds rolled away and the moon came out.",
-            "MWE": "came out"
+            "REPLACEMENT": "came out"
          },
          {
+            "ID": "ddf3c104-aa9b-4a0f-ab84-e71434dc78d5",
             "SENTENCE": "Boxer would even come out at nights and work for an hour or two on his own by the light of the harvest moon.",
-            "MWE": "come out"
+            "REPLACEMENT": "come out"
          },
          {
+            "ID": "d9d25b37-5415-4726-a529-be110ea148a4",
             "SENTENCE": "Then I wondered how her face would look when she came out from behind those doors.",
-            "MWE": "came out"
+            "REPLACEMENT": "came out"
          }
       ],
       "end up": [
          {
+            "ID": "afb990f6-b00c-4282-a962-7105f66a534e",
             "SENTENCE": "She once tried to draw me a Darth Vader, but it ended up looking like some weird mushroom-shaped robot.",
-            "MWE": "ended up"
+            "REPLACEMENT": "ended up"
          },
          {
+            "ID": "ef629f9a-3acb-4583-8a16-3ab409424ff2",
             "SENTENCE": "He knew there was no chance he would end up like that.",
-            "MWE": "end up"
+            "REPLACEMENT": "end up"
          }
       ],
       "fall down": [
          {
+            "ID": "ae77a2fd-53bd-45c3-af09-2d592c0a5b31",
             "SENTENCE": "To be afraid of this ridiculous dog when there was a tiger about was like being afraid of splinters when trees are falling down.",
-            "MWE": "falling down"
+            "REPLACEMENT": "falling down"
          },
          {
+            "ID": "e7b0ffa9-4b55-4e75-94d1-ff564a199874",
             "SENTENCE": "Then Aslan roared so that the sun shook in the sky and thirty feet of the wall fell down before them.",
-            "MWE": "fell down"
+            "REPLACEMENT": "fell down"
          }
       ],
       "fall over": [
          {
+            "ID": "954a0cf4-4299-4d37-a140-482de3d73d62",
             "SENTENCE": "With his hands he caught himself from falling over.",
-            "MWE": "falling over"
+            "REPLACEMENT": "falling over"
          },
          {
+            "ID": "54a96a0c-8690-4a2a-a61f-47e5bb77ed83",
             "SENTENCE": "Their respectful attention to Bean soon prevailed, and silence fell over the room.",
-            "MWE": "fell over"
+            "REPLACEMENT": "fell over"
          },
          {
+            "ID": "c6a180f0-5f2a-4174-a801-c3aa0ec8b402",
             "SENTENCE": "This morning I began sorting out an index card file from the office, because it'd fallen over and gotten all mixed up.",
-            "MWE": "fallen over"
+            "REPLACEMENT": "fallen over"
          }
       ],
       "get in": [
          {
+            "ID": "7efbd527-c36c-48b6-a4d5-b510ae40b554",
             "SENTENCE": "Once the vessel cracks, the light can get in.",
-            "MWE": "get in"
+            "REPLACEMENT": "get in"
          },
          {
+            "ID": "a998e085-8fee-46ec-ad2e-914316ca5456",
             "SENTENCE": "The descolada virus has gotten in and killed every strain of amaranth that your sister developed for them.",
-            "MWE": "gotten in"
+            "REPLACEMENT": "gotten in"
          },
          {
+            "ID": "d686c252-fca7-4d72-9a08-ba170d654ddc",
             "SENTENCE": "It was after hours, but Bean could still palm his way through the locks to get in without setting off alarms.",
-            "MWE": "get in"
+            "REPLACEMENT": "get in"
          }
       ]
    },
    "MWE 3": {
       "get on": [
          {
+            "ID": "7f4b8909-ade8-42af-a7cf-ca7476e242dc",
             "SENTENCE": "They were all getting on at a quicker pace now.",
-            "MWE": "getting on"
+            "REPLACEMENT": "getting on"
          },
          {
+            "ID": "138c7789-d086-4b7c-94fc-2e0624debaf7",
             "SENTENCE": "Let's think about those Gentle Giants and get on to Harfang as quickly as we can.",
-            "MWE": "get on"
+            "REPLACEMENT": "get on"
          }
       ],
       "get out": [
          {
+            "ID": "66e5347d-e7e4-48f0-b911-7aaedb9bd57b",
             "SENTENCE": "Violet opened the door of the automobile and got out to shake the woman’s hand.",
-            "MWE": "got out"
+            "REPLACEMENT": "got out"
          },
          {
+            "ID": "90dda18e-3ee8-4dd6-9fe1-988087278522",
             "SENTENCE": "They were shivering when they got out.",
-            "MWE": "got out"
+            "REPLACEMENT": "got out"
          },
          {
+            "ID": "6857ca17-e3ea-493b-9745-d4928f65e9db",
             "SENTENCE": "I got out the noseplugs and vaselined them carefully.",
-            "MWE": "got out"
+            "REPLACEMENT": "got out"
          },
          {
+            "ID": "6ec6ce48-bc87-4e19-97a8-41c8af7a0073",
             "SENTENCE": "When I got out at the fifth floor and walked along the corridor, the elevator operator stayed and watched me.",
-            "MWE": "got out"
+            "REPLACEMENT": "got out"
          },
          {
+            "ID": "4716b6d0-98f5-4acc-a8a3-f4131cf45794",
             "SENTENCE": "They can shut us in here without power or water or sewers, and we can't get out.",
-            "MWE": "get out"
+            "REPLACEMENT": "get out"
          }
       ],
       "give in": [
          {
+            "ID": "330b506d-9c4e-4a9c-8eed-1a919d890ebf",
             "SENTENCE": "It was as if Novinha had already started giving in to a new rival before the rival was even there.",
-            "MWE": "giving in"
+            "REPLACEMENT": "giving in"
          },
          {
+            "ID": "5e5ec071-b4fd-4016-a212-0398419f3dd8",
             "SENTENCE": "But Uncle Vernon wasn’t going to give in without a fight.",
-            "MWE": "give in"
+            "REPLACEMENT": "give in"
          },
          {
+            "ID": "76c4fc2b-3491-4921-90cd-cb4b914330bb",
             "SENTENCE": "Dussel finally had to give in, and I was granted the opportunity to work without interruption two afternoons a week.",
-            "MWE": "give in"
+            "REPLACEMENT": "give in"
          }
       ],
       "go away": [
          {
+            "ID": "e687931e-1699-4dc9-b76a-eadeac96fbb2",
             "SENTENCE": "I would do anything to make this go away.",
-            "MWE": "go away"
+            "REPLACEMENT": "go away"
          },
          {
+            "ID": "06da9f90-1dd4-4c70-bdb0-2d3e06ba9407",
             "SENTENCE": "Seasickness comes on quickly, but it takes a long while to go away.",
-            "MWE": "go away"
+            "REPLACEMENT": "go away"
          },
          {
+            "ID": "6ccfdcdd-072b-42e8-80d2-0cf943c1daaa",
             "SENTENCE": "The blackness would stir and eventually go away, and God would remain, a shining point of light in my heart.",
-            "MWE": "go away"
+            "REPLACEMENT": "go away"
          }
       ],
       "go down": [
          {
+            "ID": "b33a73a7-28c6-4559-b1f5-31f3d0c20a2c",
             "SENTENCE": "When the sun went down, I put my smoking pamphlet on the page where I stopped reading and started driving home.",
-            "MWE": "went down"
+            "REPLACEMENT": "went down"
          },
          {
+            "ID": "0fb8e0a7-9bb5-4247-8046-dfeed12ac175",
             "SENTENCE": "So I waited and listened for my name as she went down the list alphabetically.",
-            "MWE": "went down"
+            "REPLACEMENT": "went down"
          },
          {
+            "ID": "72a83c50-3b92-477b-8cf0-0cc677e048f8",
             "SENTENCE": "I stood with my hands in my pockets watching the sun go down and thinking of the work which we were to do.",
-            "MWE": "go down"
+            "REPLACEMENT": "go down"
          },
          {
+            "ID": "6eff3635-d98f-4d75-be82-8e018f69ea01",
             "SENTENCE": "Only after the sun has gone down does it come out to hunt for food.",
-            "MWE": "gone down"
+            "REPLACEMENT": "gone down"
          },
          {
+            "ID": "d7cd6203-1c5d-40cc-9f0e-7f85b9db9cb8",
             "SENTENCE": "It was at this point that Anna had to go down to Dallas on office business.",
-            "MWE": "go down"
+            "REPLACEMENT": "go down"
          }
       ]
    }
