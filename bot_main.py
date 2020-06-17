@@ -7,6 +7,7 @@ import google.cloud.logging
 client = google.cloud.logging.Client()
 client.setup_logging(log_level=logging.DEBUG) # INFO DEBUG WARNING
 
+from bot_telegram_dialogue import  state_WAITING_FOR_START, redirect_to_state
 
 # If entrypoint is not defined in app.yaml, App Engine will look for an app
 # called app in main.py.
@@ -100,8 +101,9 @@ def join_game():
             room_name = game_name.upper()
             game = Game.get_game_in_initial_state(room_name)
             if game:
-                if Game.add_player(game, u):
-                    u.set_state('state_WAITING_FOR_START')
+                if Game.add_player(game, u):                    
+                    redirect_to_state(u, state_WAITING_FOR_START)
+                    # u.set_state('state_WAITING_FOR_START')
                     return jsonify({'success': True, 'error': None}), 200
                 else:
                     error_msg = 'Game no longer available'
