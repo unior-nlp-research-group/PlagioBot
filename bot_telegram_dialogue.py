@@ -901,15 +901,16 @@ def state_WRITERS_WRITE_ANSWERS(user, message_obj):
     incomplete_text, original_completion = game.get_current_incomplete_text_and_original_completion()
     lang = game.language
     if message_obj is None:
-        if game.dealer_is_reader_or_teacher():
+        if user == dealer and game.dealer_is_reader_or_teacher():
             msg_reader_list = [
                 ux.MSG_WAIT_WRITERS_WRITE_ANSWERS[game.game_type][lang],
                 ux.MSG_STATUS_INSTRUCTIONS[lang],
                 ux.MSG_CHAT_INFO[lang],
                 ux.MSG_JUMP_TO_NEXT_PHASE[lang]
             ]
-            send_message(user, '\n'.join(msg_reader_list), remove_keyboard=True)        
+            send_message(dealer, '\n'.join(msg_reader_list), remove_keyboard=True)        
         else:
+            # msg to writers
             msg_incomplete_sentence = ux.render_incomplete_text(game)
             msg_writers = [
                 msg_incomplete_sentence, '',
@@ -928,6 +929,7 @@ def state_WRITERS_WRITE_ANSWERS(user, message_obj):
             msg_list = [ux.MSG_WAITING_FOR[lang].format(remaining_names_str)]
             msg_list.append(ux.MSG_JUMP_TO_NEXT_PHASE[lang])
             send_message(user, '\n'.join(msg_list))
+            return
         if user == dealer:
             if text_input=='/jump':
                 if game.teacher_mode:
@@ -936,6 +938,7 @@ def state_WRITERS_WRITE_ANSWERS(user, message_obj):
                 else:
                     send_message(players, ux.MSG_READER_HAS_JUMPED_TO_NEXT_PHASE[lang], remove_keyboard=True)
                     redirect_to_state_multi(game, players, state_WRITERS_SELECT_BEST_ANSWER)
+                return
             if game.dealer_is_reader_or_teacher():            
                 send_message(user, ux.MSG_WRONG_INPUT_WAIT_FOR_PLAYERS_TO_ANSWER[lang])
                 return
@@ -1131,6 +1134,7 @@ def state_WRITERS_SELECT_BEST_ANSWER(user, message_obj):
                 else:
                     send_message(players, ux.MSG_READER_HAS_JUMPED_TO_NEXT_PHASE[lang], remove_keyboard=True)
                     recap_votes(game)
+                return
             elif game.dealer_is_reader_or_teacher():
                 send_message(user, ux.MSG_WRONG_INPUT_WAIT_FOR_PLAYERS_TO_SELECT[lang])
                 return

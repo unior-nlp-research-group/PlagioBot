@@ -352,7 +352,8 @@ class Game(Model):
         hand_index = self.variables['HAND']-1
         current_players_answers = self.variables['PLAYERS_ANSWERS'][hand_index]
         remaining_players_indexes = [i for i in range(self.num_players) if str(i) not in current_players_answers]
-        remaining_players_indexes.remove(self.get_dealer_index())
+        if self.dealer_is_reader_or_teacher():
+            remaining_players_indexes.remove(self.get_dealer_index())
         remaining_names = [self.players_names[i] for i in remaining_players_indexes]            
         return remaining_names
 
@@ -625,4 +626,4 @@ class Game(Model):
         return games_generator
 
 if __name__ == "__main__":
-    g = Game.get('TEST_1592221902235')
+    g = Game.get('APEROL_1592603148678')
