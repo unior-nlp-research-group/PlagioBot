@@ -529,6 +529,10 @@ MSG_READER_HAS_JUMPED_TO_NEXT_PHASE = {
     'en': "🦘 The reader has decided to jump to the next phase without waiting for all the answers.",
     'it': "🦘 Il lettore ha deciso di saltare alla fase successiva senza aspettare tutte le risposte."
 }
+MSG_DEALER_HAS_JUMPED_TO_NEXT_PHASE = {
+    'en': "🦘 The dealer has decided to jump to the next phase without waiting for all the answers.",
+    'it': "🦘 L'amministratore del gioco ha deciso di saltare alla fase successiva senza aspettare tutte le risposte."
+}
 MSG_PLAYERS_INCOMPLETE_SENTENCE = {
     'en': "📖 This is the sentence that needs to be completed:\n\n{}",
     'it': "📖 Questa è la frase che deve essere completata:\n\n{}"
@@ -828,7 +832,14 @@ MSG_WINNER_PLURAL = {
     'en': "🏆 The winners of the game are {}",
     'it': "🏆 I/le vincitori/trici del gioco sono {}"
 }
-
+MSG_WRONG_INPUT = {
+    'en': "⛔️ Wrong input.",
+    'it': "⛔️ Input non valido."
+}
+MSG_NO_JUMP_ANSWER_FIRST = {
+    'en': "⛔️ Wrong input, you should answer first.",
+    'it': "⛔️ Input non valido, devi ancora rispondere."
+}
 MSG_WRONG_INPUT_ONLY_TEXT_ACCEPTED = {
     'en': "⛔️ Wrong input, only text is accepted here.",
     'it': "⛔️ Input non valido, devi inserire solo del testo."

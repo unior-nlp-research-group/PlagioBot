@@ -70,12 +70,45 @@ class Game(Model):
         from bot_firestore_user import User
         players = [User.get(p_id) for p_id in self.players_id]
         return players
-    
-    def dealer_is_reader_or_teacher(self):
+
+    def get_reader_index(self):
+        if self.auto_exercise_mode:
+            return None
+        if self.teacher_mode:
+            return 0
+        return (self.variables['HAND'] - 1 ) % self.num_players
+
+    def get_writers_indexes(self):
+        writers_indexes = list(range(self.num_players))
+        if self.teacher_mode:
+            writers_indexes.remove(0)
+        elif not self.auto_exercise_mode:
+            writers_indexes.remove(self.get_reader_index())
+        return writers_indexes
+
+    def teacher_or_reader_present(self):
         return self.teacher_mode or not self.auto_exercise_mode
 
-    def is_dealer_a_writer(self):
-        return self.auto_exercise_mode and not self.teacher_mode
+    def index_is_teacher_or_reader(self, i):
+        if self.teacher_mode:
+            return i == 0
+        return i == self.get_reader_index()
+
+    def player_is_teacher_or_reader(self, user):
+        i = self.players_id.index(user.id)
+        return self.index_is_teacher_or_reader(i)
+
+    def player_is_dealer(self, user):
+        i = self.players_id.index(user.id)
+        return i == 0
+
+    def get_current_hand_players_dealer_reader_writers(self):
+        players = self.get_players()
+        dealer = players[0] # dealer is always the game creator
+        reader_index = self.get_reader_index()
+        reader = None if reader_index == None else players[reader_index]
+        writers = [p for i,p in enumerate(players) if i in self.get_writers_indexes()]
+        return players, dealer, reader, writers
 
     def reset_variables(self, save=True):
         self.variables = {}
@@ -139,7 +172,7 @@ class Game(Model):
 
     @transactional
     def add_player(self, user): 
-        if self.state != "INITIAL":
+        if self.state != "INITIAL" or user.id in self.players_id:
             return False
         self.players_id.append(user.id)   
         self.players_names.append(user.get_name())
@@ -156,7 +189,7 @@ class Game(Model):
         # we could have set some vars before setups (e.g., exercise data)
         self.variables.update({
             'HAND': 0, # 1 for the first hand
-            'DEALER_INDEX': 0, # index of dealer
+            'READER_INDEX': 0, # index of reader
             'COMPLETED_HANDS': [False for _ in range(self.num_hands)], # weather each hand has been completed
             'CONFIRMED_CURRENT_HAND': [False for _ in range(self.num_players)], # weather each player has confirmed answer in current hand
             'SELECTED_CURRENT_HAND': [False for _ in range(self.num_players)], # weather each player has made a selection in current hand
@@ -188,25 +221,31 @@ class Game(Model):
         hand_index = self.variables['HAND']-1
         current_players_answers = self.variables['PLAYERS_ANSWERS'][hand_index]
         current_players_answers[str(player_index)] = text
-        remaining_players_indexes = [i for i in range(self.num_players) if str(i) not in current_players_answers]
-        if not self.is_dealer_a_writer():
-            remaining_players_indexes.remove(self.get_dealer_index())
+        remaining_players_indexes = [i for i in self.get_writers_indexes() if str(i) not in current_players_answers]
         return len(remaining_players_indexes)
 
     @transactional
     def set_voted_indexes_and_get_remaining(self, user, voted_shuffled_number): 
         answers_info = self.get_current_hand_answers_info()
         player_index = self.players_id.index(user.id)
-        dealer_index = self.get_dealer_index()        
-        if player_index == dealer_index:
-            assert self.is_dealer_a_writer() # dealer votes only in auto_text mode
+        reader_index = self.get_reader_index()
+        if player_index == reader_index:
+            assert self.auto_exercise_mode # reader votes only in auto_text mode
         voted_answer_info = next(info for c,info in answers_info.items() if info['shuffled_number']==voted_shuffled_number)
         voted_answer_info['voted_by'].append(player_index)   
         voted_by_list = [info['voted_by'] for info in answers_info.values()] 
         voters_indexes = list(itertools.chain(*voted_by_list))        
-        exact_author_list = next((info['authors'] for info in answers_info.values() if info['correct']),[dealer_index])
+        exact_author_list = next((info['authors'] for info in answers_info.values() if info['correct']),[reader_index])
         remaining_players_indexes = [i for i in range(self.num_players) if i not in voters_indexes and i not in exact_author_list]
         return len(remaining_players_indexes)
+
+    def has_confirmed(self, user):
+        player_index = self.players_id.index(user.id)
+        return self.variables['CONFIRMED_CURRENT_HAND'][player_index]
+
+    def has_selected(self, user):
+        player_index = self.players_id.index(user.id)
+        return self.variables['SELECTED_CURRENT_HAND'][player_index]    
 
     @transactional 
     def set_confirm(self, user):
@@ -234,7 +273,7 @@ class Game(Model):
         self.variables['CONFIRMED_CURRENT_HAND'] = [False for _ in range(self.num_players)]
         self.variables['SELECTED_CURRENT_HAND'] = [False for _ in range(self.num_players)]
         self.variables['HAND'] += 1
-        self.variables['DEALER_INDEX'] = self.get_dealer_index()
+        self.variables['READER_INDEX'] = self.get_reader_index()
         return True
 
 
@@ -279,25 +318,9 @@ class Game(Model):
 
     def is_last_hand(self):
         return self.variables['HAND'] == self.num_hands
-
-    def get_dealer_index(self):
-        if self.teacher_mode:
-            return 0
-        return (self.variables['HAND'] - 1 ) % self.num_players
-
-    def get_dealer_id(self):
-        return self.players_id[self.get_dealer_index()]
-
+    
     def get_hand_number(self):
         return self.variables['HAND']
-
-    def get_current_hand_players_dealer_writers(self):
-        players = self.get_players()
-        dealer = players[self.get_dealer_index()]
-        writers = [p for p in players if p != dealer]
-        if self.is_dealer_a_writer():
-            writers.append(dealer)
-        return players, dealer, writers
 
     def set_current_incomplete_text(self, text, save=True):        
         hand_index = self.variables['HAND']-1
@@ -351,9 +374,7 @@ class Game(Model):
     def get_remaining_answers_names(self):
         hand_index = self.variables['HAND']-1
         current_players_answers = self.variables['PLAYERS_ANSWERS'][hand_index]
-        remaining_players_indexes = [i for i in range(self.num_players) if str(i) not in current_players_answers]
-        if self.dealer_is_reader_or_teacher():
-            remaining_players_indexes.remove(self.get_dealer_index())
+        remaining_players_indexes = [i for i in self.get_writers_indexes() if str(i) not in current_players_answers]
         remaining_names = [self.players_names[i] for i in remaining_players_indexes]            
         return remaining_names
 
@@ -393,8 +414,7 @@ class Game(Model):
                 'correct': False,
                 'voted_by': []
             }
-        else:
-            dealer_index = self.get_dealer_index()
+        else:            
             if original_in_players_answers:
                 correct_answer = answers_info[original_completion]                
                 correct_answer['correct'] = True
@@ -407,8 +427,10 @@ class Game(Model):
                     'correct': True,
                     'voted_by': []
                 }   
-            if self.dealer_is_reader_or_teacher():
-                correct_answer['authors'].append(dealer_index)
+            if self.teacher_or_reader_present():
+                correct_index = 0 if self.teacher_mode else self.get_reader_index()
+                correct_answer['authors'].append(correct_index)
+                    
         
         # selection is enabled only if there are at least 2 unique answers
         # we should not count the answer given by the same person
@@ -421,7 +443,7 @@ class Game(Model):
         answer_correct_info = next((info for c,info in answers_info.items() if info['correct']), None)
         if answer_correct_info is None:
             return []
-        return [i for i in answer_correct_info['authors'] if i!=self.get_dealer_index()]
+        return [i for i in answer_correct_info['authors'] if i!=self.get_reader_index()]
 
     def has_user_already_voted(self, user):
         player_index = self.players_id.index(user.id)        
@@ -433,8 +455,8 @@ class Game(Model):
         names = self.players_names        
         voted_by_list = [info['voted_by'] for info in answers_info.values()] 
         voters_indexes = list(itertools.chain(*voted_by_list))
-        dealer_index = self.get_dealer_index()
-        exact_author_list = next((info['authors'] for info in answers_info.values() if info['correct']),[dealer_index])
+        reader_index = self.get_reader_index() # not sure if this is needed
+        exact_author_list = next((info['authors'] for info in answers_info.values() if info['correct']), reader_index) 
         remaining_names = [n for i,n in enumerate(names) if i not in voters_indexes and i not in exact_author_list] 
         return remaining_names   
 
@@ -457,7 +479,7 @@ class Game(Model):
         hand_index = self.variables['HAND']-1
         answers_info = self.variables['ANSWERS_INFO'][hand_index]
         current_hand_points = self.variables['HAND_POINTS'][hand_index]
-        dealer_index = self.get_dealer_index()
+        reader_index = self.get_reader_index()
         
         points_feedbacks = [{} for i in range(self.num_players)]         
             # one dict per player
@@ -476,7 +498,7 @@ class Game(Model):
             pfi['POINTS'] = 0            
 
         for i in range(self.num_players):            
-            if i==dealer_index and not self.is_dealer_a_writer():
+            if self.index_is_teacher_or_reader(i):
                 continue # reader/teacher doesn't give/receive points
             pfi = points_feedbacks[i]
             player_answer_info = next((info for info in answers_info.values() if i in info['authors']),None)
@@ -519,10 +541,11 @@ class Game(Model):
                 # peole get awarded points when voted by others only if teacher validation is off
                 if player_voted_answer_info:                                         
                     for j in player_voted_answer_info['authors']:
-                        if j != dealer_index or self.is_dealer_a_writer():
-                            # don't give point to reader
-                            points_feedbacks[j]['POINTS'] += POINT_SYSTEM['RECEIVED_VOTE']
-                            points_feedbacks[j]['NUM_VOTES_RECEIVED'] += 1
+                        if self.index_is_teacher_or_reader(j):
+                            # don't give point to reader/teacher
+                            continue
+                        points_feedbacks[j]['POINTS'] += POINT_SYSTEM['RECEIVED_VOTE']
+                        points_feedbacks[j]['NUM_VOTES_RECEIVED'] += 1
             # if 'SELECTED_CORRECTLY' not in pfi:
             #     # either i) she previous answered correctly or ii) she didn't provide a selection (jump)
             #     pfi['SELECTED_CORRECTLY'] = False
