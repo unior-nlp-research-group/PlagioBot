@@ -98,7 +98,8 @@ If kb==None keep last keyboard
 def send_message(user, text, kb=None, markdown=True, remove_keyboard=False, sleep=False, **kwargs):
     if type(user) is list:
         for u in user:
-            send_message(u, text, kb=kb, markdown=markdown, remove_keyboard=remove_keyboard, sleep=True, **kwargs)
+            send_message(u, text, kb=kb, markdown=markdown, 
+            remove_keyboard=remove_keyboard, sleep=True, **kwargs)
         return
     
     is_user = type(user) is User
@@ -124,6 +125,7 @@ def send_message(user, text, kb=None, markdown=True, remove_keyboard=False, slee
             text = text,
             parse_mode = telegram.ParseMode.MARKDOWN if markdown else None,
             reply_markup = reply_markup,
+            disable_web_page_preview=True,
             **kwargs
         )
     except Unauthorized:

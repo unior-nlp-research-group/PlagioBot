@@ -4,7 +4,6 @@ import utility
 # ================================
 # SYMBOLS
 # ================================
-# 🤗📝✏️
 CHECK_SYMBOL = '✅'
 CANCEL_SYMBOL = '❌'
 BLACK_CHECK_SYMBOL = '✔️'
@@ -448,12 +447,12 @@ MSG_WRITE_INCOMPLETE = {
         'it': "✍️ Scrivi l'inizio di una frase."
     },
     'FILL': {
-        'en': '✍️ Please write down a sentence with the missing gap indicated with 3 question marks (\'???\' with no spaces).',
-        'it': "✍️ Scrivi una frase con una parte da completare indicata da 3 punti di domanda (\'???\' senza spazi)."
+        'en': '✍️ Please write down a sentence with the missing gap indicated with 3 underscores (\'___\' with no spaces).',
+        'it': "✍️ Scrivi una frase con una parte da completare indicata da 3 trattini bassi (\'___\' senza spazi)."
     },
     'REPLACEMENT': {
-        'en': '✍️ Please write down a sentence containing a part to substitute.',
-        'it': "✍️ Scrivi una frase con una parte da sostituire."
+        'en': '✍️ Please write down a sentence with the part that will need to be substituted indicated with 3 underscores (\'___\' with no spaces).',
+        'it': "✍️ Scrivi una frase con una parte da sostituire indicata da 3 trattini bassi (\'___\' senza spazi)."
     }
 }
 MSG_WAIT_READER_WRITE_INCOMPLETE = {
@@ -916,9 +915,9 @@ MSG_CHAT_MSG_NO_MARKDOWN = {
     'en': '⛔️ The chat message cannot contain the following characters: {}'.format(utility.escape_markdown(utility.MARKDOWN_CHARS)),
     'it': '⛔️ Il testo del messaggio non può contenere i caratteri: {}'.format(utility.escape_markdown(utility.MARKDOWN_CHARS))
 }
-MSG_INPUT_NO_GAP = {
-    'en': '⛔️ The text you have inserted does not contain the sequence of 3 question marks (\'???\') to indicate the missing part to be completed.',
-    'it': '⛔️ Il testo inserito non contiene la sequenza di 3 punti di domanda (\'???\') per indicare la parte mancante da completare.'
+MSG_INPUT_NO_UNDERSCORES = {
+    'en': '⛔️ The text you have inserted does not contain the sequence of 3 underscores (\'___\').',
+    'it': '⛔️ Il testo inserito non contiene la sequenza di 3 trattini bassi (\'___\').'
 }
 MSG_INPUT_NO_SYNONYM = {
     'en': '⛔️ The text you have inserted does not contain parentheses or they are not in the correct format.',
@@ -981,7 +980,7 @@ def render_incomplete_text(game):
         msg_incomplete_sentence = MSG_PLAYERS_INCOMPLETE_SENTENCE[lang].format(incomplete_text)
     else:
         assert game.game_type == 'REPLACEMENT'
-        incomplete_text = incomplete_text.replace(original_completion, '*{}*'.format(original_completion))
+        incomplete_text = incomplete_text.replace('___', '*{}*'.format(original_completion))
         msg_incomplete_sentence = MSG_PLAYERS_SENTENCE_WITH_HIGHLITED_SYNONYM[lang].format(incomplete_text)
     if game.translate_help:
         import translate
@@ -1000,8 +999,8 @@ def render_complete_text(game, answer):
         completed_text = '{}*{}*{}'.format(pre_gap, answer, post_gap)
     else:
         assert game.game_type == 'REPLACEMENT'
-        original_answer = game.get_current_completion_text()
-        completed_text = incomplete_text.replace(original_answer, '*{}*'.format(answer))
+        # original_answer = game.get_current_completion_text()
+        completed_text = incomplete_text.replace('___', '*{}*'.format(answer))
     return completed_text
 
 def text_is_button_or_digit(text):

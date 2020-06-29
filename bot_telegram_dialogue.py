@@ -449,23 +449,24 @@ def state_SETTINGS_GAME_TYPE(user, message_obj):
 # AUTO EXERCISE MODE
 # ================================
 def state_SETTINGS_AUTO_EXERCISE_SETUP(user, message_obj):
+    import language_dataset        
     game = user.get_current_game()
     lang = game.language
-    synonym_mode = lang=='en' and game.game_type == 'REPLACEMENT'
-    nature_mode = game.game_type == 'CONTINUATION'
-    if message_obj is None:
-        if synonym_mode:
-            from exercise_en_synonym_mwe import get_exercise_batch_title_and_description
-            batch_title_descr = get_exercise_batch_title_and_description()
-            batch_title_descr_str = ['{}: {}'.format(k,v) for k,v in batch_title_descr.items()]
+    ex_list = language_dataset.get_exercise_list(lang, game.game_type)
+    if message_obj is None:        
+        ex_names = [e['Name'] for e in ex_list]                
+        if ex_names:
+            kb = [[e] for e in ex_names]
+            batch_title_descr_str = []
+            for e in ex_list:
+                row = '*{}*'.format(e['Name'])
+                if e['Description']:
+                    row += ': {}'.format(e['Description'])
+                batch_title_descr_str.append(row)
             msg_list = [ux.MSG_SELECT_EXERCISE_BATCH[lang], ''] + batch_title_descr_str
-            kb = [[sorted(batch_title_descr.keys())]]
-        elif nature_mode:
-            msg_list = [ux.MSG_SELECT_EXERCISE_BATCH[lang]]
-            kb = [[ux.BUTTON_NATURE_EXERCISE[lang]]]
         else:
-            msg_list = [ux.MSG_NO_EXERCISE_FOR_GIVEN_SETTINGS[lang]]
             kb = []
+            msg_list = [ux.MSG_NO_EXERCISE_FOR_GIVEN_SETTINGS[lang]]
         if game.auto_exercise_mode:
             kb.append([ux.BUTTON_OFF[lang]])
         kb.append([ux.BUTTON_BACK[lang]])
@@ -479,20 +480,10 @@ def state_SETTINGS_AUTO_EXERCISE_SETUP(user, message_obj):
             elif text_input.startswith(ux.BUTTON_OFF[lang]):
                 game.unset_exercise_data()
                 redirect_to_state(user, state_GAME_SETTINGS)
-            elif synonym_mode:                
-                batch_title = text_input
-                ex_exec = 'import exercise_en_synonym_mwe as ex_syn'
-                ex_eval = 'ex_syn.extract_random_exercises({}, self.num_hands).format(batch_title)'
-                if game.set_auto_text_info(batch_title, ex_exec, ex_eval):
-                    user.set_var('UPDATED_SETTINGS', True)
-                send_message(user, ux.MSG_EXERCISE_SETUP_SUCCESSFULLY[lang], remove_keyboard=True)
-                redirect_to_state(user, state_GAME_SETTINGS)
             else:
-                assert nature_mode
-                ex_title = text_input                
-                ex_exec = 'import exercise_continuation_nature as ex_nat'
-                ex_eval = 'ex_nat.extract_random_exercises(self.language, self.num_hands)'
-                if game.set_auto_text_info(ex_title, ex_exec, ex_eval):
+                ex_title = text_input
+                gid = next(e for e in ex_list if e['Name']==ex_title)['GID']                                        
+                if game.set_auto_text_info(ex_title, gid):
                     user.set_var('UPDATED_SETTINGS', True)
                 send_message(user, ux.MSG_EXERCISE_SETUP_SUCCESSFULLY[lang], remove_keyboard=True)
                 redirect_to_state(user, state_GAME_SETTINGS)
@@ -801,8 +792,8 @@ def state_READER_WRITES_INCOMPLETE_TEXT(user, message_obj, first_call=True):
                     send_message(user, ux.MSG_INPUT_NO_MARKDOWN[lang])
                 elif len(text_input) < parameters.MIN_BEGINNING_LENGTH:
                     send_message(user, ux.MSG_INPUT_TOO_SHORT[lang], sleep=True)
-                elif game.game_type == 'FILL' and '???' not in text_input:
-                    send_message(user, ux.MSG_INPUT_NO_GAP[lang], sleep=True)
+                elif game.game_type != 'COMPLETION' and '___' not in text_input:
+                    send_message(user, ux.MSG_INPUT_NO_UNDERSCORES[lang], sleep=True)
                 # elif game.game_type == 'REPLACEMENT' and utility.has_parenthesis_in_correct_format(text_input):
                 #     send_message(user, ux.MSG_INPUT_NO_SYNONYM[lang], sleep=True)
                 else:
@@ -821,7 +812,7 @@ def state_READER_WRITES_INCOMPLETE_TEXT(user, message_obj, first_call=True):
 # ================================
 def state_READER_WRITES_ANSWER(user, message_obj):
     game = user.get_current_game()
-    players, dealer, reader, writers = game.get_current_hand_players_dealer_reader_writers()
+    _, dealer, reader, _ = game.get_current_hand_players_dealer_reader_writers()
     lang = game.language
     reader_name = ux.MSG_THE_TEACHER[lang] if game.teacher_mode else reader.get_name()
     if message_obj is None:
@@ -841,15 +832,6 @@ def state_READER_WRITES_ANSWER(user, message_obj):
                     answer = text_input.upper()
                     if game.game_type == 'CONTINUATION':
                         answer = utility.add_full_stop_if_missing_end_puct(answer)
-                    elif game.game_type == 'REPLACEMENT':
-                        inserted_sentence = game.get_current_incomplete_text()
-                        freq = inserted_sentence.count(answer)
-                        if freq==0:
-                            send_message(user, ux.MSG_INPUT_SUBSTITUION_NOT_IN_SENTENCE[lang])
-                            return
-                        if freq>1:
-                            send_message(user, ux.MSG_INPUT_SUBSTITUION_PRESENT_TWICE_OR_MORE_IN_SENTENCE[lang])
-                            return
                     game.set_current_completion_text(answer)
                     redirect_to_state(user, state_READER_CONFIRMS_INPUT)
             else:
@@ -897,7 +879,7 @@ def state_READER_CONFIRMS_INPUT(user, message_obj):
 # ================================
 def state_WRITERS_WRITE_ANSWERS(user, message_obj):
     game = user.get_current_game()
-    players, dealer, reader, writers = game.get_current_hand_players_dealer_reader_writers()
+    players, dealer, _, _ = game.get_current_hand_players_dealer_reader_writers()
     incomplete_text, original_completion = game.get_current_incomplete_text_and_original_completion()
     lang = game.language
     # processing all input because we redirect writers to this state from the confirmation ifn the reply NO
@@ -917,9 +899,12 @@ def state_WRITERS_WRITE_ANSWERS(user, message_obj):
         else:
             # user is writer
             msg_incomplete_sentence = ux.render_incomplete_text(game)
+            instructions = ux.MSG_WRITERS_WRITE_ANSWER[game.game_type][lang]
+            if game.game_type == 'REPLACEMENT':
+                instructions = instructions.format(game.get_current_completion_text())
             msg_list = [
                 msg_incomplete_sentence, '',
-                ux.MSG_WRITERS_WRITE_ANSWER[game.game_type][lang]
+                instructions
             ]
             send_message(user, '\n'.join(msg_list), remove_keyboard=True)
     else:
@@ -957,9 +942,9 @@ def state_WRITERS_WRITE_ANSWERS(user, message_obj):
                         if answer == original_completion:
                             send_message(user, ux.MSG_INPUT_SYNONYM_IDENTICAL_TO_ORIGINAL[lang])
                             return
-                        elif utility.check_if_substitue_suggestion_matches_prefix_suffix(incomplete_text, original_completion, answer):
+                        elif utility.check_if_substitue_suggestion_matches_prefix_suffix(incomplete_text, answer):
                             send_message(user, ux.MSG_INPUT_SYNONYM_MATCHED_PREFIX_SUFFIX[lang])
-                            pass
+                            return
                     user.set_var('ANSWER', answer)
                     redirect_to_state(user, state_WRITER_CONFIRMS_INPUT)
         else:
@@ -1086,7 +1071,7 @@ def state_WRITERS_SELECT_BEST_ANSWER(user, message_obj):
             return
         if game.game_type == 'REPLACEMENT':
             incomplete_text, original_completion = game.get_current_incomplete_text_and_original_completion()
-            completed_text = incomplete_text.replace(original_completion, '*{}*'.format(original_completion))
+            completed_text = incomplete_text.replace('___', '*{}*'.format(original_completion))
             msg = ux.MSG_ORIGINAL_TEXT[lang].format(completed_text)
             send_message(players, msg)
         intro_msg = ux.MSG_INTRO_NUMBERED_TEXT[lang]
@@ -1554,6 +1539,11 @@ def deal_with_universal_commands(user, message_obj):
         send_message(user, msg)
         return True
     if user.is_master():
+        if text_input == '/update':
+            import language_dataset
+            language_dataset.update()
+            send_message(user, "💨 Langauge Dataset updated!")
+            return True
         if text_input == '/debug':
             import json
             game = user.get_current_game()

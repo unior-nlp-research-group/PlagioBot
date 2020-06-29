@@ -56,13 +56,14 @@ def normalize_apostrophe(text):
         text = text.replace(char, "'")
     return text
 
-def check_if_substitue_suggestion_matches_prefix_suffix(text, replacement_in_text, answer):
-    text = remove_trailing_punctuation(text)
+def check_if_substitue_suggestion_matches_prefix_suffix(incomplete_text, answer):
+    replacement_in_text = '___'
+    incomplete_text = remove_trailing_punctuation(incomplete_text)
     answer = remove_trailing_punctuation(answer)
-    prefix_end = text.index(replacement_in_text)
+    prefix_end = incomplete_text.index(replacement_in_text)
     suffix_start = prefix_end + len(replacement_in_text)
-    prefix = text[:prefix_end]
-    suffix = text[suffix_start:]
+    prefix = incomplete_text[:prefix_end]
+    suffix = incomplete_text[suffix_start:]
     return answer.startswith(prefix) and answer.endswith(suffix)
 
 def has_parenthesis_in_correct_format(text):

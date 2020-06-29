@@ -281,35 +281,27 @@ class Game(Model):
     # END of TRANSACTIONAL FUNCTIONS
     ##########################################
 
-    def set_auto_text_info(self, exercise_title, ex_exec, ex_eval, save=True):
+    def set_auto_text_info(self, exercise_title, gid, save=True):
         self.auto_exercise_mode = True
         changed = not self.auto_exercise_mode or self.get_var('EXERCISE_TITLE') != exercise_title
         self.variables['EXERCISE_TITLE'] = exercise_title
-        self.variables['EXERCISE_EXEC_CMD'] = ex_exec
-        self.variables['EXERCISE_EVAL_CMD'] = ex_eval
+        self.variables['EXERCISE_GID'] = gid
         if save: self.save()
         return changed
 
     def unset_exercise_data(self, save=True):
         self.auto_exercise_mode = False
         self.variables['EXERCISE_TITLE'] = None
-        self.variables['EXERCISE_EXEC_CMD'] = None        
-        self.variables['EXERCISE_EVAL_CMD'] = None        
+        self.variables['EXERCISE_GID'] = None        
         if save: self.save()
 
     def fill_exercises_automatically(self, save=True):
-        assert self.auto_exercise_mode
-        exec(self.variables['EXERCISE_EXEC_CMD']) # import libraries
-        EX_DATA = eval(self.variables['EXERCISE_EVAL_CMD']) # get exercise data
-        if self.game_type == 'CONTINUATION':
-            # ID, INCIPIT, CONTINUATION, SOURCE
-            self.variables['INCOMPLETE_TEXTS'] = [e['INCIPIT'].upper() for e in EX_DATA]
-            self.variables['ORIGINAL_COMPLETION'] = [e['CONTINUATION'].upper() for e in EX_DATA]
-        else:
-            assert self.game_type == 'REPLACEMENT'    
-            # ID, SENTENCE, REPLACEMENT    
-            self.variables['INCOMPLETE_TEXTS'] = [e['SENTENCE'].upper() for e in EX_DATA]
-            self.variables['ORIGINAL_COMPLETION'] = [e['REPLACEMENT'].upper() for e in EX_DATA]
+        import language_dataset
+        assert self.auto_exercise_mode        
+        gid = self.variables['EXERCISE_GID']
+        ex_data = language_dataset.get_exercise_random_sample(gid, self.num_hands)
+        self.variables['INCOMPLETE_TEXTS'] = [e['TEXT'].upper() for e in ex_data]
+        self.variables['ORIGINAL_COMPLETION'] = [e['MISSING'].upper() for e in ex_data]
         if save: self.save()
 
     def get_creator_name(self):
@@ -352,7 +344,7 @@ class Game(Model):
 
     def get_incomplete_text_pre_post_gap(self):        
         incomplete_text = self.get_current_incomplete_text()
-        gap_string = '???'
+        gap_string = '___'
         gap_index = incomplete_text.index(gap_string)
         pre_gap = incomplete_text[:gap_index]
         post_gap = incomplete_text[gap_index+len(gap_string):]
@@ -454,9 +446,13 @@ class Game(Model):
         answers_info = self.get_current_hand_answers_info()
         names = self.players_names        
         voted_by_list = [info['voted_by'] for info in answers_info.values()] 
-        voters_indexes = list(itertools.chain(*voted_by_list))
-        reader_index = self.get_reader_index() # not sure if this is needed
-        exact_author_list = next((info['authors'] for info in answers_info.values() if info['correct']), reader_index) 
+        voters_indexes = list(itertools.chain(*voted_by_list))        
+        if self.auto_exercise_mode == None:
+            # auto_exercise_mode
+            exact_author_list = []
+        else:
+            reader_index = self.get_reader_index() # not sure if this is needed
+            exact_author_list = next((info['authors'] for info in answers_info.values() if info['correct']), [reader_index]) 
         remaining_names = [n for i,n in enumerate(names) if i not in voters_indexes and i not in exact_author_list] 
         return remaining_names   
 
