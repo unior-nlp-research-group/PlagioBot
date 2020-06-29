@@ -631,6 +631,12 @@ class Game(Model):
             print("{}:{} {}".format(s, count, id_list))
 
     @staticmethod
+    def get_ended_games():
+        games = Game.query([('state', '==', 'ENDED')]).get() # order_by('created')
+        for g in games:
+            print('{} {}'.format(g.name, g.created))
+
+    @staticmethod
     @exception_reporter
     def get_expired_games():
         import datetime
@@ -649,4 +655,5 @@ class Game(Model):
         return games_generator
 
 if __name__ == "__main__":
-    g = Game.get('APEROL_1592603148678')
+    # g = Game.get('APEROL_1592603148678')
+    Game.get_ended_games()
